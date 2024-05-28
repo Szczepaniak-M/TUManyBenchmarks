@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 @Document(collection = "instances")
 data class Instance(
     @Id
-    val id: String,
+    val id: String?,
     val name: String,
     val tags: List<String>
 )

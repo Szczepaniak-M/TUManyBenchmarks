@@ -5,6 +5,7 @@ import de.tum.cit.cs.benchmarkservice.model.InstanceWithBenchmarks
 import de.tum.cit.cs.benchmarkservice.repository.BenchmarkCronRepository
 import de.tum.cit.cs.benchmarkservice.repository.BenchmarkRepository
 import de.tum.cit.cs.benchmarkservice.repository.InstanceRepository
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
@@ -23,26 +24,31 @@ class BenchmarkSchedulerService(
     val instanceService: InstanceService,
     val benchmarkRunnerService: BenchmarkRunnerService
 ) {
+
+    private val logger = KotlinLogging.logger {}
+
     @Scheduled(cron = "0 0 * * * *")
     fun runBenchmarks() {
+        logger.info { "Staring benchmarks" }
         runBlocking {
             val benchmarkIdsToRun = getBenchmarksWithMatchingCron()
             val benchmarks = benchmarkRepository.findAllById(benchmarkIdsToRun).toList()
             val instanceWithBenchmarksToRun = getInstancesWithBenchmarks(benchmarks)
             val benchmarkResults = instanceWithBenchmarksToRun.map(benchmarkRunnerService::runBenchmarksForInstance)
-            }
         }
+        logger.info { "Finished benchmarks" }
+    }
 
     private fun getBenchmarksWithMatchingCron(): Flow<String> {
         val now = ZonedDateTime.now().withMinute(0)
         return benchmarkCronRepository.findAll()
-            .filter { benchmarkCron -> cronParserService.isCronActive(benchmarkCron, now) }
-            .map { benchmark -> benchmark.id }
+            .filter { cronParserService.isCronActive(it, now) }
+            .map { it.id }
     }
 
     private fun getInstancesWithBenchmarks(benchmarks: List<Benchmark>): Flow<InstanceWithBenchmarks> {
         return instanceRepository.findAll()
-            .map { instance -> instanceService.findMatchingBenchmarks(instance, benchmarks) }
-            .filter { instanceWithBenchmarks -> instanceWithBenchmarks.benchmarks.isNotEmpty() }
+            .map { instanceService.findMatchingBenchmarks(it, benchmarks) }
+            .filter { it.benchmarks.isNotEmpty() }
     }
 }
