@@ -8,6 +8,19 @@ import org.springframework.stereotype.Service
 @Service
 class InstanceService {
     fun findMatchingBenchmarks(instance: Instance, benchmarks: List<Benchmark>): InstanceWithBenchmarks {
-        return InstanceWithBenchmarks(instance, benchmarks)
+        val applicableBenchmarks = mutableListOf<Benchmark>()
+        for (benchmark in benchmarks) {
+            if (benchmark.configuration.instanceType?.contains(instance.name) == true) {
+                applicableBenchmarks.add(benchmark)
+            } else if (benchmark.configuration.instanceTags != null){
+                for(tagList in benchmark.configuration.instanceTags) {
+                    if (instance.tags.containsAll(tagList)) {
+                        applicableBenchmarks.add(benchmark)
+                        break
+                    }
+                }
+            }
+        }
+        return InstanceWithBenchmarks(instance, applicableBenchmarks)
     }
 }

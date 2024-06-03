@@ -9,6 +9,6 @@ data class BenchmarkCron(
     @Id
     val id: String,
 
-    @Field("metadata.cron")
+    @Field("configuration.cron")
     val cron: String,
 )

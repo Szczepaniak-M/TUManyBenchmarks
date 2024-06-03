@@ -7,18 +7,18 @@ import org.springframework.data.mongodb.core.mapping.Document
 data class Benchmark(
     @Id
     val id: String,
-    val metadata: Metadata,
+    val configuration: Configuration,
     val nodes: List<Node>,
 )
 
-data class Metadata(
+data class Configuration(
     val name: String,
     val description: String,
     val cron: String,
     val outputType: OutputType,
     val instanceNumber: Int,
     val instanceTags: List<List<String>>?,
-    val instanceType: List<String>
+    val instanceType: List<String>?
 )
 
 data class Node(
