@@ -7,3 +7,14 @@ spring:
       port: ${mongodb.container.port:27017}
       host: localhost
       auto-index-creation: true
+aws:
+  ec2:
+    private-key:
+      name: aws-benchmark-private-key
+      file-name: aws-benchmark-private-key.pem
+    default-ami:
+      x86_64: ami-04b70fa74e45c3917
+      arm: ami-0eac975a54dfee8cb
+    network:
+      availability-zone: us-east-1a
+      cidr: 10.0.0.0/28

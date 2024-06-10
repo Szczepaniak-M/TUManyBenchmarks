@@ -10,12 +10,12 @@ class CronParserServiceTest {
 
     companion object {
         private const val TEST_ID = "ID"
-        private val DEFAULT_DATE = ZonedDateTime.now().withMinute(0)
+        private val DEFAULT_DATE = ZonedDateTime.now().withMonth(1).withMinute(0)
         private val cronParserService = CronParserService()
     }
 
     @Test
-    fun `test matching simple cron expression`() {
+    fun `match simple cron expression`() {
         // given
         val benchmarkCron = BenchmarkCron(TEST_ID, "0 * * * *") // run every hour
         // when
@@ -25,7 +25,7 @@ class CronParserServiceTest {
     }
 
     @Test
-    fun `test matching complex cron expression`() {
+    fun `match complex cron expression`() {
         // given
         val benchmarkCron = BenchmarkCron(TEST_ID, "0 0 L * *") // run last day of month
         val date = DEFAULT_DATE.withHour(0).withDayOfMonth(31).withMonth(1)
@@ -36,7 +36,7 @@ class CronParserServiceTest {
     }
 
     @Test
-    fun `test non-matching cron expression`() {
+    fun `non-match cron expression`() {
         // given
         val benchmarkCron = BenchmarkCron(TEST_ID, "0 0 L * *") // run last day of month
         val date = DEFAULT_DATE.withHour(0).withDayOfMonth(30).withMonth(1)

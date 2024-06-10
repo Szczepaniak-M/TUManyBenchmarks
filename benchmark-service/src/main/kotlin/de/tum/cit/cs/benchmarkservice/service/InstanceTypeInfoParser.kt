@@ -1,7 +1,7 @@
 package de.tum.cit.cs.benchmarkservice.service
 
+import aws.sdk.kotlin.services.ec2.model.InstanceTypeInfo
 import org.springframework.stereotype.Service
-import software.amazon.awssdk.services.ec2.model.InstanceTypeInfo
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -9,7 +9,7 @@ import java.math.RoundingMode
 class InstanceTypeInfoParser {
 
     fun parseInstanceName(instanceTypeInfo: InstanceTypeInfo): String {
-        return instanceTypeInfo.instanceTypeAsString()
+        return instanceTypeInfo.instanceType?.value ?: "UNKNOWN"
     }
 
     // TODO discuss additional tags
@@ -24,12 +24,12 @@ class InstanceTypeInfoParser {
     }
 
     private fun parseCPUs(instanceTypeInfo: InstanceTypeInfo): String {
-        val vCpu = instanceTypeInfo.vCpuInfo().defaultVCpus()
+        val vCpu = instanceTypeInfo.vCpuInfo?.defaultVCpus
         return "$vCpu vCPUs"
     }
 
     private fun parseMemory(instanceTypeInfo: InstanceTypeInfo): String {
-        val memory = instanceTypeInfo.memoryInfo().sizeInMiB() / 1024.0
+        val memory = instanceTypeInfo.memoryInfo?.sizeInMib?.div(1024.0) ?: 0.0
         val memoryDecimal = BigDecimal(memory)
             .setScale(3, RoundingMode.HALF_EVEN)
             .stripTrailingZeros()
@@ -38,22 +38,22 @@ class InstanceTypeInfoParser {
     }
 
     private fun parseArchitectures(instanceTypeInfo: InstanceTypeInfo): List<String> {
-        return instanceTypeInfo.processorInfo()
-            .supportedArchitectures()
-            .map { it.toString() }
+        return instanceTypeInfo.processorInfo
+            ?.supportedArchitectures
+            ?.map { it.value } ?: emptyList()
     }
 
     private fun parseStorageInfo(instanceTypeInfo: InstanceTypeInfo): List<String> {
         val tags = mutableListOf<String>()
-        if (instanceTypeInfo.instanceStorageSupported()) {
-            val disk = instanceTypeInfo.instanceStorageInfo().disks()[0]
-            tags.add(disk.type().name)
+        if (instanceTypeInfo.instanceStorageSupported == true) {
+            val disk = instanceTypeInfo.instanceStorageInfo?.disks?.get(0)
+            disk?.type?.let { tags.add(it.value) }
         }
         return tags
     }
 
     private fun parseNetwork(instanceTypeInfo: InstanceTypeInfo): String {
-        val networkSpeed = instanceTypeInfo.networkInfo().networkPerformance()
+        val networkSpeed = instanceTypeInfo.networkInfo?.networkPerformance
         return "$networkSpeed Network"
     }
 }

@@ -1,5 +1,6 @@
 package de.tum.cit.cs.benchmarkservice.service
 
+import aws.sdk.kotlin.services.ec2.model.InstanceTypeInfo
 import de.tum.cit.cs.benchmarkservice.model.Instance
 import de.tum.cit.cs.benchmarkservice.repository.InstanceRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -10,7 +11,6 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
-import software.amazon.awssdk.services.ec2.model.InstanceTypeInfo
 
 @Service
 class InstanceUpdateSchedulerService(

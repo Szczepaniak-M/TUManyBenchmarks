@@ -38,3 +38,6 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### AWS Key ###
+/src/main/resources/aws-benchmark-private-key.pem

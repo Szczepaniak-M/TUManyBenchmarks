@@ -22,7 +22,7 @@ class InstanceServiceTest {
     private val instanceService = InstanceService()
 
     @Test
-    fun `test findMatchingBenchmarks with matching instance type`() {
+    fun `find matching benchmarks using instance type`() {
         // given
         val instance = TEMPLATE_INSTANCE
         val configuration = TEMPLATE_CONFIGURATION.copy(instanceType = listOf("t3.micro", "t2.micro"))
@@ -38,7 +38,7 @@ class InstanceServiceTest {
     }
 
     @Test
-    fun `test findMatchingBenchmarks with matching instance tags`() {
+    fun `find matching benchmarks using instance tags`() {
         // given
         val instance = TEMPLATE_INSTANCE.copy(tags = listOf("8 vCPUs", "8 GiB Memory"))
         val configuration = TEMPLATE_CONFIGURATION.copy(
@@ -59,7 +59,7 @@ class InstanceServiceTest {
     }
 
     @Test
-    fun `test findMatchingBenchmarks with multiple matching instance tags`() {
+    fun `find matching benchmarks while multiple instance tags match`() {
         // given
         val instance = TEMPLATE_INSTANCE.copy(tags = listOf("8 vCPUs", "8 GiB Memory"))
         val configuration = TEMPLATE_CONFIGURATION.copy(
@@ -80,7 +80,7 @@ class InstanceServiceTest {
     }
 
     @Test
-    fun `test findMatchingBenchmarks with no matches`() {
+    fun `find matching benchmarks when no matches`() {
         // given
         val instance = TEMPLATE_INSTANCE.copy(tags = listOf("8 vCPUs", "8 GiB Memory"))
         val configuration = TEMPLATE_CONFIGURATION.copy(
@@ -101,7 +101,7 @@ class InstanceServiceTest {
     }
 
     @Test
-    fun `test findMatchingBenchmarks with matching instance type and instance tags`() {
+    fun `find matching benchmarks when instance type and instance tags match`() {
         // given
         val instance = TEMPLATE_INSTANCE.copy(tags = listOf("8 vCPUs", "8 GiB Memory"))
         val configuration = TEMPLATE_CONFIGURATION.copy(
@@ -123,7 +123,7 @@ class InstanceServiceTest {
     }
 
     @Test
-    fun `test findMatchingBenchmarks with only nulls`() {
+    fun `find matching benchmarks with only nulls`() {
         // given
         val instance = TEMPLATE_INSTANCE
         val benchmarks = listOf(TEMPLATE_BENCHMARK)
@@ -137,7 +137,7 @@ class InstanceServiceTest {
     }
 
     @Test
-    fun `test findMatchingBenchmarks with multiple matching benchmarks`() {
+    fun `find matching benchmarks when multiple benchmarks match`() {
         // given
         val instance = TEMPLATE_INSTANCE.copy(tags = listOf("8 vCPUs", "8 GiB Memory"))
         val configuration1 = TEMPLATE_CONFIGURATION.copy(instanceType = listOf("t2.micro"))

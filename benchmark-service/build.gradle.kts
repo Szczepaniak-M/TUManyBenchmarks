@@ -31,7 +31,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     implementation("com.cronutils:cron-utils:9.2.1")
-    implementation("software.amazon.awssdk:ec2:2.25.60")
+    implementation("aws.sdk.kotlin:ec2:1.2.29")
     implementation("io.github.oshai:kotlin-logging-jvm:6.0.9")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
