@@ -6,14 +6,16 @@ import de.tum.cit.cs.benchmarkservice.repository.BenchmarkCronRepository
 import de.tum.cit.cs.benchmarkservice.repository.BenchmarkRepository
 import de.tum.cit.cs.benchmarkservice.repository.InstanceRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
 
 @Service
-class BenchmarkSchedulerService(
+class BenchmarkService(
     val benchmarkCronRepository: BenchmarkCronRepository,
     val benchmarkRepository: BenchmarkRepository,
     val instanceRepository: InstanceRepository,
@@ -24,17 +26,12 @@ class BenchmarkSchedulerService(
 
     private val logger = KotlinLogging.logger {}
 
-    @Scheduled(cron = "0 0 * * * *")
-    fun runBenchmarks() {
-        logger.info { "Staring benchmarks" }
-        runBlocking {
-            val benchmarkIdsToRun = getBenchmarksWithMatchingCron()
-            val benchmarks = benchmarkRepository.findAllById(benchmarkIdsToRun).toList()
-            logger.info { "Found ${benchmarks.size} benchmarks with matching CRON expression" }
-            val instanceWithBenchmarksToRun = getInstancesWithBenchmarks(benchmarks)
-            val benchmarkResults = instanceWithBenchmarksToRun.map(benchmarkRunnerService::runBenchmarksForInstance)
-        }
-        logger.info { "Finished benchmarks" }
+    fun runBenchmarks() = runBlocking {
+        val benchmarkIdsToRun = getBenchmarksWithMatchingCron()
+        val benchmarks = benchmarkRepository.findAllById(benchmarkIdsToRun).toList()
+        logger.info { "Found ${benchmarks.size} benchmarks with matching CRON expression" }
+        val instanceWithBenchmarksToRun = getInstancesWithBenchmarks(benchmarks)
+        val benchmarkResults = instanceWithBenchmarksToRun.map(benchmarkRunnerService::runBenchmarksForInstance)
     }
 
     private fun getBenchmarksWithMatchingCron(): Flow<String> {

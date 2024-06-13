@@ -15,6 +15,10 @@ aws:
     network:
       availability-zone: us-east-1a
       cidr: 10.0.0.0/28
+github:
+  repository:
+    url: https://api.github.com/repos/userName/repositoryName/contents
+
 #logging:
 #  level:
 #    root: debug

@@ -1,12 +1,10 @@
 package de.tum.cit.cs.benchmarkservice
 
 import org.springframework.context.annotation.Configuration
-import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories
 import org.testcontainers.containers.MongoDBContainer
 import org.testcontainers.junit.jupiter.Container
 
 @Configuration
-@EnableReactiveMongoRepositories
 class MongoTestContainerConfig {
     @Container
     final val mongoDBContainer: MongoDBContainer = MongoDBContainer("mongo:latest")

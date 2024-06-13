@@ -18,3 +18,6 @@ aws:
     network:
       availability-zone: us-east-1a
       cidr: 10.0.0.0/28
+github:
+  repository:
+    url: http://localhost/repos/userName/repositoryName/contents

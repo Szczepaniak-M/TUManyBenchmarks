@@ -1,11 +1,11 @@
 package de.tum.cit.cs.benchmarkservice
 
 import org.junit.jupiter.api.Test
-import org.springframework.test.context.ContextConfiguration
-import org.testcontainers.junit.jupiter.Testcontainers
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.ActiveProfiles
 
-@Testcontainers
-@ContextConfiguration(classes = [MongoTestContainerConfig::class])
+@SpringBootTest
+@ActiveProfiles("test")
 class BenchmarkServiceApplicationTests {
 
     @Test
