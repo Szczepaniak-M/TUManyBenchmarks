@@ -6,10 +6,9 @@ import de.tum.cit.cs.benchmarkservice.repository.BenchmarkCronRepository
 import de.tum.cit.cs.benchmarkservice.repository.BenchmarkRepository
 import de.tum.cit.cs.benchmarkservice.repository.InstanceRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
@@ -26,12 +25,28 @@ class BenchmarkService(
 
     private val logger = KotlinLogging.logger {}
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun runBenchmarks() = runBlocking {
         val benchmarkIdsToRun = getBenchmarksWithMatchingCron()
         val benchmarks = benchmarkRepository.findAllById(benchmarkIdsToRun).toList()
         logger.info { "Found ${benchmarks.size} benchmarks with matching CRON expression" }
         val instanceWithBenchmarksToRun = getInstancesWithBenchmarks(benchmarks)
-        val benchmarkResults = instanceWithBenchmarksToRun.map(benchmarkRunnerService::runBenchmarksForInstance)
+        val benchmarksCount = instanceWithBenchmarksToRun.flatMapMerge { instanceWithBenchmarks ->
+            flow {
+                emit(
+                    async {
+                        benchmarkRunnerService.runBenchmarksForInstance(instanceWithBenchmarks)
+                    }.await()
+                )
+            }
+        }.map { benchmarkResultsList ->
+            val instanceId = benchmarkResultsList.first().instanceId
+            val benchmarkResultsListMongo = benchmarkResultsList.map { it.toMongoModel() }
+            instanceRepository.updateBenchmarksById(instanceId, benchmarkResultsListMongo)
+            logger.info { "Added ${benchmarkResultsListMongo.size} benchmark results to Instance $instanceId" }
+            benchmarkResultsListMongo.size
+        }.reduce { accumulator, value -> accumulator + value }
+        logger.info { "Finished running $benchmarksCount benchmarks" }
     }
 
     private fun getBenchmarksWithMatchingCron(): Flow<String> {

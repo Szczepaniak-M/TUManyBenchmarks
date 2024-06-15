@@ -14,6 +14,7 @@ data class Benchmark(
 data class Configuration(
     val name: String,
     val description: String,
+    val directory: String,
     val cron: String,
     val outputType: OutputType,
     val instanceNumber: Int,

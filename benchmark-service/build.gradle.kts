@@ -38,6 +38,7 @@ dependencies {
     }
     implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.14")
     implementation("io.github.oshai:kotlin-logging-jvm:6.0.9")
+    implementation("org.apache.sshd:sshd-core:2.12.1")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(module = "mockito-core")

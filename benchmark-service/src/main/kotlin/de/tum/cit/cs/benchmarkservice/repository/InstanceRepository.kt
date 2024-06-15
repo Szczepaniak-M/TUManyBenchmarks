@@ -1,5 +1,6 @@
 package de.tum.cit.cs.benchmarkservice.repository
 
+import de.tum.cit.cs.benchmarkservice.model.BenchmarkResultMongo
 import de.tum.cit.cs.benchmarkservice.model.Instance
 import org.springframework.data.mongodb.repository.Query
 import org.springframework.data.mongodb.repository.Update
@@ -12,5 +13,12 @@ interface InstanceRepository : CoroutineCrudRepository<Instance, String> {
     @Query("{ '_id' : ?0 }")
     @Update("{ '\$set' : { 'tags' : ?1 } }")
     suspend fun updateTagsById(id: String, tags: List<String>): Int
+
+    @Query("{ '_id' : ?0 }")
+    @Update("{ '\$push' : { 'benchmarks' : { '\$each': [?1] } } }")
+    suspend fun updateBenchmarksById(
+        instanceId: String,
+        benchmarks: List<BenchmarkResultMongo>
+    ): Int
 
 }

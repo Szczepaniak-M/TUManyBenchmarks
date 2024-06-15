@@ -79,4 +79,9 @@ class InstanceRepositoryTest {
         assertEquals(NAME_2, notUpdatedInstance?.name)
         assertEquals(TAGS_2, notUpdatedInstance?.tags)
     }
+
+    @Test
+    fun `update benchmarks`() = runTest {
+        // TODO implement test
+    }
 }

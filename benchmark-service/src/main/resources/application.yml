@@ -8,7 +8,7 @@ aws:
   ec2:
     private-key:
       name: aws-benchmark-private-key
-      file-name: aws-benchmark-private-key.pem
+      file: aws-benchmark-private-key.pem
     default-ami:
       x86_64: ami-04b70fa74e45c3917
       arm: ami-0eac975a54dfee8cb
