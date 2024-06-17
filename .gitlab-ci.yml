@@ -1,0 +1,21 @@
+stages:
+  - test
+
+test_job:
+  stage: test
+  image: gradle:jdk21
+
+  script:
+    - cd /benchmark-service
+    - gradle clean test
+
+  artifacts:
+    when: always
+    paths:
+      - /benchmark/build/reports/tests/
+    expire_in: 1 week
+
+  tags:
+    - gradle
+
+
