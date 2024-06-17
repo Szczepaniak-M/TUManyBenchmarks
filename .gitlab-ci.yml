@@ -7,7 +7,7 @@ test_job:
 
   script:
     - cd /benchmark-service
-    - gradle clean test
+    - ./gradlew clean test
 
   artifacts:
     when: always

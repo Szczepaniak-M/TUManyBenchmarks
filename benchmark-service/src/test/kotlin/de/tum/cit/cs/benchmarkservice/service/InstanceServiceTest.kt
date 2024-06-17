@@ -33,8 +33,8 @@ class InstanceServiceTest {
     companion object {
         private val TEMPLATE_INSTANCE = Instance(id = "id", name = "t2.micro", tags = emptyList())
         private val TEMPLATE_CONFIGURATION = Configuration(
-            name = "", description = "", cron = "",
-            outputType = OutputType.SINGLE_VALUE, instanceNumber = 0,
+            name = "", description = "", cron = "", directory = "",
+            outputType = OutputType.SINGLE_NODE_SINGLE_VALUE, instanceNumber = 0,
             instanceTags = null, instanceType = null
         )
         private val TEMPLATE_BENCHMARK = Benchmark(id = "", configuration = TEMPLATE_CONFIGURATION, nodes = emptyList())
