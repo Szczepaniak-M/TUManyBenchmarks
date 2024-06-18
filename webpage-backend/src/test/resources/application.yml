@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: webpage-backend
+  data:
+    mongodb:
+      database: test
+      port: ${mongodb.container.port:27017}
+      host: localhost
+      auto-index-creation: true

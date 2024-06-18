@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: webpage-backend
+  data:
+    mongodb:
+      uri: mongodb+srv://${DB_USER}:${DB_PASSWORD}@benchmark.7pst8ee.mongodb.net/benchmark-data?retryWrites=true&w=majority
