@@ -15,13 +15,22 @@ def load_yaml_file(file_path):
             return None
 
 
-def convert_keys_to_camel_case(d: dict) -> dict:
+def convert_keys_to_camel_case(input_dict):
     new_dict = {}
-    for key, value in d.items():
+    for key, value in input_dict.items():
         new_key = dash_to_camel_case(key)
         # Recursively convert nested dictionaries
         if isinstance(value, dict):
             new_dict[new_key] = convert_keys_to_camel_case(value)
+        elif isinstance(value, list):
+            new_list = []
+            for element in value:
+                if isinstance(element, dict):
+                    # Recursively convert nested dictionaries in a list
+                    new_list.append(convert_keys_to_camel_case(element))
+                else:
+                    new_list.append(element)
+            new_dict[new_key] = new_list
         else:
             new_dict[new_key] = value
     return new_dict

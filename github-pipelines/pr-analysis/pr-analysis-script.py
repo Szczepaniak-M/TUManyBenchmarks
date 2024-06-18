@@ -16,10 +16,10 @@ REQUIRED_CONFIGURATION_FIELDS = {
 }
 
 ALLOWED_OUTPUT_TYPES = [
-    'multiple-nodes-single-values',
-    'single-node-multiple-value',
+    'single-node-single-value',
+    'single-node-multiple-values',
+    'multiple-nodes-single-value'
     'multiple-nodes-multiple-values',
-    'multiple-nodes-single-values'
 ]
 
 
@@ -133,24 +133,23 @@ def analyze_configuration_file(yaml_file):
 
         # Check if all nodes have IDs
         for node in yaml_data['nodes']:
-            node = node['node']
             if not isinstance(node, dict):
                 print_stderr("Each node should be of type dict.")
                 return 1
-            if 'id' not in node:
-                print_stderr("Missing 'id' in 'node' section.")
+            if 'node-id' not in node:
+                print_stderr("Missing 'node-id' in 'node' section.")
                 return 1
-            if not isinstance(node['id'], int):
-                print_stderr("'id' in 'node' should be of type int.")
+            if not isinstance(node['node-id'], int):
+                print_stderr("'node-id' in 'node' should be of type int.")
                 return 1
 
         # Check if global configuration of benchmark and output command defined
         global_benchmark_command_defined = False
         global_output_command_defined = False
 
-        sorted_nodes = sorted(yaml_data['nodes'], key=lambda d: d['node']['id'])
+        sorted_nodes = sorted(yaml_data['nodes'], key=lambda d: d['node-id'])
 
-        if sorted_nodes[0]['node']['id'] == 0:
+        if sorted_nodes[0]['node-id'] == 0:
             if 'benchmark-command' in sorted_nodes[0]:
                 global_benchmark_command_defined = True
             if 'output-command' in sorted_nodes[0]:
@@ -160,11 +159,14 @@ def analyze_configuration_file(yaml_file):
         # Check nodes
         output_command_defined = False
         for node in sorted_nodes:
-            node = node['node']
+            # check ansible configuration:
+            if 'ansible-command' in node and not isinstance(node['ansible-configuration'], str):
+                print_stderr("'ansible-configuration' in 'node' should be of type str.")
+                return 1
             # Check benchmark command
             if 'benchmark-command' in node:
                 if global_benchmark_command_defined:
-                    print_stderr(f"Conflicting 'benchmark-command' for node with ID = {node['id']}. "
+                    print_stderr(f"Conflicting 'benchmark-command' for node with ID = {node['node-id']}. "
                                  f"'benchmark-command' defined previously globally in node with ID = 0.")
                     return 1
                 if not isinstance(node['benchmark-command'], str):
@@ -172,14 +174,14 @@ def analyze_configuration_file(yaml_file):
                     return 1
             else:
                 if not global_benchmark_command_defined:
-                    print_stderr(f"Missing 'benchmark-command' for node with ID = {node['id']}. "
+                    print_stderr(f"Missing 'benchmark-command' for node with ID = {node['node-id']}. "
                                  f"'benchmark-command' was also not defined globally in node with ID = 0.")
                     return 1
 
             # Check output command
             if 'output-command' in node:
                 if global_output_command_defined:
-                    print_stderr(f"Conflicting 'output-command' for node with ID = {node['id']}. "
+                    print_stderr(f"Conflicting 'output-command' for node with ID = {node['node-id']}. "
                                  f"'output-command' defined previously globally in node with ID = 0.")
                     return 1
                 if not isinstance(node['output-command'], str):
