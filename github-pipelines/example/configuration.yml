@@ -1,0 +1,30 @@
+---
+configuration:
+    name: "My benchmark"
+    description: "My benchmark test which instance is better"
+    directory: example
+    cron: "0 */4 * * *"
+    output-type: multiple-nodes-single-values # single-node-multiple-value / multiple-nodes-multiple-values / multiple-nodes-single-values
+    instance-number: 2
+    instance-tags:
+        - - 1 GiB Memory
+          - 1 vCPUs
+        - - hdd
+          - Up to 10 Gigabit Network
+    instance-types:
+      - t2.micro
+      - t3.micro
+nodes:
+  - node:
+      id: 0
+      configuration: ansible-0.yaml
+  - node:
+      id: 1
+      configuration: ansible-1.yaml
+      benchmark-command: ./benchmark-1 > benchmark_output.txt
+      output-command: python3 format_output.py benchmark_output.txt
+  - node:
+      id: 2
+      configuration: ansible-2.yaml
+      benchmark-command: ./benchmark-2 > benchmark_output.txt
+      output-command: python3 format_output.py benchmark_output.txt

@@ -1,0 +1,51 @@
+name: Analyze Configuration File on Pull Request
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  analyze-config-file:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r .github/workflows/pr-analysis-requirements.txt
+
+    - name: Identify newly added configuration.yml files
+      id: find_new_config_files
+      run: |
+        git fetch origin +refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}
+        git diff --diff-filter=A --name-only origin/${{ github.base_ref }}...${{ github.head_ref }} | grep 'configuration.yml$' > new_config_files.txt || true
+        file_count=$(wc -l < new_config_files.txt | xargs)
+        echo "Number of new configuration.yml files: $file_count"
+        if [ "$file_count" -eq 0 ]; then
+          echo "No new configuration.yml files found. Failing the pipeline."
+          exit 1
+        elif [ "$file_count" -gt 1 ]; then
+          echo "More than one configuration.yml file found. Failing the pipeline."
+          exit 1
+        else
+          config_file=$(cat new_config_files.txt)
+          echo "Found configuration.yml file: $config_file"
+          echo "::set-output name=config_file::$config_file"
+        fi
+
+    - name: Run Python script on configuration.yml
+      if: steps.find_new_config_files.outputs.config_file
+      run: |
+        config_file=${{ steps.find_new_config_files.outputs.config_file }}
+        echo "Analyzing $config_file with Python script"
+        python .github/workflows/pr-analysis-script.py "$config_file"

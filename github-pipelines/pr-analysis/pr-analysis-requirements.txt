@@ -1,0 +1,4 @@
+PyYAML==6.0.1
+boto3==1.34.128
+cron-validator==1.0.8
+pymongo==4.7.3

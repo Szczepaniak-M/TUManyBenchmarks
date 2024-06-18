@@ -1,0 +1,54 @@
+name: Upload Benchmark Configuration
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  analyze-config-file:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r .github/workflows/benchmark-upload-requirements.txt
+
+    - name: Identify newly added configuration.yml files
+      id: find_new_config_files
+      run: |
+        git fetch origin +refs/heads/main:refs/remotes/origin/main
+        git diff --diff-filter=A --name-only origin/main...HEAD | grep 'configuration.yml$' > new_config_files.txt || true
+        file_count=$(wc -l < new_config_files.txt | xargs)
+        echo "Number of new configuration.yml files: $file_count"
+        if [ "$file_count" -eq 0 ]; then
+          echo "No new configuration.yml files found. Exiting the workflow."
+          exit 0  # Exit with success if no new files are found
+        elif [ "$file_count" -gt 1 ]; then
+          echo "More than one configuration.yml file found. Failing the workflow."
+          exit 1
+        else
+          config_file=$(cat new_config_files.txt)
+          echo "Found configuration.yml file: $config_file"
+          echo "::set-output name=config_file::$config_file"
+        fi
+
+    - name: Run Python script on configuration.yml
+      if: steps.find_new_config_files.outputs.config_file
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      run: |
+        config_file=${{ steps.find_new_config_files.outputs.config_file }}
+        echo "Analyzing $config_file with Python script"
+        python .github/workflows/benchmark-upload-script.py "$config_file"
