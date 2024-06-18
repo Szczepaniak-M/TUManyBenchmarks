@@ -10,9 +10,9 @@ import java.time.ZonedDateTime
 
 @Service
 class BenchmarkRunnerService(
-    val awsService: AwsService,
-    val gitHubService: GitHubService,
-    val sshService: SshService,
+    private val awsService: AwsService,
+    private val gitHubService: GitHubService,
+    private val sshService: SshService,
 ) {
     private val logger = KotlinLogging.logger {}
 

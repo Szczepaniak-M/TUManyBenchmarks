@@ -23,9 +23,9 @@ data class Configuration(
 )
 
 data class Node(
-    val id: Int,
-    val ansibleConfiguration: String,
-    val benchmarkCommand: String,
-    val outputCommand: String
+    val nodeId: Int,
+    val ansibleConfiguration: String?,
+    val benchmarkCommand: String?,
+    val outputCommand: String?
 )
 

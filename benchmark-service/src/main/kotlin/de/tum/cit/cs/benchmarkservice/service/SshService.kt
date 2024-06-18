@@ -46,8 +46,8 @@ class SshService {
                         val commands = mutableListOf<String>()
                         commands.addAll(curls)
                         commands.add("ansible-playbook --connection=local --inventory 127.0.0.1, $ansibleFile")
-                        commands.add(benchmark.nodes[0].benchmarkCommand)
-                        commands.add(benchmark.nodes[0].outputCommand)
+                        commands.add(benchmark.nodes[0].benchmarkCommand!!)
+                        commands.add(benchmark.nodes[0].outputCommand!!)
                         val combinedCommands = commands.joinToString(" ; ")
 
                         val outputStream = ByteArrayOutputStream()

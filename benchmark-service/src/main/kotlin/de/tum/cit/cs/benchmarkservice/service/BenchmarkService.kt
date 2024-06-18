@@ -15,12 +15,12 @@ import java.time.ZonedDateTime
 
 @Service
 class BenchmarkService(
-    val benchmarkCronRepository: BenchmarkCronRepository,
-    val benchmarkRepository: BenchmarkRepository,
-    val instanceRepository: InstanceRepository,
-    val cronParserService: CronParserService,
-    val instanceService: InstanceService,
-    val benchmarkRunnerService: BenchmarkRunnerService
+    private val benchmarkCronRepository: BenchmarkCronRepository,
+    private val benchmarkRepository: BenchmarkRepository,
+    private val instanceRepository: InstanceRepository,
+    private val cronParserService: CronParserService,
+    private val instanceService: InstanceService,
+    private val benchmarkRunnerService: BenchmarkRunnerService
 ) {
 
     private val logger = KotlinLogging.logger {}
