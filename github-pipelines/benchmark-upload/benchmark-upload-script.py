@@ -8,10 +8,28 @@ def load_yaml_file(file_path):
     with open(file_path, 'r') as file:
         try:
             data = yaml.safe_load(file)
-            return data
+            data_with_camel_case = convert_keys_to_camel_case(data)
+            return data_with_camel_case
         except yaml.YAMLError as exc:
             print(f"Error reading YAML file: {exc}")
             return None
+
+
+def convert_keys_to_camel_case(d: dict) -> dict:
+    new_dict = {}
+    for key, value in d.items():
+        new_key = dash_to_camel_case(key)
+        # Recursively convert nested dictionaries
+        if isinstance(value, dict):
+            new_dict[new_key] = convert_keys_to_camel_case(value)
+        else:
+            new_dict[new_key] = value
+    return new_dict
+
+
+def dash_to_camel_case(dash_str):
+    parts = dash_str.split('-')
+    return parts[0] + ''.join(word.capitalize() for word in parts[1:])
 
 
 def upload_to_mongodb(document, client):
