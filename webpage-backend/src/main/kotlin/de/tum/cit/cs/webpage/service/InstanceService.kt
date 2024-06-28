@@ -1,6 +1,7 @@
 package de.tum.cit.cs.webpage.service
 
 import com.github.benmanes.caffeine.cache.Caffeine
+import de.tum.cit.cs.webpage.common.LoggerUtils.buildDebugLogMessage
 import de.tum.cit.cs.webpage.model.Instance
 import de.tum.cit.cs.webpage.repository.InstanceRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -22,15 +23,21 @@ class InstanceService(
         .maximumSize(1)
         .build<String, List<Instance>>()
 
-    suspend fun findAll(): Flow<Instance> {
+    suspend fun findAll(requestId: String?, apiKey: String?): Flow<Instance> {
         var instances = cache.getIfPresent("all")
         if (instances == null) {
-            logger.debug { "Instance list not found in the cache. Calling database." }
+            logger.debug {
+                buildDebugLogMessage("Instance list not found in the cache. Calling database.", requestId, apiKey)
+            }
             instances = instanceRepository.findAll().toList()
             cache.put("all", instances)
-            logger.debug { "Instance list added to the cache." }
+            logger.debug {
+                buildDebugLogMessage("Instance list added to the cache.", requestId, apiKey)
+            }
         } else {
-            logger.debug { "Instance list founded in the cache." }
+            logger.debug {
+                buildDebugLogMessage("Instance list founded in the cache.", requestId, apiKey)
+            }
         }
         return instances.asFlow()
     }

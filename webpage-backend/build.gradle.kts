@@ -27,6 +27,7 @@ dependencies {
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	implementation("io.github.oshai:kotlin-logging-jvm:6.0.9")
 	implementation("com.github.ben-manes.caffeine:caffeine")
+	implementation("com.bucket4j:bucket4j-core:8.10.1")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude(module = "mockito-core")

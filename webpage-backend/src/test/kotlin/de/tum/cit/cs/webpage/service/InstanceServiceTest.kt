@@ -30,8 +30,8 @@ class InstanceServiceTest {
         coEvery { instanceRepository.findAll() } returns flowOf(INSTANCE_1, INSTANCE_2)
 
         // when
-        val databaseResult = service.findAll().toList()
-        val cachedResult = service.findAll().toList()
+        val databaseResult = service.findAll(null, null).toList()
+        val cachedResult = service.findAll(null, null).toList()
 
         // then
         coVerify(exactly = 1) { instanceRepository.findAll() }

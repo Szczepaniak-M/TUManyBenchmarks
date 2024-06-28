@@ -28,8 +28,8 @@ class SummaryServiceTest {
         coEvery { summaryRepository.findByInstanceName(instanceType) } returns summary
 
         // when
-        val databaseResult = service.findByInstanceType(instanceType)
-        val cachedResult = service.findByInstanceType(instanceType)
+        val databaseResult = service.findByInstanceType(instanceType, null, null)
+        val cachedResult = service.findByInstanceType(instanceType, null, null)
 
         // then
         coVerify(exactly = 1) { summaryRepository.findByInstanceName(instanceType) }
@@ -47,8 +47,8 @@ class SummaryServiceTest {
         coEvery { summaryRepository.findByInstanceName(instanceType) } returns null
 
         // when
-        val databaseResult1 = service.findByInstanceType(instanceType)
-        val databaseResult2 = service.findByInstanceType(instanceType)
+        val databaseResult1 = service.findByInstanceType(instanceType, null, null)
+        val databaseResult2 = service.findByInstanceType(instanceType, null, null)
 
         // then
         coVerify(exactly = 2) { summaryRepository.findByInstanceName(instanceType) }

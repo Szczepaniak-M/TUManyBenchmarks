@@ -7,3 +7,8 @@ spring:
       port: ${mongodb.container.port:27017}
       host: localhost
       auto-index-creation: true
+application:
+  security:
+    bucket:
+      size: 40
+      refill: 20

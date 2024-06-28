@@ -1,6 +1,7 @@
 package de.tum.cit.cs.webpage.service
 
 import com.github.benmanes.caffeine.cache.Caffeine
+import de.tum.cit.cs.webpage.common.LoggerUtils.buildDebugLogMessage
 import de.tum.cit.cs.webpage.model.Summary
 import de.tum.cit.cs.webpage.repository.SummaryRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -19,17 +20,23 @@ class SummaryService(
         .maximumSize(100)
         .build<String, Summary>()
 
-    suspend fun findByInstanceType(instanceType: String): Summary? {
+    suspend fun findByInstanceType(instanceType: String, requestId: String?, apiKey: String?): Summary? {
         var summary = cache.getIfPresent(instanceType)
         if (summary == null) {
-            logger.debug { "No summary found for $instanceType in the cache. Calling database." }
+            logger.debug {
+                buildDebugLogMessage("No summary found for $instanceType in the cache. Calling database.", requestId, apiKey)
+            }
             summary = summaryRepository.findByInstanceName(instanceType)
             summary?.let {
                 cache.put(instanceType, it)
-                logger.debug { "Summary for $instanceType found in the database and added to the cache." }
+                logger.debug {
+                    buildDebugLogMessage("Summary for $instanceType found in the database and added to the cache.", requestId, apiKey)
+                }
             }
         } else {
-            logger.debug { "Summary for $instanceType founded in the cache." }
+            logger.debug {
+                buildDebugLogMessage("Summary for $instanceType founded in the cache.", requestId, apiKey)
+            }
         }
         return summary
     }
