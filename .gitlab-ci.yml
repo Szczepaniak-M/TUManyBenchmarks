@@ -1,7 +1,7 @@
 stages:
   - test
 
-test_job:
+test_benchmark_runner:
   stage: test
   image: gradle:jdk21
 
@@ -12,10 +12,26 @@ test_job:
   artifacts:
     when: always
     paths:
-      - /benchmark/build/reports/tests/
+      - /benchmark-service/build/reports/tests/
     expire_in: 1 week
 
   tags:
     - gradle
 
+test_webpage_backend:
+  stage: test
+  image: gradle:jdk21
+
+  script:
+    - cd /webpage_backend
+    - ./gradlew clean test
+
+  artifacts:
+    when: always
+    paths:
+      - /webpage-backend/build/reports/tests/
+    expire_in: 1 week
+
+  tags:
+    - gradle
 
