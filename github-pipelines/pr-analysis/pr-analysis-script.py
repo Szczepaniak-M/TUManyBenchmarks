@@ -38,7 +38,7 @@ def get_allowed_tags():
 
 
 def analyze_configuration_file(yaml_file):
-    with (open(yaml_file, 'r') as f):
+    with open(yaml_file, 'r') as f:
         # Read file
         try:
             yaml_data = yaml.safe_load(f)
@@ -146,23 +146,55 @@ def analyze_configuration_file(yaml_file):
         # Check if global configuration of benchmark and output command defined
         global_benchmark_command_defined = False
         global_output_command_defined = False
+        global_image_defined = False
 
         sorted_nodes = sorted(yaml_data['nodes'], key=lambda d: d['node-id'])
 
         if sorted_nodes[0]['node-id'] == 0:
-            if 'benchmark-command' in sorted_nodes[0]:
+            global_node_configuration = sorted_nodes[0]
+            # Check ansible configuration:
+            if 'ansible-command' in global_node_configuration \
+                    and not isinstance(global_node_configuration['ansible-configuration'], str):
+                print_stderr("'ansible-configuration' in 'node' should be of type str.")
+                return 1
+
+            # Check benchmark command
+            if 'benchmark-command' in global_node_configuration:
                 global_benchmark_command_defined = True
-            if 'output-command' in sorted_nodes[0]:
+                if not isinstance(global_node_configuration['benchmark-command'], str):
+                    print_stderr("'benchmark-command' in 'node' should be of type str.")
+                    return 1
+
+            # Check output command
+            if 'output-command' in global_node_configuration:
                 global_output_command_defined = True
+                if 'ansible-command' in global_node_configuration \
+                        and not isinstance(global_node_configuration['ansible-configuration'], str):
+                    print_stderr("'ansible-configuration' in 'node' should be of type str.")
+                    return 1
+
+            # Check image
+            if 'image' in global_node_configuration:
+                global_image_defined = True
+                if 'image' in global_node_configuration \
+                        and not isinstance(global_node_configuration['image'], str):
+                    print_stderr("'image' in 'node' should be of type str.")
+                    return 1
+
+            # Check instance type
+            if 'instance-type' in global_node_configuration:
+                print_stderr("'instance-type' can be only specified for specific node")
+                return 1
             sorted_nodes = sorted_nodes[1:]
 
         # Check nodes
         output_command_defined = False
         for node in sorted_nodes:
-            # check ansible configuration:
+            # Check ansible configuration:
             if 'ansible-command' in node and not isinstance(node['ansible-configuration'], str):
                 print_stderr("'ansible-configuration' in 'node' should be of type str.")
                 return 1
+
             # Check benchmark command
             if 'benchmark-command' in node:
                 if global_benchmark_command_defined:
@@ -188,6 +220,27 @@ def analyze_configuration_file(yaml_file):
                     print_stderr("'output-command' in 'node' should be of type str.")
                     return 1
                 output_command_defined = True
+
+            # Check image
+            if 'image' in node:
+                if global_image_defined:
+                    print_stderr(f"Conflicting 'image' for node with ID = {node['node-id']}. "
+                                 f"'image' defined previously globally in node with ID = 0.")
+                    return 1
+                if not isinstance(node['image'], str):
+                    print_stderr("'image' in 'node' should be of type str.")
+                    return 1
+
+            # Check instance type
+            if 'instance-type' in node:
+                if not isinstance(node['instance-type'], str):
+                    print_stderr(f"'instance-type' in 'node' should be of type str.")
+                    return 1
+                client = boto3.client('ec2')
+                aws_instances = client._service_model.shape_for('InstanceType').enum
+                if node['instance-type'] not in aws_instances:
+                    print_stderr(f"Incorrect value of EC2 instance in 'instance-type' for node with ID = {node['node-id']}.")
+                    return 1
 
         # Check whether any output command defined
         if not output_command_defined and not global_output_command_defined:

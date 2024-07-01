@@ -22,6 +22,8 @@ nodes:
     ansible-configuration: ansible-1.yaml
     benchmark-command: ./benchmark-1 > benchmark_output.txt
     output-command: python3 format_output.py benchmark_output.txt
+    instance-type: c7gn.16xlarge
+    image: ubuntu-with-benchmark-iso
 
   - node-id: 2
     ansible-configuration: ansible-2.yaml
