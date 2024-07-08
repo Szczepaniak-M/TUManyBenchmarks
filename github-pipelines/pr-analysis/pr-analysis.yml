@@ -4,6 +4,9 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
 jobs:
   analyze-config-file:
     runs-on: ubuntu-latest
@@ -28,7 +31,7 @@ jobs:
       id: find_new_config_files
       run: |
         git fetch origin +refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}
-        git diff --diff-filter=A --name-only origin/${{ github.base_ref }} ${{ github.head_ref }} | grep 'configuration.yml$' > new_config_files.txt || true
+        git diff --diff-filter=AM --name-only origin/${{ github.base_ref }} ${{ github.head_ref }} | grep 'configuration.yml$' > new_config_files.txt || true
         file_count=$(wc -l < new_config_files.txt | xargs)
         echo "Number of new configuration.yml files: $file_count"
         if [ "$file_count" -eq 0 ]; then
