@@ -16,7 +16,7 @@ aws:
       x86_64: ami-04b70fa74e45c3917
       arm: ami-0eac975a54dfee8cb
     network:
-      availability-zone: us-east-1a
+      availability-zone: use1-az1
       cidr: 10.0.0.0/28
 github:
   repository:

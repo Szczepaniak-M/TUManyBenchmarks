@@ -4,7 +4,7 @@ data class BenchmarkResult(
     val instanceId: String,
     val benchmarkId: String,
     val outputType: OutputType,
-    val values: Map<String, String>,
+    val values: Map<String, Any>,
     val timestamp: Long,
 ) {
     fun toMongoModel(): BenchmarkResultMongo {
@@ -15,5 +15,5 @@ data class BenchmarkResult(
 data class BenchmarkResultMongo(
     val benchmarkId: String,
     val timestamp: Long,
-    val values: Map<String, String>,
+    val values: Map<String, Any>,
 )

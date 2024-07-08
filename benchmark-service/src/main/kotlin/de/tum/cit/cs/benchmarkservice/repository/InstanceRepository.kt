@@ -21,4 +21,5 @@ interface InstanceRepository : CoroutineCrudRepository<Instance, String> {
         benchmarks: List<BenchmarkResultMongo>
     ): Int
 
+    suspend fun findInstanceByName(name: String): Instance
 }

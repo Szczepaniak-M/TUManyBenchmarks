@@ -15,6 +15,7 @@ class InstanceTypeInfoParserTest {
         private val PROCESSOR_INFO = ProcessorInfo { supportedArchitectures = listOf(ArchitectureType.X86_64, ArchitectureType.I386) }
         private val INSTANCE_STORAGE_INFO = InstanceStorageInfo { disks = listOf(DiskInfo { type = DiskType.Ssd }) }
         private val NETWORK_INFO = NetworkInfo { networkPerformance = "Up to 25 Gigabit" }
+        private val HYPERVISOR = InstanceTypeHypervisor.Nitro
     }
 
     private val parser = InstanceTypeInfoParser()
@@ -42,13 +43,19 @@ class InstanceTypeInfoParserTest {
             instanceStorageSupported = true
             instanceStorageInfo = INSTANCE_STORAGE_INFO
             networkInfo = NETWORK_INFO
+            hypervisor = HYPERVISOR
+            bareMetal = false
+            currentGeneration = false
         }
 
         // when
         val result = parser.parseInstanceTags(instanceTypeInfo)
 
         // then
-        val expectedTags = listOf("8 vCPUs", "4 GiB Memory", "x86_64", "i386", "ssd", "Up to 25 Gigabit Network")
+        val expectedTags = listOf(
+            "8 vCPUs", "4 GiB Memory", "x86_64", "i386", "ssd",
+            "Up to 25 Gigabit Network", "Hypervisor Nitro", "Previous Generation"
+        )
         assertEquals(expectedTags, result)
     }
 
@@ -70,6 +77,29 @@ class InstanceTypeInfoParserTest {
 
         // then
         val expectedTags = listOf("8 vCPUs", "4 GiB Memory", "x86_64", "i386", "Up to 25 Gigabit Network")
+        assertEquals(expectedTags, result)
+    }
+
+    @Test
+    fun `do not parse hypervisor if its null`() {
+        // given
+        val instanceTypeInfo = InstanceTypeInfo {
+            instanceType = INSTANCE_NAME
+            vCpuInfo = V_CPU_INFO
+            memoryInfo = MEMORY_INFO
+            processorInfo = PROCESSOR_INFO
+            instanceStorageSupported = false
+            instanceStorageInfo = INSTANCE_STORAGE_INFO
+            networkInfo = NETWORK_INFO
+            hypervisor = null
+            bareMetal = true
+        }
+
+        // when
+        val result = parser.parseInstanceTags(instanceTypeInfo)
+
+        // then
+        val expectedTags = listOf("8 vCPUs", "4 GiB Memory", "x86_64", "i386", "Up to 25 Gigabit Network", "Bare Metal")
         assertEquals(expectedTags, result)
     }
 }

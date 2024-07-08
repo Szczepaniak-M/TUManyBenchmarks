@@ -84,4 +84,18 @@ class InstanceRepositoryTest {
     fun `update benchmarks`() = runTest {
         // TODO implement test
     }
+
+    @Test
+    fun `find instance by name`() = runTest {
+        val instance1 = Instance(ID_1, NAME_1, TAGS_1)
+        val instance2 = Instance(ID_2, NAME_2, TAGS_2)
+        instanceRepository.save(instance1)
+        instanceRepository.save(instance2)
+
+        // when
+        val result = instanceRepository.findInstanceByName(NAME_1)
+
+        // then
+        assertEquals(instance1, result)
+    }
 }

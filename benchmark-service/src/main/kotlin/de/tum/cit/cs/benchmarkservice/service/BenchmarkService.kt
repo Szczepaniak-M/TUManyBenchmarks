@@ -58,6 +58,7 @@ class BenchmarkService(
 
     private fun getInstancesWithBenchmarks(benchmarks: List<Benchmark>): Flow<InstanceWithBenchmarks> {
         return instanceRepository.findAll()
+            .filter { !it.tags.contains("Previous Generation") } // TODO ask for acceptance
             .map { instanceService.findMatchingBenchmarks(it, benchmarks) }
             .filter { it.benchmarks.isNotEmpty() }
     }

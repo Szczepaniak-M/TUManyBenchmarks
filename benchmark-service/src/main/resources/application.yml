@@ -10,14 +10,14 @@ aws:
       name: aws-benchmark-private-key
       file: aws-benchmark-private-key.pem
     default-ami:
-      x86_64: ami-04b70fa74e45c3917
-      arm: ami-0eac975a54dfee8cb
+      x86_64: ami-0bc16b510fa2622db
+      arm: ami-0bc16b510fa2622db-arm
     network:
-      availability-zone: us-east-1a
+      availability-zone: use1-az1
       cidr: 10.0.0.0/28
 github:
   repository:
-    url: https://api.github.com/repos/userName/repositoryName/contents
+    url: https://api.github.com/repos/Szczepaniak-M/thesis-test-repo/contents
 
 #logging:
 #  level:

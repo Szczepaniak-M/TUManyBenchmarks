@@ -43,7 +43,7 @@ class InstanceService(
     fun findMatchingBenchmarks(instance: Instance, benchmarks: List<Benchmark>): InstanceWithBenchmarks {
         val applicableBenchmarks = mutableListOf<Benchmark>()
         for (benchmark in benchmarks) {
-            if (benchmark.configuration.instanceType?.contains(instance.name) == true) {
+            if (benchmark.configuration.instanceTypes?.contains(instance.name) == true) {
                 applicableBenchmarks.add(benchmark)
             } else if (benchmark.configuration.instanceTags != null) {
                 for (tagList in benchmark.configuration.instanceTags) {

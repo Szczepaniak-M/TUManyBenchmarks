@@ -12,7 +12,6 @@ class InstanceTypeInfoParser {
         return instanceTypeInfo.instanceType?.value ?: "UNKNOWN"
     }
 
-    // TODO discuss additional tags
     fun parseInstanceTags(instanceTypeInfo: InstanceTypeInfo): List<String> {
         val tags = mutableListOf<String>()
         tags.add(parseCPUs(instanceTypeInfo))
@@ -20,6 +19,9 @@ class InstanceTypeInfoParser {
         tags.addAll(parseArchitectures(instanceTypeInfo))
         tags.addAll(parseStorageInfo(instanceTypeInfo))
         tags.add(parseNetwork(instanceTypeInfo))
+        parseHypervisor(instanceTypeInfo)?.let { tags.add(it) }
+        parseMetal(instanceTypeInfo)?.let { tags.add(it) }
+        parsePreviousGeneration(instanceTypeInfo)?.let { tags.add(it) }
         return tags
     }
 
@@ -56,4 +58,26 @@ class InstanceTypeInfoParser {
         val networkSpeed = instanceTypeInfo.networkInfo?.networkPerformance
         return "$networkSpeed Network"
     }
+
+    private fun parseHypervisor(instanceTypeInfo: InstanceTypeInfo): String? {
+        val hypervisor = instanceTypeInfo.hypervisor?.toString()
+        return if (hypervisor != null) {
+            "Hypervisor $hypervisor"
+        } else null
+    }
+
+    private fun parseMetal(instanceTypeInfo: InstanceTypeInfo): String? {
+        val isMetal = instanceTypeInfo.bareMetal
+        return if (isMetal == true) {
+            "Bare Metal"
+        } else null
+    }
+
+    private fun parsePreviousGeneration(instanceTypeInfo: InstanceTypeInfo): String? {
+        val isCurrentGeneration = instanceTypeInfo.currentGeneration
+        return if (isCurrentGeneration == false) {
+            "Previous Generation"
+        } else null
+    }
+
 }

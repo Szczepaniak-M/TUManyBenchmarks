@@ -19,11 +19,13 @@ data class Configuration(
     val outputType: OutputType,
     val instanceNumber: Int,
     val instanceTags: List<List<String>>?,
-    val instanceType: List<String>?
+    val instanceTypes: List<String>?
 )
 
 data class Node(
     val nodeId: Int,
+    val instanceType: String?,
+    val image: String?,
     val ansibleConfiguration: String?,
     val benchmarkCommand: String?,
     val outputCommand: String?
