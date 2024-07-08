@@ -12,13 +12,12 @@ REQUIRED_CONFIGURATION_FIELDS = {
     'cron': str,
     'output-type': str,
     'instance-number': int,
-    'instance-tags': list
 }
 
 ALLOWED_OUTPUT_TYPES = [
     'single-node-single-value',
     'single-node-multiple-values',
-    'multiple-nodes-single-value'
+    'multiple-nodes-single-value',
     'multiple-nodes-multiple-values',
 ]
 

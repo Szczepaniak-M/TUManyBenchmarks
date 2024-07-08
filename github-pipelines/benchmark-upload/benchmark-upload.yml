@@ -29,7 +29,7 @@ jobs:
       id: find_new_config_files
       run: |
         git fetch origin +refs/heads/main:refs/remotes/origin/main
-        git diff --diff-filter=A --name-only origin/main...HEAD | grep 'configuration.yml$' > new_config_files.txt || true
+        git diff --diff-filter=A --name-only origin/main HEAD | grep 'configuration.yml$' > new_config_files.txt || true
         file_count=$(wc -l < new_config_files.txt | xargs)
         echo "Number of new configuration.yml files: $file_count"
         if [ "$file_count" -eq 0 ]; then
@@ -41,7 +41,7 @@ jobs:
         else
           config_file=$(cat new_config_files.txt)
           echo "Found configuration.yml file: $config_file"
-          echo "::set-output name=config_file::$config_file"
+          echo "config_file=$config_file" >> $GITHUB_OUTPUT
         fi
 
     - name: Run Python script on configuration.yml
