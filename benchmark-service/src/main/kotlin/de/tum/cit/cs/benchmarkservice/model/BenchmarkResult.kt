@@ -2,6 +2,7 @@ package de.tum.cit.cs.benchmarkservice.model
 
 data class BenchmarkResult(
     val instanceId: String,
+    val instanceName: String,
     val benchmarkId: String,
     val outputType: OutputType,
     val values: Map<String, Any>,

@@ -1,6 +1,7 @@
 package de.tum.cit.cs.benchmarkservice.model
 
 data class Ec2Configuration(
+    val benchmarkRunId: String,
     val directory: String,
     val nodes: List<NodeConfig>,
     var vpcId: String? = null,

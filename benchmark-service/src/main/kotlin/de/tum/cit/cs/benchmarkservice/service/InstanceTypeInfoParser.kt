@@ -79,5 +79,4 @@ class InstanceTypeInfoParser {
             "Previous Generation"
         } else null
     }
-
 }

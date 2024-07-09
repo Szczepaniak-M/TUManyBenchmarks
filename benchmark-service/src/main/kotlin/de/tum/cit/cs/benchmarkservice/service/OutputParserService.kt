@@ -43,6 +43,7 @@ class OutputParserService {
         val time = ZonedDateTime.now().withMinute(0).toEpochSecond()
         return BenchmarkResult(
             instance.id!!,
+            instance.name,
             benchmark.id,
             benchmark.configuration.outputType,
             values,

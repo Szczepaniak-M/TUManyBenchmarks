@@ -8,7 +8,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.delay
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.util.*
 
 
 @Service
@@ -50,11 +49,10 @@ class AwsService(
     }
 
     suspend fun createVpc(ec2Configuration: Ec2Configuration) {
-        logger.info { "Starting creating  VPC" }
         ec2Configuration.ipv4Cidr = ipv4Cidr
         val createVpcRequest = CreateVpcRequest { cidrBlock = ec2Configuration.ipv4Cidr }
         val createVpcResponse = retryIfException { ec2Client.createVpc(createVpcRequest) }
-        ec2Configuration.vpcId = createVpcResponse.vpc?.vpcId ?: throw RuntimeException("VPC creation failed")
+        ec2Configuration.vpcId = createVpcResponse.vpc?.vpcId
         val dnsSupportRequest = ModifyVpcAttributeRequest {
             vpcId = ec2Configuration.vpcId
             enableDnsSupport = AttributeBooleanValue { value = true }
@@ -71,6 +69,11 @@ class AwsService(
         }
         val ipv6CidrResponse = retryIfException { ec2Client.associateVpcCidrBlock(ipv6CidrRequest) }
         ec2Configuration.ipv6Cidr = ipv6CidrResponse.ipv6CidrBlockAssociation?.ipv6CidrBlock
+        awaitForIpv6IfNotAssigned(ec2Configuration)
+        logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Created VPC ${ec2Configuration.vpcId}" }
+    }
+
+    private suspend fun awaitForIpv6IfNotAssigned(ec2Configuration: Ec2Configuration) {
         while (ec2Configuration.ipv6Cidr == null) {
             delay(3000)
             val describeVpcRequest = DescribeVpcsRequest {
@@ -89,11 +92,9 @@ class AwsService(
                 ?.firstOrNull()
                 ?.ipv6CidrBlock
         }
-        logger.info { "Created VPC ${ec2Configuration.vpcId}" }
     }
 
     suspend fun createInternetGateway(ec2Configuration: Ec2Configuration) {
-        logger.info { "Starting creating Internet Gateway for VPC ${ec2Configuration.vpcId}" }
         val createIgwRequest = CreateInternetGatewayRequest {}
         val createIgwResponse = retryIfException { ec2Client.createInternetGateway(createIgwRequest) }
         ec2Configuration.internetGatewayId = createIgwResponse.internetGateway?.internetGatewayId
@@ -102,7 +103,7 @@ class AwsService(
             internetGatewayId = ec2Configuration.internetGatewayId
         }
         retryIfException { ec2Client.attachInternetGateway(attachIgwRequest) }
-        logger.info { "Created Internet Gateway ${ec2Configuration.internetGatewayId} for VPC ${ec2Configuration.vpcId}" }
+        logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Created Internet Gateway ${ec2Configuration.internetGatewayId}" }
     }
 
     suspend fun configureRouteTable(ec2Configuration: Ec2Configuration) {
@@ -114,23 +115,16 @@ class AwsService(
         }
         val describeRouteTablesResponse = retryIfException { ec2Client.describeRouteTables(describeRouteTablesRequest) }
         ec2Configuration.routeTableId = describeRouteTablesResponse.routeTables?.firstOrNull()?.routeTableId
-        if (ec2Configuration.routeTableId == null) {
-            val createRouteTableRequest = CreateRouteTableRequest {
-                vpcId = ec2Configuration.vpcId
-            }
-            val createRouteTableResponse = retryIfException { ec2Client.createRouteTable(createRouteTableRequest) }
-            ec2Configuration.routeTableId = createRouteTableResponse.routeTable?.routeTableId
-        }
         val createIpv6RouteRequest = CreateRouteRequest {
             routeTableId = ec2Configuration.routeTableId
             destinationIpv6CidrBlock = "::/0"
             gatewayId = ec2Configuration.internetGatewayId
         }
         retryIfException { ec2Client.createRoute(createIpv6RouteRequest) }
+        logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Configured RouteTable ${ec2Configuration.routeTableId}" }
     }
 
     suspend fun createSubnet(ec2Configuration: Ec2Configuration) {
-        logger.info { "Starting creating subnet for VPC ${ec2Configuration.vpcId}" }
         val createSubnetRequest = CreateSubnetRequest {
             vpcId = ec2Configuration.vpcId
             cidrBlock = ec2Configuration.ipv4Cidr
@@ -144,25 +138,23 @@ class AwsService(
             assignIpv6AddressOnCreation = AttributeBooleanValue { value = true }
         }
         retryIfException { ec2Client.modifySubnetAttribute(modifySubnetRequest) }
-        logger.info { "Created subnetId ${ec2Configuration.subnetId} for VPC ${ec2Configuration.vpcId}" }
+        logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Created Subnet ${ec2Configuration.subnetId}" }
     }
 
     suspend fun createSecurityGroup(ec2Configuration: Ec2Configuration) {
-        logger.info { "Starting creating security group for VPC ${ec2Configuration.vpcId}" }
-        val randomUuid = UUID.randomUUID()
+
         val createRequest = CreateSecurityGroupRequest {
-            groupName = "benchmark-$randomUuid"
-            description = "benchmark-$randomUuid"
+            groupName = "benchmark-${ec2Configuration.benchmarkRunId}"
+            description = "benchmark-${ec2Configuration.benchmarkRunId}"
             vpcId = ec2Configuration.vpcId
         }
         val createSecurityGroupResponse = retryIfException { ec2Client.createSecurityGroup(createRequest) }
-        ec2Configuration.securityGroupId =
-            createSecurityGroupResponse.groupId ?: throw RuntimeException("Security group creation failed")
+        ec2Configuration.securityGroupId = createSecurityGroupResponse.groupId
         val ipv4PermissionIngress = IpPermission {
             ipProtocol = "-1"
             ipRanges = listOf(IpRange { cidrIp = ec2Configuration.ipv4Cidr })
         }
-        val intraIpv6PermissionIngress = IpPermission {
+        val ipv6PermissionIngress = IpPermission {
             ipProtocol = "-1"
             ipv6Ranges = listOf(Ipv6Range { cidrIpv6 = ec2Configuration.ipv6Cidr })
         }
@@ -174,14 +166,14 @@ class AwsService(
         }
         val ingressRequest = AuthorizeSecurityGroupIngressRequest {
             groupId = ec2Configuration.securityGroupId
-            ipPermissions = listOf(ipv4PermissionIngress, intraIpv6PermissionIngress, sshIpv6PermissionIngress)
+            ipPermissions = listOf(ipv4PermissionIngress, ipv6PermissionIngress, sshIpv6PermissionIngress)
         }
         retryIfException { ec2Client.authorizeSecurityGroupIngress(ingressRequest) }
-        logger.info { "Created security group ${ec2Configuration.securityGroupId} for VPC ${ec2Configuration.vpcId}" }
+        logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Created Security Group ${ec2Configuration.securityGroupId}" }
     }
 
     suspend fun startEc2Instance(ec2Configuration: Ec2Configuration) {
-        logger.info { "Starting EC2 ${ec2Configuration.nodes.size} instances" }
+        logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Starting ${ec2Configuration.nodes.size} EC2 instances" }
         ec2Configuration.nodes
             .groupBy { it.instanceType to it.image }
             .values
@@ -193,41 +185,49 @@ class AwsService(
                     keyName = keyPairName
                     securityGroupIds = listOf(ec2Configuration.securityGroupId!!)
                     subnetId = ec2Configuration.subnetId
-
                 }
-                val spotRequestRequest = RequestSpotInstancesRequest {
+                val spotInstanceRequest = RequestSpotInstancesRequest {
                     instanceCount = ec2NodeConfigs.size
                     type = SpotInstanceType.OneTime
                     launchSpecification = specification
                 }
-                val spotRequestResponse = retryIfException { ec2Client.requestSpotInstances(spotRequestRequest) }
-                val spotRequestId = spotRequestResponse.spotInstanceRequests?.mapNotNull { it.spotInstanceRequestId }
-                var instanceIds = emptyList<String>()
-                while (instanceIds.size != ec2NodeConfigs.size) {
-                    delay(3000)
-                    val describeRequest = DescribeSpotInstanceRequestsRequest {
-                        spotInstanceRequestIds = spotRequestId
-                    }
-                    val describeRequestResponse = ec2Client.describeSpotInstanceRequests(describeRequest)
-                    val spotInstanceRequest = describeRequestResponse.spotInstanceRequests
-                        ?.filter { it.state == SpotInstanceState.Active }
-                        ?.mapNotNull { it.instanceId }
-                        ?: emptyList()
-                    instanceIds = spotInstanceRequest
-                    val failedSpotRequests = describeRequestResponse.spotInstanceRequests
-                        ?.filter { it.state == SpotInstanceState.Failed }
-                        ?: emptyList()
-                    if (failedSpotRequests.isNotEmpty()) {
-                        for ((ec2Config, instanceId) in ec2NodeConfigs zip instanceIds) {
-                            ec2Config.instanceId = instanceId
-                        }
-                        throw RuntimeException("SpotRequest failed")
-                    }
-                }
+                val spotInstanceResponse = retryIfException { ec2Client.requestSpotInstances(spotInstanceRequest) }
+                val spotRequestIds = spotInstanceResponse.spotInstanceRequests?.mapNotNull { it.spotInstanceRequestId }
+                val instanceIds = awaitForInstanceIds(ec2NodeConfigs, spotRequestIds, ec2Configuration.benchmarkRunId)
                 for ((ec2Config, instanceId) in ec2NodeConfigs zip instanceIds) {
                     ec2Config.instanceId = instanceId
                 }
             }
+    }
+
+    private suspend fun awaitForInstanceIds(
+        ec2NodeConfigs: List<NodeConfig>,
+        spotRequestIds: List<String>?,
+        benchmarkRunId: String
+    ): List<String> {
+        var instanceIds = emptyList<String>()
+        while (instanceIds.size != ec2NodeConfigs.size) {
+            delay(3000)
+            val describeSpotRequestsRequest = DescribeSpotInstanceRequestsRequest {
+                spotInstanceRequestIds = spotRequestIds
+            }
+            val describeRequestResponse = ec2Client.describeSpotInstanceRequests(describeSpotRequestsRequest)
+            instanceIds = describeRequestResponse.spotInstanceRequests
+                ?.filter { it.state == SpotInstanceState.Active }
+                ?.mapNotNull { it.instanceId }
+                ?: emptyList()
+            val failedSpotRequests = describeRequestResponse.spotInstanceRequests
+                ?.filter { it.state == SpotInstanceState.Failed }
+                ?: emptyList()
+            if (failedSpotRequests.isNotEmpty()) {
+                for ((ec2Config, instanceId) in ec2NodeConfigs zip instanceIds) {
+                    ec2Config.instanceId = instanceId
+                }
+                logger.error { "Benchmark $benchmarkRunId: One of the Spot Instance requests failed. Stopping benchmark" }
+                throw RuntimeException("SpotRequest failed for benchmark $benchmarkRunId")
+            }
+        }
+        return instanceIds
     }
 
     suspend fun getEc2InstanceAddresses(ec2Configuration: Ec2Configuration) {
@@ -236,101 +236,94 @@ class AwsService(
         val describeInstancesRequest = DescribeInstancesRequest {
             instanceIds = nodes.map { it.instanceId!! }
         }
-
-        var isAllRunning = false
-        while (!isAllRunning) {
+        var runningInstances = emptyList<Instance>()
+        while (runningInstances.size != instanceCount) {
+            delay(3000)
             val describeInstancesResponse = retryIfException { ec2Client.describeInstances(describeInstancesRequest) }
             val reservations = describeInstancesResponse.reservations ?: emptyList()
-            val runningInstances = reservations.flatMap { it.instances ?: emptyList() }
+            runningInstances = reservations.flatMap { it.instances ?: emptyList() }
                 .filter { it.state?.name == InstanceStateName.Running }
-            if (runningInstances.size != instanceCount) {
-                delay(3000)
-            } else {
-                isAllRunning = true
-                val runningInstancesMap = runningInstances.associateBy { it.instanceId }
-                nodes.forEach { node ->
-                    val matchingResponse = runningInstancesMap[node.instanceId]
-                    node.ipv4 = matchingResponse?.networkInterfaces?.get(0)?.privateIpAddress
-                    node.ipv6 = matchingResponse?.ipv6Address
-                }
-            }
         }
-        logger.info { "EC2 instances are running" }
+        val runningInstancesMap = runningInstances.associateBy { it.instanceId }
+        nodes.forEach { node ->
+            val matchingResponse = runningInstancesMap[node.instanceId]
+            node.ipv4 = matchingResponse?.networkInterfaces?.get(0)?.privateIpAddress
+            node.ipv6 = matchingResponse?.ipv6Address
+        }
+        logger.info {
+            "Benchmark ${ec2Configuration.benchmarkRunId}: EC2 instances are ready to connect. " +
+                    "Instance IDs: ${nodes.map { it.instanceId }}"
+        }
     }
 
-    suspend fun terminateEc2Instance(instances: List<NodeConfig>): List<String> {
-        val instanceIdToDelete = instances.mapNotNull { it.instanceId }
+    suspend fun terminateEc2Instance(ec2Configuration: Ec2Configuration): List<String> {
+        val instanceIdToDelete = ec2Configuration.nodes.mapNotNull { it.instanceId }
         if (instanceIdToDelete.isNotEmpty()) {
             val terminateInstancesRequest = TerminateInstancesRequest {
                 instanceIds = instanceIdToDelete
             }
             retryIfException { ec2Client.terminateInstances(terminateInstancesRequest) }
-            logger.info { "Stopped instances $instances" }
+            logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Terminated instances $instanceIdToDelete" }
             return instanceIdToDelete
         }
         return emptyList()
     }
 
-    suspend fun deleteSecurityGroup(securityGroup: String?, instances: List<String>) {
-        if (securityGroup != null) {
+    suspend fun deleteSecurityGroup(ec2Configuration: Ec2Configuration, instances: List<String>) {
+        if (ec2Configuration.securityGroupId != null) {
             if (instances.isNotEmpty()) {
                 val describeInstancesRequest = DescribeInstancesRequest {
                     instanceIds = instances
                 }
-                while(true) {
+                var terminatedInstances = emptyList<Instance>()
+                while (terminatedInstances.size != instances.size) {
+                    delay(15_000)
                     val describeInstancesResponse = ec2Client.describeInstances(describeInstancesRequest)
                     val reservations = describeInstancesResponse.reservations ?: emptyList()
-                    val terminatedInstances = reservations.flatMap { it.instances ?: emptyList() }
+                    terminatedInstances = reservations.flatMap { it.instances ?: emptyList() }
                         .filter { it.state?.name == InstanceStateName.Terminated }
-                    if (terminatedInstances.size == instances.size) {
-                        break
-                    } else {
-                        delay(15_000)
-                    }
                 }
             }
-
             val deleteRequest = DeleteSecurityGroupRequest {
-                groupId = securityGroup
+                groupId = ec2Configuration.securityGroupId
             }
             retryIfException { ec2Client.deleteSecurityGroup(deleteRequest) }
-            logger.info { "Deleted security group $securityGroup" }
+            logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Deleted Security Group ${ec2Configuration.securityGroupId}" }
         }
     }
 
-    suspend fun deleteSubnet(subnet: String?) {
-        if (subnet != null) {
+    suspend fun deleteSubnet(ec2Configuration: Ec2Configuration) {
+        if (ec2Configuration.subnetId != null) {
             val deleteRequest = DeleteSubnetRequest {
-                subnetId = subnet
+                subnetId = ec2Configuration.subnetId
             }
             retryIfException { ec2Client.deleteSubnet(deleteRequest) }
-            logger.info { "Deleted subnet $subnet" }
+            logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Deleted Subnet ${ec2Configuration.subnetId}" }
         }
     }
 
-    suspend fun deleteInternetGateway(internetGateway: String?, vpc: String?) {
-        if (internetGateway != null) {
+    suspend fun deleteInternetGateway(ec2Configuration: Ec2Configuration) {
+        if (ec2Configuration.internetGatewayId != null) {
             val detachRequest = DetachInternetGatewayRequest {
-                internetGatewayId = internetGateway
-                vpcId = vpc
+                internetGatewayId = ec2Configuration.internetGatewayId
+                vpcId = ec2Configuration.vpcId
             }
             retryIfException { ec2Client.detachInternetGateway(detachRequest) }
-            logger.info { "Detached Internet gateway $internetGateway" }
             val deleteRequest = DeleteInternetGatewayRequest {
-                internetGatewayId = internetGateway
+                internetGatewayId = ec2Configuration.internetGatewayId
             }
             retryIfException { ec2Client.deleteInternetGateway(deleteRequest) }
-            logger.info { "Deleted Internet gateway $internetGateway" }
+            logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Deleted Internet Gateway ${ec2Configuration.internetGatewayId}" }
         }
     }
 
-    suspend fun deleteVpc(vpc: String?) {
-        if (vpc != null) {
+    suspend fun deleteVpc(ec2Configuration: Ec2Configuration) {
+        if (ec2Configuration.vpcId != null) {
             val deleteRequest = DeleteVpcRequest {
-                vpcId = vpc
+                vpcId = ec2Configuration.vpcId
             }
             retryIfException { ec2Client.deleteVpc(deleteRequest) }
-            logger.info { "Deleted VPC $vpc" }
+            logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Deleted VPC ${ec2Configuration.vpcId}" }
         }
     }
 
@@ -347,6 +340,7 @@ class AwsService(
                     logger.error { "Encountered 3 Ec2Exceptions. Stopping execution." }
                     throw e
                 }
+                delay(1000)
             } catch (e: Exception) {
                 logger.error { "An unexpected error occurred: ${e.message} Stopping execution." }
                 throw e

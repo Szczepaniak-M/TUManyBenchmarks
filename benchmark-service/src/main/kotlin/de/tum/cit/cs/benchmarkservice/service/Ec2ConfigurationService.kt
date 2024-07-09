@@ -16,7 +16,7 @@ class Ec2ConfigurationService(
     @Value("\${aws.ec2.default-ami.arm}")
     lateinit var amiArm: String
 
-    suspend fun generateEc2Configuration(instance: Instance, benchmark: Benchmark): Ec2Configuration {
+    suspend fun generateEc2Configuration(instance: Instance, benchmark: Benchmark, benchmarkRunId: String): Ec2Configuration {
         val defaultBenchmarkConfiguration = benchmark.nodes.filter { it.nodeId == 0 }.getOrNull(0)
         val nodesBenchmarkConfiguration = benchmark.nodes.filter { it.nodeId != 0 }
         val defaultInstanceType = instance.name
@@ -47,7 +47,7 @@ class Ec2ConfigurationService(
                 ec2NodeConfigurations.add(nodeConfig)
             }
         }
-        return Ec2Configuration(benchmark.configuration.directory, ec2NodeConfigurations)
+        return Ec2Configuration(benchmarkRunId, benchmark.configuration.directory, ec2NodeConfigurations)
     }
 
     private suspend fun getDefaultImage(node: Node?, instance: Instance): String {

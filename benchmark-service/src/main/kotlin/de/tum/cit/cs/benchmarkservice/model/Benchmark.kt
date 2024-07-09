@@ -30,4 +30,3 @@ data class Node(
     val benchmarkCommand: String?,
     val outputCommand: String?
 )
-

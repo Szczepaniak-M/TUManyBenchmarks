@@ -31,6 +31,7 @@ class BenchmarkService(
         val benchmarks = benchmarkRepository.findAllById(benchmarkIdsToRun).toList()
         logger.info { "Found ${benchmarks.size} benchmarks with matching CRON expression" }
         val instanceWithBenchmarksToRun = getInstancesWithBenchmarks(benchmarks)
+        // execute multiple benchmarks in parallel without synchronizing
         val benchmarksCount = instanceWithBenchmarksToRun.flatMapMerge { instanceWithBenchmarks ->
             flow {
                 emit(
@@ -39,13 +40,16 @@ class BenchmarkService(
                     }.await()
                 )
             }
-        }.map { benchmarkResultsList ->
-            val instanceId = benchmarkResultsList.first().instanceId
-            val benchmarkResultsListMongo = benchmarkResultsList.map { it.toMongoModel() }
-            instanceRepository.updateBenchmarksById(instanceId, benchmarkResultsListMongo)
-            logger.info { "Added ${benchmarkResultsListMongo.size} benchmark results to Instance $instanceId" }
-            benchmarkResultsListMongo.size
-        }.reduce { accumulator, value -> accumulator + value }
+        }
+            .map { benchmarkResultsList ->
+                val instanceId = benchmarkResultsList[0].instanceId
+                val instanceName = benchmarkResultsList[0].instanceName
+                val benchmarkResultsListMongo = benchmarkResultsList.map { it.toMongoModel() }
+                instanceRepository.updateBenchmarksById(instanceId, benchmarkResultsListMongo)
+                logger.info { "Added ${benchmarkResultsListMongo.size} benchmark results for instance' $instanceName'" }
+                benchmarkResultsListMongo.size
+            }
+            .fold(0) { accumulator, value -> accumulator + value }
         logger.info { "Finished running $benchmarksCount benchmarks" }
     }
 

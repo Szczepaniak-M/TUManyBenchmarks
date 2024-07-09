@@ -8,12 +8,12 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class BenchmarkRunnerService(
     private val ec2ConfigurationService: Ec2ConfigurationService,
     private val awsService: AwsService,
-    private val gitHubService: GitHubService,
     private val sshService: SshService,
     private val outputParserService: OutputParserService
 ) {
@@ -21,20 +21,24 @@ class BenchmarkRunnerService(
 
     suspend fun runBenchmarksForInstance(instanceWithBenchmarks: InstanceWithBenchmarks): List<BenchmarkResult> {
         val instance = instanceWithBenchmarks.instance
-        var benchmarksResult: List<BenchmarkResult> = listOf()
+        var benchmarksResult = listOf<BenchmarkResult>()
         coroutineScope {
             benchmarksResult = instanceWithBenchmarks.benchmarks.map { benchmark ->
-                logger.info { "Starting benchmark ${benchmark.configuration.name} for instance ${instance.name}" }
+                val benchmarkRunId = UUID.randomUUID().toString()
+                logger.info { "Benchmark ${benchmarkRunId}: Starting benchmark '${benchmark.configuration.name}' for instance '${instance.name}'" }
                 async {
-                    val ec2Configuration = ec2ConfigurationService.generateEc2Configuration(instance, benchmark)
+                    val ec2Configuration =
+                        ec2ConfigurationService.generateEc2Configuration(instance, benchmark, benchmarkRunId)
                     var benchmarkResult: BenchmarkResult? = null
                     try {
                         createAwsResources(ec2Configuration)
-                        val curls = gitHubService.getCurlsForFilesFromDirectory(benchmark.configuration.directory)
-                        val results = sshService.executeBenchmark(ec2Configuration, curls)
+                        val results = sshService.executeBenchmark(ec2Configuration)
                         benchmarkResult = outputParserService.parseOutput(instance, benchmark, results)
                     } catch (e: Exception) {
-                        logger.error { "Stopping benchmark ${benchmark.configuration.name} for instance ${instance.name} due to error: ${e.message}" }
+                        logger.error {
+                            "Benchmark ${benchmarkRunId}: Stopping benchmark '${benchmark.configuration.name}'" +
+                                    " for instance '${instance.name}' due to error: ${e.message}"
+                        }
                     } finally {
                         deleteAwsResources(ec2Configuration)
                     }
@@ -58,10 +62,10 @@ class BenchmarkRunnerService(
     }
 
     private suspend fun deleteAwsResources(ec2Configuration: Ec2Configuration) {
-        val instances = awsService.terminateEc2Instance(ec2Configuration.nodes)
-        awsService.deleteSecurityGroup(ec2Configuration.securityGroupId, instances)
-        awsService.deleteSubnet(ec2Configuration.subnetId)
-        awsService.deleteInternetGateway(ec2Configuration.internetGatewayId, ec2Configuration.vpcId)
-        awsService.deleteVpc(ec2Configuration.vpcId)
+        val instances = awsService.terminateEc2Instance(ec2Configuration)
+        awsService.deleteSecurityGroup(ec2Configuration, instances)
+        awsService.deleteSubnet(ec2Configuration)
+        awsService.deleteInternetGateway(ec2Configuration)
+        awsService.deleteVpc(ec2Configuration)
     }
 }
