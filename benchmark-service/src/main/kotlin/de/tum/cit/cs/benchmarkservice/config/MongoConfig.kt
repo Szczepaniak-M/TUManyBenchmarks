@@ -44,7 +44,6 @@ class OutputTypeToStringConverter : Converter<OutputType, String> {
             OutputType.SINGLE_NODE_MULTIPLE_VALUES -> "single-node-multiple-value"
             OutputType.MULTIPLE_NODES_SINGLE_VALUE -> "multiple-nodes-single-value"
             OutputType.MULTIPLE_NODES_MULTIPLE_VALUES -> "multiple-nodes-multiple-values"
-
         }
     }
 }

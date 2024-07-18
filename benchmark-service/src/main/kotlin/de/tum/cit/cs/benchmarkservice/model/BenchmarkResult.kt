@@ -1,5 +1,7 @@
 package de.tum.cit.cs.benchmarkservice.model
 
+import org.bson.types.ObjectId
+
 data class BenchmarkResult(
     val instanceId: String,
     val instanceName: String,
@@ -9,12 +11,12 @@ data class BenchmarkResult(
     val timestamp: Long,
 ) {
     fun toMongoModel(): BenchmarkResultMongo {
-        return BenchmarkResultMongo(benchmarkId, timestamp, values)
+        return BenchmarkResultMongo(ObjectId(benchmarkId), timestamp, values)
     }
 }
 
 data class BenchmarkResultMongo(
-    val benchmarkId: String,
+    val benchmark: ObjectId,
     val timestamp: Long,
     val values: Map<String, Any>,
 )

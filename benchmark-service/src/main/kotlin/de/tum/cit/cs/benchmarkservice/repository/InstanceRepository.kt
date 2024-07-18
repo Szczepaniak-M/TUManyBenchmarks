@@ -15,7 +15,7 @@ interface InstanceRepository : CoroutineCrudRepository<Instance, String> {
     suspend fun updateTagsById(id: String, tags: List<String>): Int
 
     @Query("{ '_id' : ?0 }")
-    @Update("{ '\$push' : { 'benchmarks' : { '\$each': [?1] } } }")
+    @Update("{ '\$push' : { 'benchmarks' : { '\$each': ?1 } } }")
     suspend fun updateBenchmarksById(
         instanceId: String,
         benchmarks: List<BenchmarkResultMongo>
