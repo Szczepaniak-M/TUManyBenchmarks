@@ -1,14 +1,15 @@
 package de.tum.cit.cs.webpage.web
 
 import com.ninjasquad.springmockk.MockkBean
+import de.tum.cit.cs.webpage.model.Benchmark
 import de.tum.cit.cs.webpage.model.BenchmarkResult
 import de.tum.cit.cs.webpage.model.Instance
-import de.tum.cit.cs.webpage.model.Summary
+import de.tum.cit.cs.webpage.model.InstanceDetails
 import de.tum.cit.cs.webpage.repository.InstanceRepository
-import de.tum.cit.cs.webpage.repository.SummaryRepository
+import de.tum.cit.cs.webpage.repository.InstanceDetailsRepository
 import de.tum.cit.cs.webpage.service.ApiKeyService
 import de.tum.cit.cs.webpage.service.InstanceService
-import de.tum.cit.cs.webpage.service.SummaryService
+import de.tum.cit.cs.webpage.service.InstanceDetailsService
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -33,13 +34,13 @@ class RestControllerTest {
     private lateinit var instanceService: InstanceService
 
     @MockkBean
-    private lateinit var summaryService: SummaryService
+    private lateinit var instanceDetailsService: InstanceDetailsService
 
     @MockkBean
     private lateinit var apiKeyService: ApiKeyService
 
     @MockkBean
-    private lateinit var summaryRepository: SummaryRepository
+    private lateinit var instanceDetailsRepository: InstanceDetailsRepository
 
     @MockkBean
     private lateinit var instanceRepository: InstanceRepository
@@ -248,48 +249,65 @@ class RestControllerTest {
     }
 
     @Test
-    fun `get summary when instance type exists`() {
+    fun `get instance details when instance type exists`() {
         // given
         val apiKey = "apiKey123"
         val instanceType = "t3.micro"
         val benchmarkResults = listOf(
-            BenchmarkResult(
-                "benchmark1", "benchmarkDescription1",
-                "outputType1", 1000, mapOf(Pair("key1", "value1"))
+            Benchmark(
+                "benchId1", "benchmark1", "benchmarkDescription1",
+                listOf(BenchmarkResult(1000, mapOf(Pair("key1", "value1"))))
             ),
-            BenchmarkResult(
-                "benchmark2", "benchmarkDescription2",
-                "outputType2", 1000, mapOf(Pair("key2", "value2"))
+            Benchmark(
+                "benchId2", "benchmark2", "benchmarkDescription2",
+                listOf(
+                    BenchmarkResult(1000, mapOf(Pair("key2", "value2"))),
+                    BenchmarkResult(1000, mapOf(Pair("key3", "value3")))
+                )
             )
         )
-        val summary = Summary("id1", "t3.micro", listOf("1 vCPU"), benchmarkResults)
-        coEvery { summaryService.findByInstanceType(instanceType, any<String>(), apiKey) } returns summary
+        val instanceDetails = InstanceDetails("id1", "t3.micro", listOf("1 vCPU"), benchmarkResults)
+        coEvery { instanceDetailsService.findByInstanceType(instanceType, any<String>(), apiKey) } returns instanceDetails
         every { apiKeyService.isAccessAllowed(apiKey) } returns true
         val expectedResponse = """
             {
                 "id": "id1",
-                "instanceName": "t3.micro",
+                "name": "t3.micro",
                 "tags": [
                     "1 vCPU"
                 ],
                 "benchmarks": [
                     {
-                        "benchmarkName": "benchmark1",
-                        "benchmarkDescription": "benchmarkDescription1",
-                        "outputType": "outputType1",
-                        "timestamp": 1000,
-                        "values": {
-                            "key1":"value1"
-                        }
+                        "id": "benchId1",
+                        "name": "benchmark1",
+                        "description": "benchmarkDescription1",
+                        "results": [
+                            {
+                                "timestamp": 1000,
+                                "values": {
+                                    "key1":"value1"
+                                }
+                            }
+                        ]
                     },
                     {
-                        "benchmarkName":"benchmark2",
-                        "benchmarkDescription":"benchmarkDescription2",
-                        "outputType":"outputType2",
-                        "timestamp":1000,
-                        "values":{
-                            "key2":"value2"
-                        }
+                        "id": "benchId2",
+                        "name":"benchmark2",
+                        "description":"benchmarkDescription2",
+                        "results": [
+                            {
+                                "timestamp": 1000,
+                                "values": {
+                                    "key2":"value2"
+                                }
+                            },
+                            {
+                                "timestamp": 1000,
+                                "values": {
+                                    "key3":"value3"
+                                }
+                            }
+                        ]
                      }
                 ]
             }
@@ -312,7 +330,7 @@ class RestControllerTest {
                     getBodyAsString(it)
                 )
             }
-        coVerify(exactly = 1) { summaryService.findByInstanceType(instanceType, any<String>(), apiKey) }
+        coVerify(exactly = 1) { instanceDetailsService.findByInstanceType(instanceType, any<String>(), apiKey) }
         verify(exactly = 1) { apiKeyService.isAccessAllowed(apiKey) }
     }
 
@@ -321,7 +339,7 @@ class RestControllerTest {
         // given
         val apiKey = "apiKey123"
         val instanceType = "notExisting"
-        coEvery { summaryService.findByInstanceType(instanceType, any<String>(), apiKey) } returns null
+        coEvery { instanceDetailsService.findByInstanceType(instanceType, any<String>(), apiKey) } returns null
         every { apiKeyService.isAccessAllowed(apiKey) } returns true
 
         val expectedResponse = """
@@ -347,12 +365,12 @@ class RestControllerTest {
                     getBodyAsString(it)
                 )
             }
-        coVerify(exactly = 1) { summaryService.findByInstanceType(instanceType, any<String>(), apiKey) }
+        coVerify(exactly = 1) { instanceDetailsService.findByInstanceType(instanceType, any<String>(), apiKey) }
         verify(exactly = 1) { apiKeyService.isAccessAllowed(apiKey) }
     }
 
     @Test
-    fun `get too many requests error response for get summary request when access denied for given api key`() {
+    fun `get too many requests error response for get instance details request when access denied for given api key`() {
         // given
         val apiKey = "apiKey123"
         val instanceType = "t3.micro"
@@ -385,7 +403,7 @@ class RestControllerTest {
     }
 
     @Test
-    fun `get unauthorized error response for get summary request when api key no longer valid`() {
+    fun `get unauthorized error response for get instance details request when api key no longer valid`() {
         // given
         val apiKey = "apiKey123"
         val instanceType = "t3.micro"
@@ -418,7 +436,7 @@ class RestControllerTest {
     }
 
     @Test
-    fun `get unauthorized error response for get summary request when no api key in headers`() {
+    fun `get unauthorized error response for get instance details request when no api key in headers`() {
         // given
         val instanceType = "t3.micro"
         val expectedResponse = """

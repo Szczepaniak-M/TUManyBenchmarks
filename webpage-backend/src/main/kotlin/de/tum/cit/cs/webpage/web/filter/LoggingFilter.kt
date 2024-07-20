@@ -5,6 +5,7 @@ import de.tum.cit.cs.webpage.common.Headers.X_API_KEY_HEADER
 import de.tum.cit.cs.webpage.common.Headers.X_FORWARDED_FOR_HEADER
 import de.tum.cit.cs.webpage.common.LoggerUtils.buildInfoLogMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Component
 import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.server.WebFilter
@@ -12,6 +13,7 @@ import org.springframework.web.server.WebFilterChain
 import reactor.core.publisher.Mono
 import java.util.*
 
+@Order(3)
 @Component
 class LoggingFilter : WebFilter {
 

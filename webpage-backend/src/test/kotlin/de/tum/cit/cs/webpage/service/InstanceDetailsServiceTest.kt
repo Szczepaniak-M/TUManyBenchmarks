@@ -1,8 +1,8 @@
 package de.tum.cit.cs.webpage.service
 
 import com.ninjasquad.springmockk.MockkBean
-import de.tum.cit.cs.webpage.model.Summary
-import de.tum.cit.cs.webpage.repository.SummaryRepository
+import de.tum.cit.cs.webpage.model.InstanceDetails
+import de.tum.cit.cs.webpage.repository.InstanceDetailsRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import kotlinx.coroutines.test.runTest
@@ -14,44 +14,44 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import kotlin.test.assertNull
 
 @ExtendWith(SpringExtension::class)
-class SummaryServiceTest {
+class InstanceDetailsServiceTest {
 
     @MockkBean
-    private lateinit var summaryRepository: SummaryRepository
+    private lateinit var instanceDetailsRepository: InstanceDetailsRepository
 
     @Test
-    fun `find summary by instance type and cache result`() = runTest {
+    fun `find instance details by instance type and cache result`() = runTest {
         // given
-        val service = SummaryService(summaryRepository)
+        val service = InstanceDetailsService(instanceDetailsRepository)
         val instanceType = "t3.micro"
-        val summary = Summary("id1", "t3.micro", emptyList(), emptyList())
-        coEvery { summaryRepository.findByInstanceName(instanceType) } returns summary
+        val instanceDetails = InstanceDetails("id1", "t3.micro", emptyList(), emptyList())
+        coEvery { instanceDetailsRepository.findByName(instanceType) } returns instanceDetails
 
         // when
         val databaseResult = service.findByInstanceType(instanceType, null, null)
         val cachedResult = service.findByInstanceType(instanceType, null, null)
 
         // then
-        coVerify(exactly = 1) { summaryRepository.findByInstanceName(instanceType) }
+        coVerify(exactly = 1) { instanceDetailsRepository.findByName(instanceType) }
         assertNotNull(databaseResult)
-        assertEquals(summary, databaseResult)
+        assertEquals(instanceDetails, databaseResult)
         assertNotNull(cachedResult)
-        assertEquals(summary, databaseResult)
+        assertEquals(instanceDetails, databaseResult)
     }
 
     @Test
-    fun `do not cache result if there is no summary`() = runTest {
+    fun `do not cache result if there is no instance details`() = runTest {
         // given
-        val service = SummaryService(summaryRepository)
+        val service = InstanceDetailsService(instanceDetailsRepository)
         val instanceType = "nonExisting"
-        coEvery { summaryRepository.findByInstanceName(instanceType) } returns null
+        coEvery { instanceDetailsRepository.findByName(instanceType) } returns null
 
         // when
         val databaseResult1 = service.findByInstanceType(instanceType, null, null)
         val databaseResult2 = service.findByInstanceType(instanceType, null, null)
 
         // then
-        coVerify(exactly = 2) { summaryRepository.findByInstanceName(instanceType) }
+        coVerify(exactly = 2) { instanceDetailsRepository.findByName(instanceType) }
         assertNull(databaseResult1)
         assertNull(databaseResult2)
     }
