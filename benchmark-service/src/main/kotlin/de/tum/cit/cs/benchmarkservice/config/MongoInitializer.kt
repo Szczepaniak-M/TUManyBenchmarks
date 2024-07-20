@@ -1,6 +1,9 @@
 package de.tum.cit.cs.benchmarkservice.config
 
+import com.mongodb.client.model.Aggregates
+import com.mongodb.client.model.Field
 import com.mongodb.client.model.Indexes
+import com.mongodb.client.model.Projections
 import com.mongodb.reactivestreams.client.MongoClient
 import com.mongodb.reactivestreams.client.MongoDatabase
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -27,7 +30,7 @@ class MongoInitializer {
     private val logger = KotlinLogging.logger {}
 
     @PostConstruct
-    fun createView() = runBlocking {
+    fun initializeMongoDb() = runBlocking {
         val databaseName = extractDatabaseName(mongoUri)
         val database = mongoClient.getDatabase(databaseName)
         createIndexOnInstanceName(database)
@@ -55,26 +58,15 @@ class MongoInitializer {
             logger.info { "Old view `$viewName` deleted from database" }
         }
         val pipeline = listOf(
-            // add benchmark field if missing
-            Document(
-                "\$addFields",
-                Document(
-                    "benchmarks",
-                    Document("\$ifNull", listOf("\$benchmarks", mutableListOf<Any>()))
-                )
-            ),
-            // prepare lookup table for join
-            Document(
-                "\$lookup",
-                Document("from", "benchmarks")
-                    .append("localField", "benchmarks.benchmark")
-                    .append("foreignField", "_id")
-                    .append("as", "benchmarksLookup")
-            ),
-            // map all elements in 'benchmark' list and perform join
-            Document(
-                "\$addFields",
-                Document(
+            // ensure benchmarks array exists
+            Aggregates.addFields(Field("benchmarks", Document("\$ifNull", listOf("\$benchmarks", emptyList<Any>())))),
+
+            // create a lookup for 'benchmarks' collection
+            Aggregates.lookup("benchmarks", "benchmarks.benchmark", "_id", "benchmarksLookup"),
+
+            // merge benchmarks in 'instances' collection with benchmarks from 'benchmarks' collection
+            Aggregates.addFields(
+                Field(
                     "benchmarks",
                     Document(
                         "\$map",
@@ -91,7 +83,7 @@ class MongoInitializer {
                                                     "\$benchmarksLookup",
                                                     Document(
                                                         "\$indexOfArray",
-                                                        mutableListOf(
+                                                        listOf(
                                                             "\$benchmarksLookup._id",
                                                             "\$\$this.benchmark"
                                                         )
@@ -105,31 +97,27 @@ class MongoInitializer {
                     )
                 )
             ),
-            // format output
-            Document(
-                "\$project",
-                Document("_id", 1L)
-                    .append("name", 1L)
-                    .append("tags", 1L)
-                    .append(
-                        "benchmarks",
-                        Document(
+
+            // select specific fields and reshape benchmarks
+            Aggregates.project(
+                Projections.fields(
+                    Projections.include("_id", "name", "tags"),
+                    Projections.computed(
+                        "benchmarks", Document(
                             "\$map",
                             Document("input", "\$benchmarks")
                                 .append("as", "b")
                                 .append(
-                                    "in",
-                                    Document("_id", "\$\$b.benchmark._id")
+                                    "in", Document()
                                         .append("name", "\$\$b.benchmark.configuration.name")
                                         .append("description", "\$\$b.benchmark.configuration.description")
-                                        .append("timestamp", "\$\$b.timestamp")
-                                        .append("values", "\$\$b.values")
+                                        .append("results", "\$\$b.results")
+                                        .append("_id", "\$\$b.benchmark._id")
                                         .append("nodes", "\$\$b.benchmark.nodes")
-                                        .append("instanceTypes", "\$\$b.benchmark.configuration.instanceTypes")
-                                        .append("instanceTags", "\$\$b.benchmark.configuration.instanceTags")
                                 )
                         )
                     )
+                )
             )
         )
         database.createView(viewName, "instances", pipeline).awaitFirstOrNull()

@@ -10,13 +10,20 @@ data class BenchmarkResult(
     val values: Map<String, Any>,
     val timestamp: Long,
 ) {
-    fun toMongoModel(): BenchmarkResultMongo {
-        return BenchmarkResultMongo(ObjectId(benchmarkId), timestamp, values)
+    fun toMongoBenchmark(): MongoBenchmark {
+        return MongoBenchmark(ObjectId(benchmarkId), listOf(this.toMongoBenchmarkResult()))
+    }
+    fun toMongoBenchmarkResult(): MongoBenchmarkResult {
+        return MongoBenchmarkResult(timestamp, values)
     }
 }
 
-data class BenchmarkResultMongo(
+data class MongoBenchmark(
     val benchmark: ObjectId,
+    val results: List<MongoBenchmarkResult>,
+)
+
+data class MongoBenchmarkResult(
     val timestamp: Long,
     val values: Map<String, Any>,
 )
