@@ -4,16 +4,15 @@ configuration:
     description: "My benchmark test which instance is better"
     directory: example
     cron: "0 */4 * * *"
-    output-type: single-node-single-value # single-node-multiple-value / multiple-nodes-single-value / multiple-nodes-multiple-values
     instance-number: 2
-    instance-tags:
-        - - 1 GiB Memory
-          - 1 vCPUs
-        - - hdd
-          - Up to 10 Gigabit Network
     instance-types:
       - t2.micro
       - t3.micro
+    instance-tags:
+      - - 1 GiB Memory
+        - 1 vCPUs
+      - - hdd
+        - Up to 10 Gigabit Network
 nodes:
   - node-id: 0
     ansible-configuration: ansible-0.yaml
@@ -24,8 +23,22 @@ nodes:
     output-command: python3 format_output.py benchmark_output.txt
     instance-type: c7gn.16xlarge
     image: ubuntu-with-benchmark-iso
+    output:
+      - name: sender_time
+        type: int
+        group: 1
+      - name: sender_throughput
+        type: int[]
+        group: 2
 
   - node-id: 2
     ansible-configuration: ansible-2.yaml
     benchmark-command: ./benchmark-2 > benchmark_output.txt
     output-command: python3 format_output.py benchmark_output.txt
+    output:
+      - name: receiver_time
+        type: long
+        group: 1
+      - name: receiver_throughput
+        type: double[]
+        group: 2

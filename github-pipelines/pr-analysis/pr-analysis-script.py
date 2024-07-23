@@ -10,16 +10,116 @@ REQUIRED_CONFIGURATION_FIELDS = {
     'description': str,
     'directory': str,
     'cron': str,
-    'output-type': str,
     'instance-number': int,
 }
 
-ALLOWED_OUTPUT_TYPES = [
-    'single-node-single-value',
-    'single-node-multiple-values',
-    'multiple-nodes-single-value',
-    'multiple-nodes-multiple-values',
-]
+ALLOWED_OUTPUT_TYPES = ['int', 'long', 'double', 'int[]', 'long[]', 'double[]']
+
+
+def analyze_configuration_file(yaml_file):
+    try:
+        yaml_data = read_yaml(yaml_file)
+        check_configuration_section(yaml_data)
+        check_required_fields(yaml_data)
+        check_directory(yaml_data)
+        check_cron(yaml_data)
+        check_instance_count(yaml_data)
+        instance_specified = check_specified_instances(yaml_data)
+        tag_specified = check_specified_tags(yaml_data)
+        check_if_any_instance_specified(instance_specified, tag_specified)
+        check_nodes_section(yaml_data)
+        check_if_all_nodes_have_id(yaml_data)
+        nodes = sorted(yaml_data['nodes'], key=lambda d: d['node-id'])
+        default_node, nodes = get_default_node_configuration(nodes)
+        output_names = []
+        group_types = {}
+        for node in nodes:
+            check_ansible_configuration(default_node, node)
+            check_benchmark_command(default_node, node)
+            output_command_defined = check_output_command(default_node, node)
+            check_output(node, output_command_defined, output_names, group_types)
+            check_image(node)
+            check_instance_type(node)
+        check_output_defined(output_names)
+    except ValueError as e:
+        print_stderr(e)
+        return 1
+    return 0
+
+
+def read_yaml(yaml_file):
+    with open(yaml_file, 'r') as f:
+        try:
+            yaml_data = yaml.safe_load(f)
+        except yaml.YAMLError as exc:
+            raise ValueError(f"Error reading YAML file: {exc}")
+        if not isinstance(yaml_data, dict):
+            raise ValueError("YAML file should be a dictionary after reading.")
+        return yaml_data
+
+
+def check_configuration_section(yaml_data):
+    if 'configuration' not in yaml_data:
+        raise ValueError("Missing 'configuration' section.")
+    if not isinstance(yaml_data['configuration'], dict):
+        raise ValueError("'configuration' section should be of type dictionary.")
+
+
+def check_required_fields(yaml_data):
+    for key, value_type in REQUIRED_CONFIGURATION_FIELDS.items():
+        if key not in yaml_data['configuration']:
+            raise ValueError(f"Missing '{key}' in 'configuration' section.")
+        if not isinstance(yaml_data['configuration'][key], value_type):
+            raise ValueError(f"'{key}' in 'configuration' should be of type {value_type.__name__}.")
+
+
+def check_directory(yaml_data):
+    directory_from_path = os.path.basename(os.path.dirname(file_path))
+    if directory_from_path != yaml_data['configuration']['directory']:
+        raise ValueError(f"Incorrect value of 'directory' in 'configuration'. "
+                         f"It is different than the location of file. "
+                         f"Location: '{directory_from_path}' Configuration: "
+                         f"'{yaml_data['configuration']['directory']}'")
+
+
+def check_cron(yaml_data):
+    if CronValidator.parse(yaml_data['configuration']['cron']) is None:
+        raise ValueError(f"Value of 'cron' in 'configuration' section is not correct CRON expression.")
+
+
+def check_instance_count(yaml_data):
+    if yaml_data['configuration']['instance-number'] < 1:
+        raise ValueError('Instance number must be at least 1')
+
+
+def check_specified_instances(yaml_data):
+    instance_specified = False
+    if 'instance-types' in yaml_data['configuration']:
+        if not isinstance(yaml_data['configuration']['instance-types'], list):
+            raise ValueError(f"'instance-types' in 'configuration' should be of type list.")
+        client = boto3.client('ec2', region_name='us-east-1')
+        aws_instances = client._service_model.shape_for('InstanceType').enum
+        for instance_type in yaml_data['configuration']['instance-types']:
+            if instance_type not in aws_instances:
+                raise ValueError("Incorrect value of EC2 instance in 'instance-types'.")
+        instance_specified = True
+    return instance_specified
+
+
+def check_specified_tags(yaml_data):
+    tag_specified = False
+    if 'instance-tags' in yaml_data['configuration']:
+        if not isinstance(yaml_data['configuration']['instance-tags'], list):
+            raise ValueError(f"'instance-tags' in 'configuration' should be of type list.")
+        allowed_tags = get_allowed_tags()
+        for tag_list in yaml_data['configuration']['instance-tags']:
+            if not isinstance(tag_list, list):
+                raise ValueError(f"All elements in 'instance-tags' should be of type list.")
+            for tag in tag_list:
+                if tag not in allowed_tags:
+                    raise ValueError(f"Tag '{tag}' is not allowed.")
+        tag_specified = True
+    return tag_specified
 
 
 def get_allowed_tags():
@@ -36,218 +136,165 @@ def get_allowed_tags():
     return result
 
 
-def analyze_configuration_file(yaml_file):
-    with open(yaml_file, 'r') as f:
-        # Read file
-        try:
-            yaml_data = yaml.safe_load(f)
-        except yaml.YAMLError as exc:
-            print_stderr(f"Error reading YAML file: {exc}")
-            return 1
+def check_if_any_instance_specified(instance_specified, tag_specified):
+    if not instance_specified and not tag_specified:
+        raise ValueError("Missing 'instance-types' or 'instance-tags' in 'configuration' section.")
 
-        if not isinstance(yaml_data, dict):
-            print_stderr("YAML file should be a dictionary after reading.")
-            return 1
 
-        # Check configuration section
-        if 'configuration' not in yaml_data:
-            print_stderr("Missing 'configuration' section.")
-            return 1
-        if not isinstance(yaml_data['configuration'], dict):
-            print_stderr("'configuration' section should be of type dictionary.")
-            return 1
+def check_nodes_section(yaml_data):
+    if 'nodes' not in yaml_data:
+        raise ValueError("Missing 'nodes' section.")
+    if not isinstance(yaml_data['nodes'], list):
+        raise ValueError("'nodes' section should be of type list.")
 
-        # Check required fields
-        for key, value_type in REQUIRED_CONFIGURATION_FIELDS.items():
-            if key not in yaml_data['configuration']:
-                print_stderr(f"Missing '{key}' in 'configuration' section.")
-                return 1
-            if not isinstance(yaml_data['configuration'][key], value_type):
-                print_stderr(f"'{key}' in 'configuration' should be of type {value_type.__name__}.")
-                return 1
 
-        # Check CRON
-        if CronValidator.parse(yaml_data['configuration']['cron']) is None:
-            print_stderr(f"Value of 'cron' in 'configuration' section is not correct CRON expression.")
-            return 1
+def check_if_all_nodes_have_id(yaml_data):
+    for node in yaml_data['nodes']:
+        if not isinstance(node, dict):
+            raise ValueError("Each node should be of type dict.")
+        if 'node-id' not in node:
+            raise ValueError("Missing 'node-id' in 'node' section.")
+        if not isinstance(node['node-id'], int):
+            raise ValueError("'node-id' in 'node' should be of type int.")
 
-        # Check output type
-        if yaml_data['configuration']['output-type'] not in ALLOWED_OUTPUT_TYPES:
-            print_stderr(f"Incorrect value of 'output-type' in 'configuration'. "
-                         f"Allowed values are: {ALLOWED_OUTPUT_TYPES}")
-            return 1
 
-        # Check directory
-        directory_from_path = os.path.basename(os.path.dirname(file_path))
-        if directory_from_path != yaml_data['configuration']['directory']:
-            print_stderr(f"Incorrect value of 'directory' in 'configuration'. "
-                         f"It is different than the location of file. "
-                         f"Location: '{directory_from_path}' Configuration: "
-                         f"'{yaml_data['configuration']['directory']}'")
-            return 1
+def get_default_node_configuration(nodes):
+    default_node = {}
+    if nodes[0]['node-id'] == 0:
+        # Remove default node from the list
+        default_node = nodes[0]
+        nodes = nodes[1:]
 
-        # Check specified instances
-        instance_specified = False
-        if 'instance-types' in yaml_data['configuration']:
-            if not isinstance(yaml_data['configuration']['instance-types'], list):
-                print_stderr(f"'instance-types' in 'configuration' should be of type list.")
-                return 1
-            client = boto3.client('ec2', region_name='us-east-1')
-            aws_instances = client._service_model.shape_for('InstanceType').enum
-            for instance_type in yaml_data['configuration']['instance-types']:
-                if instance_type not in aws_instances:
-                    print_stderr("Incorrect value of EC2 instance in 'instance-types'.")
-                    return 1
-            instance_specified = True
+        # Check ansible configuration:
+        if 'ansible-configuration' in default_node \
+                and not isinstance(default_node['ansible-configuration'], str):
+            raise ValueError("'ansible-configuration' in 'node' should be of type str.")
 
-        # Check specified tags
-        if 'instance-tags' in yaml_data['configuration']:
-            if not isinstance(yaml_data['configuration']['instance-tags'], list):
-                print_stderr(f"'instance-tags' in 'configuration' should be of type list.")
-                return 1
-            allowed_tags = get_allowed_tags()
-            for tag_list in yaml_data['configuration']['instance-tags']:
-                if not isinstance(tag_list, list):
-                    print_stderr(f"All elements in 'instance-tags' should be of type list.")
-                    return 1
-                for tag in tag_list:
-                    if tag not in allowed_tags:
-                        print_stderr(f"Tag '{tag}' is not allowed.")
-                        return 1
-            instance_specified = True
+        # Check benchmark command
+        if 'benchmark-command' in default_node \
+                and not isinstance(default_node['benchmark-command'], str):
+            raise ValueError("'benchmark-command' in 'node' should be of type str.")
 
-        # Check whether instances or tags specified
-        if not instance_specified:
-            print_stderr("Missing 'instance-types' or 'instance-tags' in 'configuration' section.")
-            return 1
+        # Check output command
+        if 'output-command' in default_node \
+                and not isinstance(default_node['output-command'], str):
+            raise ValueError("'output-command' in 'node' should be of type str.")
 
-        # Check nodes section
-        if 'nodes' not in yaml_data:
-            print_stderr("Missing 'nodes' section.")
-            return 1
+        # Check image
+        if 'image' in default_node \
+                and not isinstance(default_node['image'], str):
+            raise ValueError("'image' in 'node' should be of type str.")
 
-        if not isinstance(yaml_data['nodes'], list):
-            print_stderr("'nodes' section should be of type list.")
-            return 1
+        # Check instance type
+        if 'instance-type' in default_node:
+            raise ValueError("'instance-type' can be only specified for specific node")
 
-        # Check if all nodes have IDs
-        for node in yaml_data['nodes']:
-            if not isinstance(node, dict):
-                print_stderr("Each node should be of type dict.")
-                return 1
-            if 'node-id' not in node:
-                print_stderr("Missing 'node-id' in 'node' section.")
-                return 1
-            if not isinstance(node['node-id'], int):
-                print_stderr("'node-id' in 'node' should be of type int.")
-                return 1
+        # Check output
+        if 'output' in default_node:
+            raise ValueError("'output' can be only specified for specific node")
 
-        # Check if global configuration of benchmark and output command defined
-        global_benchmark_command_defined = False
-        global_output_command_defined = False
-        global_image_defined = False
+    return default_node, nodes
 
-        sorted_nodes = sorted(yaml_data['nodes'], key=lambda d: d['node-id'])
 
-        if sorted_nodes[0]['node-id'] == 0:
-            global_node_configuration = sorted_nodes[0]
-            # Check ansible configuration:
-            if 'ansible-command' in global_node_configuration \
-                    and not isinstance(global_node_configuration['ansible-configuration'], str):
-                print_stderr("'ansible-configuration' in 'node' should be of type str.")
-                return 1
+def check_ansible_configuration(default_node, node):
+    if 'ansible-configuration' in node:
+        if not isinstance(node['ansible-configuration'], str):
+            raise ValueError("'ansible-configuration' in 'node' should be of type str.")
+    elif 'ansible-configuration' not in default_node:
+        raise ValueError(f"Missing 'ansible-configuration' for node with ID = {node['node-id']}. "
+                         f"'benchmark-command' was also not defined globally in node with ID = 0.")
 
-            # Check benchmark command
-            if 'benchmark-command' in global_node_configuration:
-                global_benchmark_command_defined = True
-                if not isinstance(global_node_configuration['benchmark-command'], str):
-                    print_stderr("'benchmark-command' in 'node' should be of type str.")
-                    return 1
 
-            # Check output command
-            if 'output-command' in global_node_configuration:
-                global_output_command_defined = True
-                if 'ansible-command' in global_node_configuration \
-                        and not isinstance(global_node_configuration['ansible-configuration'], str):
-                    print_stderr("'ansible-configuration' in 'node' should be of type str.")
-                    return 1
+def check_benchmark_command(default_node, node):
+    if 'benchmark-command' in node:
+        if not isinstance(node['benchmark-command'], str):
+            raise ValueError("'benchmark-command' in 'node' should be of type str.")
+    elif 'benchmark-command' not in default_node:
+        raise ValueError(f"Missing 'benchmark-command' for node with ID = {node['node-id']}. "
+                         f"'benchmark-command' was also not defined globally in node with ID = 0.")
 
-            # Check image
-            if 'image' in global_node_configuration:
-                global_image_defined = True
-                if 'image' in global_node_configuration \
-                        and not isinstance(global_node_configuration['image'], str):
-                    print_stderr("'image' in 'node' should be of type str.")
-                    return 1
 
-            # Check instance type
-            if 'instance-type' in global_node_configuration:
-                print_stderr("'instance-type' can be only specified for specific node")
-                return 1
-            sorted_nodes = sorted_nodes[1:]
+def check_output_command(default_node, node):
+    output_command_defined = False
+    if 'output-command' in node:
+        if not isinstance(node['output-command'], str):
+            raise ValueError("'output-command' in 'node' should be of type str.")
+        output_command_defined = True
+    elif 'output-command' in default_node:
+        output_command_defined = True
+    return output_command_defined
 
-        # Check nodes
-        output_command_defined = False
-        for node in sorted_nodes:
-            # Check ansible configuration:
-            if 'ansible-command' in node and not isinstance(node['ansible-configuration'], str):
-                print_stderr("'ansible-configuration' in 'node' should be of type str.")
-                return 1
 
-            # Check benchmark command
-            if 'benchmark-command' in node:
-                if global_benchmark_command_defined:
-                    print_stderr(f"Conflicting 'benchmark-command' for node with ID = {node['node-id']}. "
-                                 f"'benchmark-command' defined previously globally in node with ID = 0.")
-                    return 1
-                if not isinstance(node['benchmark-command'], str):
-                    print_stderr("'benchmark-command' in 'node' should be of type str.")
-                    return 1
-            else:
-                if not global_benchmark_command_defined:
-                    print_stderr(f"Missing 'benchmark-command' for node with ID = {node['node-id']}. "
-                                 f"'benchmark-command' was also not defined globally in node with ID = 0.")
-                    return 1
+def check_image(node):
+    if 'image' in node and not isinstance(node['image'], str):
+        raise ValueError("'image' in 'node' should be of type str.")
 
-            # Check output command
-            if 'output-command' in node:
-                if global_output_command_defined:
-                    print_stderr(f"Conflicting 'output-command' for node with ID = {node['node-id']}. "
-                                 f"'output-command' defined previously globally in node with ID = 0.")
-                    return 1
-                if not isinstance(node['output-command'], str):
-                    print_stderr("'output-command' in 'node' should be of type str.")
-                    return 1
-                output_command_defined = True
 
-            # Check image
-            if 'image' in node:
-                if global_image_defined:
-                    print_stderr(f"Conflicting 'image' for node with ID = {node['node-id']}. "
-                                 f"'image' defined previously globally in node with ID = 0.")
-                    return 1
-                if not isinstance(node['image'], str):
-                    print_stderr("'image' in 'node' should be of type str.")
-                    return 1
+def check_instance_type(node):
+    if 'instance-type' in node:
+        if not isinstance(node['instance-type'], str):
+            raise ValueError(f"'instance-type' in 'node' should be of type str.")
+        client = boto3.client('ec2', region_name='us-east-1')
+        aws_instances = client._service_model.shape_for('InstanceType').enum
+        if node['instance-type'] not in aws_instances:
+            raise ValueError(
+                f"Incorrect value of EC2 instance in 'instance-type' for node with ID = {node['node-id']}.")
 
-            # Check instance type
-            if 'instance-type' in node:
-                if not isinstance(node['instance-type'], str):
-                    print_stderr(f"'instance-type' in 'node' should be of type str.")
-                    return 1
-                client = boto3.client('ec2', region_name='us-east-1')
-                aws_instances = client._service_model.shape_for('InstanceType').enum
-                if node['instance-type'] not in aws_instances:
-                    print_stderr(f"Incorrect value of EC2 instance in 'instance-type' for node with ID = {node['node-id']}.")
-                    return 1
 
-        # Check whether any output command defined
-        if not output_command_defined and not global_output_command_defined:
-            print_stderr("Missing 'output-command' for all nodes."
-                         "'output-command' was also not defined globally in node with ID = 0.")
-            return 1
+def check_output(node, output_command_defined, output_names, group_types):
+    if output_command_defined:
+        check_output_list(node)
+        for output in node['output']:
+            check_output_name(output, output_names)
+            check_output_type(output)
+            check_output_group(group_types, output)
+    elif 'output' in node:
+        raise ValueError("'output' defined but 'output-command' is not defined")
 
-        return 0
+
+def check_output_list(node):
+    if 'output' not in node:
+        raise ValueError("'output-command' defined but 'output' is not defined")
+    if not isinstance(node['output'], list):
+        raise ValueError(f"'output' in 'configuration' should be of type list.")
+
+
+def check_output_name(output, output_names):
+    if 'name' not in output:
+        raise ValueError("Missing 'name' in 'output' element.")
+    if not isinstance(output['name'], str):
+        raise ValueError(f"'name' in 'output' should be of type str.")
+    if output['name'] in output_names:
+        raise ValueError(f"Value  of 'name' must be unique. '{output['name']}' is duplicated.")
+    output_names.append(output['name'])
+
+
+def check_output_type(output):
+    if 'type' not in output:
+        raise ValueError("Missing 'name' in 'output' element.")
+    if output['type'] not in ALLOWED_OUTPUT_TYPES:
+        raise ValueError(f"'type' in 'output' should be equal to one value from ${ALLOWED_OUTPUT_TYPES}")
+
+
+def check_output_group(group_types, output):
+    if 'group' not in output:
+        raise ValueError("Missing 'group' in 'output' element.")
+    if not isinstance(output['group'], int):
+        raise ValueError(f"'group' in 'output' should be of type int.")
+    if "[]" in output['type']:
+        output_type = "list"
+    else:
+        output_type = "scalar"
+    if output['group'] in group_types:
+        if group_types[output['group']] != output_type:
+            raise ValueError(f"Scalar and list outputs assigned to the same plot group.")
+    else:
+        group_types[output['group']] = output_type
+
+
+def check_output_defined(output_names):
+    if not output_names:
+        raise ValueError('No output defined')
 
 
 def print_stderr(*args, **kwargs):
