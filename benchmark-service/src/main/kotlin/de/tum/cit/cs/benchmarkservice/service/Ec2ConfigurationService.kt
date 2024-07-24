@@ -35,7 +35,7 @@ class Ec2ConfigurationService(
         }
 
         if (ec2NodeConfigurations.size < benchmark.configuration.instanceNumber) {
-            for (i in ec2NodeConfigurations.size+ 1..benchmark.configuration.instanceNumber) {
+            for (i in ec2NodeConfigurations.size + 1..benchmark.configuration.instanceNumber) {
                 val nodeConfig = NodeConfig(
                     nodeId = i,
                     instanceType = defaultInstanceType,

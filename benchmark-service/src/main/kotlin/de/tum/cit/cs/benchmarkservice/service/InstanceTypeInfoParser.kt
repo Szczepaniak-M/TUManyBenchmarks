@@ -14,6 +14,7 @@ class InstanceTypeInfoParser {
 
     fun parseInstanceTags(instanceTypeInfo: InstanceTypeInfo): List<String> {
         val tags = mutableListOf<String>()
+        tags.add(parseFamily(instanceTypeInfo))
         tags.add(parseCPUs(instanceTypeInfo))
         tags.add(parseMemory(instanceTypeInfo))
         tags.addAll(parseArchitectures(instanceTypeInfo))
@@ -23,6 +24,11 @@ class InstanceTypeInfoParser {
         parseMetal(instanceTypeInfo)?.let { tags.add(it) }
         parsePreviousGeneration(instanceTypeInfo)?.let { tags.add(it) }
         return tags
+    }
+
+    private fun parseFamily(instanceTypeInfo: InstanceTypeInfo): String {
+        val family = instanceTypeInfo.instanceType?.value?.split(".")?.get(0)
+        return "Family $family"
     }
 
     private fun parseCPUs(instanceTypeInfo: InstanceTypeInfo): String {
@@ -42,14 +48,15 @@ class InstanceTypeInfoParser {
     private fun parseArchitectures(instanceTypeInfo: InstanceTypeInfo): List<String> {
         return instanceTypeInfo.processorInfo
             ?.supportedArchitectures
-            ?.map { it.value } ?: emptyList()
+            ?.map { it.value.replace("_", "-").replace("arm", "ARM") }
+            ?: emptyList()
     }
 
     private fun parseStorageInfo(instanceTypeInfo: InstanceTypeInfo): List<String> {
         val tags = mutableListOf<String>()
         if (instanceTypeInfo.instanceStorageSupported == true) {
             val disk = instanceTypeInfo.instanceStorageInfo?.disks?.get(0)
-            disk?.type?.let { tags.add(it.value) }
+            disk?.type?.let { tags.add(it.value.uppercase()) }
         }
         return tags
     }

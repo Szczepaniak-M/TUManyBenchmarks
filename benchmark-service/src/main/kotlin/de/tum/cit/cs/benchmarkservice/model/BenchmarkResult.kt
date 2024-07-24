@@ -6,7 +6,6 @@ data class BenchmarkResult(
     val instanceId: String,
     val instanceName: String,
     val benchmarkId: String,
-    val outputType: OutputType,
     val values: Map<String, Any>,
     val timestamp: Long,
 ) {

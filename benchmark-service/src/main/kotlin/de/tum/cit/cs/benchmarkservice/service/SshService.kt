@@ -26,9 +26,9 @@ class SshService(
 
     private val logger = KotlinLogging.logger {}
 
-    suspend fun executeBenchmark(ec2Configuration: Ec2Configuration): List<Pair<NodeConfig, String>> {
+    suspend fun executeBenchmark(ec2Configuration: Ec2Configuration): List<String> {
         val directory = ec2Configuration.directory
-        var output = emptyList<Pair<NodeConfig, String>>()
+        var output = emptyList<String>()
         val privateKeyPath = Paths.get(ClassPathResource(filePath).uri)
         val loader = SecurityUtils.getKeyPairResourceParser()
         val keyPairs = withContext(Dispatchers.IO) {
@@ -54,27 +54,35 @@ class SshService(
 
                     // 2. Phase 1: Setup
                     logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Setting up nodes" }
-                    nodeWithSession.map { (node, session) ->
+                    val setupSucceeded = nodeWithSession.map { (node, session) ->
                         async(Dispatchers.IO) {
                             setUpNode(ec2Configuration, node, session)
                         }
                     }.awaitAll()
+                        .fold(true) {prev, curr -> prev && curr}
 
-                    // 3. Phase 2: Run benchmark
-                    logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Executing benchmark" }
-                    nodeWithSession.map { (node, session) ->
-                        async(Dispatchers.IO) {
-                            executeBenchmark(node, session, directory)
+                    if (!setupSucceeded) {
+                        logger.error {
+                            "Benchmark ${ec2Configuration.benchmarkRunId}: Set up for at least on of the nodes failed. "
+                            "Stopping benchmark execution."
                         }
-                    }.awaitAll()
+                    } else {
+                        // 3. Phase 2: Run benchmark
+                        logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Executing benchmark" }
+                        nodeWithSession.map { (node, session) ->
+                            async(Dispatchers.IO) {
+                                executeBenchmark(node, session, directory)
+                            }
+                        }.awaitAll()
 
-                    // 4. Phase 3: Fetch results
-                    logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Extracting output" }
-                    output = nodeWithSession.map { (node, session) ->
-                        async(Dispatchers.IO) {
-                            getBenchmarkOutput(node, session, directory)
-                        }
-                    }.awaitAll()
+                        // 4. Phase 3: Fetch results
+                        logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Extracting output" }
+                        output = nodeWithSession.map { (node, session) ->
+                            async(Dispatchers.IO) {
+                                getBenchmarkOutput(node, session, directory)
+                            }
+                        }.awaitAll()
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -86,12 +94,27 @@ class SshService(
         return output
     }
 
-    private suspend fun setUpNode(ec2Configuration: Ec2Configuration, node: NodeConfig, session: ClientSession) {
+    private suspend fun setUpNode(
+        ec2Configuration: Ec2Configuration,
+        node: NodeConfig,
+        session: ClientSession
+    ): Boolean {
         val ansibleFile = node.ansibleConfiguration
         val combinedCommands = prepareSetUpCommands(ec2Configuration, ansibleFile, node)
         val execChannel = session.createExecChannel(combinedCommands)
+        val outputStream = ByteArrayOutputStream()
+        execChannel.out = outputStream
         execChannel.open().verify()
         execChannel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), 0)
+        val output = outputStream.toString()
+        if (output.contains("FAILED!")) {
+            logger.error {
+                "Benchmark ${ec2Configuration.benchmarkRunId}: Benchmark failed during setting up nodes. "
+                "Error message: $output"
+            }
+            return false
+        }
+        return true
     }
 
     private suspend fun executeBenchmark(node: NodeConfig, session: ClientSession, directory: String) {
@@ -105,13 +128,13 @@ class SshService(
         node: NodeConfig,
         session: ClientSession,
         directory: String
-    ): Pair<NodeConfig, String> {
-        val outputStream = ByteArrayOutputStream()
+    ): String {
         val execChannel = session.createExecChannel("cd ${directory}; ${node.outputCommand}")
+        val outputStream = ByteArrayOutputStream()
         execChannel.out = outputStream
         execChannel.open().verify()
         execChannel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), 0)
-        return node to outputStream.toString()
+        return outputStream.toString()
     }
 
     private suspend fun prepareSetUpCommands(
@@ -120,6 +143,7 @@ class SshService(
         node: NodeConfig
     ): String {
         val commands = mutableListOf<String>()
+        commands.add("sudo apt-get update")
         val curls = gitHubService.getCurlsForFilesFromDirectory(ec2Configuration.directory)
         commands.addAll(curls)
         commands.add("cd ${ec2Configuration.directory}")

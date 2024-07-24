@@ -113,7 +113,7 @@ class MongoInitializer {
                                         .append("description", "\$\$b.benchmark.configuration.description")
                                         .append("results", "\$\$b.results")
                                         .append("_id", "\$\$b.benchmark._id")
-                                        .append("nodes", "\$\$b.benchmark.nodes")
+                                        .append("plots", "\$\$b.benchmark.plots")
                                 )
                         )
                     )

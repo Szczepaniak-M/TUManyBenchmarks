@@ -53,7 +53,7 @@ class InstanceTypeInfoParserTest {
 
         // then
         val expectedTags = listOf(
-            "8 vCPUs", "4 GiB Memory", "x86_64", "i386", "ssd",
+            "Family t3", "8 vCPUs", "4 GiB Memory", "x86-64", "i386", "SSD",
             "Up to 25 Gigabit Network", "Hypervisor Nitro", "Previous Generation"
         )
         assertEquals(expectedTags, result)
@@ -76,7 +76,7 @@ class InstanceTypeInfoParserTest {
         val result = parser.parseInstanceTags(instanceTypeInfo)
 
         // then
-        val expectedTags = listOf("8 vCPUs", "4 GiB Memory", "x86_64", "i386", "Up to 25 Gigabit Network")
+        val expectedTags = listOf("Family t3", "8 vCPUs", "4 GiB Memory", "x86-64", "i386", "Up to 25 Gigabit Network")
         assertEquals(expectedTags, result)
     }
 
@@ -99,7 +99,10 @@ class InstanceTypeInfoParserTest {
         val result = parser.parseInstanceTags(instanceTypeInfo)
 
         // then
-        val expectedTags = listOf("8 vCPUs", "4 GiB Memory", "x86_64", "i386", "Up to 25 Gigabit Network", "Bare Metal")
+        val expectedTags = listOf(
+            "Family t3", "8 vCPUs", "4 GiB Memory", "x86-64",
+            "i386", "Up to 25 Gigabit Network", "Bare Metal"
+        )
         assertEquals(expectedTags, result)
     }
 }

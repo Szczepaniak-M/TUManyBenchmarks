@@ -5,7 +5,6 @@ import com.ninjasquad.springmockk.MockkBean
 import de.tum.cit.cs.benchmarkservice.model.Benchmark
 import de.tum.cit.cs.benchmarkservice.model.Configuration
 import de.tum.cit.cs.benchmarkservice.model.Instance
-import de.tum.cit.cs.benchmarkservice.model.OutputType
 import de.tum.cit.cs.benchmarkservice.repository.InstanceRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -33,9 +32,8 @@ class InstanceServiceTest {
     companion object {
         private val TEMPLATE_INSTANCE = Instance(id = "id", name = "t2.micro", tags = emptyList())
         private val TEMPLATE_CONFIGURATION = Configuration(
-            name = "", description = "", cron = "", directory = "",
-            outputType = OutputType.SINGLE_NODE_SINGLE_VALUE, instanceNumber = 0,
-            instanceTags = null, instanceType = null
+            name = "", description = "", cron = "", directory = "", instanceNumber = 0,
+            instanceTags = null, instanceTypes = null
         )
         private val TEMPLATE_BENCHMARK = Benchmark(id = "", configuration = TEMPLATE_CONFIGURATION, nodes = emptyList())
 
@@ -69,7 +67,7 @@ class InstanceServiceTest {
         // given
         val instanceService = InstanceService(instanceRepository, awsService, parser)
         val instance = TEMPLATE_INSTANCE
-        val configuration = TEMPLATE_CONFIGURATION.copy(instanceType = listOf("t3.micro", "t2.micro"))
+        val configuration = TEMPLATE_CONFIGURATION.copy(instanceTypes = listOf("t3.micro", "t2.micro"))
         val benchmark = TEMPLATE_BENCHMARK.copy(configuration = configuration)
 
         // when
@@ -131,7 +129,7 @@ class InstanceServiceTest {
         val instanceService = InstanceService(instanceRepository, awsService, parser)
         val instance = TEMPLATE_INSTANCE.copy(tags = listOf("8 vCPUs", "8 GiB Memory"))
         val configuration = TEMPLATE_CONFIGURATION.copy(
-            instanceType = listOf("t3.small", "t2.small"),
+            instanceTypes = listOf("t3.small", "t2.small"),
             instanceTags = listOf(
                 listOf("16 vCPUs"),
                 listOf("16 GiB Memory")
@@ -153,7 +151,7 @@ class InstanceServiceTest {
         val instanceService = InstanceService(instanceRepository, awsService, parser)
         val instance = TEMPLATE_INSTANCE.copy(tags = listOf("8 vCPUs", "8 GiB Memory"))
         val configuration = TEMPLATE_CONFIGURATION.copy(
-            instanceType = listOf("t3.small", "t2.micro"),
+            instanceTypes = listOf("t3.small", "t2.micro"),
             instanceTags = listOf(
                 listOf("16 vCPUs"),
                 listOf("8 GiB Memory")
@@ -190,7 +188,7 @@ class InstanceServiceTest {
         // given
         val instanceService = InstanceService(instanceRepository, awsService, parser)
         val instance = TEMPLATE_INSTANCE.copy(tags = listOf("8 vCPUs", "8 GiB Memory"))
-        val configuration1 = TEMPLATE_CONFIGURATION.copy(instanceType = listOf("t2.micro"))
+        val configuration1 = TEMPLATE_CONFIGURATION.copy(instanceTypes = listOf("t2.micro"))
         val benchmark1 = TEMPLATE_BENCHMARK.copy(configuration = configuration1)
         val configuration2 = TEMPLATE_CONFIGURATION.copy(instanceTags = listOf(listOf("8 vCPUs")))
         val benchmark2 = TEMPLATE_BENCHMARK.copy(configuration = configuration2)

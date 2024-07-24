@@ -16,7 +16,6 @@ data class Configuration(
     val description: String,
     val directory: String,
     val cron: String,
-    val outputType: OutputType,
     val instanceNumber: Int,
     val instanceTags: List<List<String>>?,
     val instanceTypes: List<String>?
