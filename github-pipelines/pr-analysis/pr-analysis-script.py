@@ -13,7 +13,7 @@ REQUIRED_CONFIGURATION_FIELDS = {
     'instance-number': int,
 }
 
-ALLOWED_OUTPUT_TYPES = ['int', 'long', 'double', 'int[]', 'long[]', 'double[]']
+ALLOWED_PLOT_TYPES = ['scatter', 'line']
 
 
 def analyze_configuration_file(yaml_file):
@@ -31,16 +31,17 @@ def analyze_configuration_file(yaml_file):
         check_if_all_nodes_have_id(yaml_data)
         nodes = sorted(yaml_data['nodes'], key=lambda d: d['node-id'])
         default_node, nodes = get_default_node_configuration(nodes)
-        output_names = []
-        group_types = {}
+        output_defined = False
         for node in nodes:
             check_ansible_configuration(default_node, node)
             check_benchmark_command(default_node, node)
-            output_command_defined = check_output_command(default_node, node)
-            check_output(node, output_command_defined, output_names, group_types)
+            output_defined = check_output_command(default_node, node) or output_defined
             check_image(node)
             check_instance_type(node)
-        check_output_defined(output_names)
+        check_output_defined(output_defined)
+        check_plots_section(yaml_data)
+        for plot in yaml_data['plots']:
+            check_plot(plot)
     except ValueError as e:
         print_stderr(e)
         return 1
@@ -241,60 +242,72 @@ def check_instance_type(node):
                 f"Incorrect value of EC2 instance in 'instance-type' for node with ID = {node['node-id']}.")
 
 
-def check_output(node, output_command_defined, output_names, group_types):
-    if output_command_defined:
-        check_output_list(node)
-        for output in node['output']:
-            check_output_name(output, output_names)
-            check_output_type(output)
-            check_output_group(group_types, output)
-    elif 'output' in node:
-        raise ValueError("'output' defined but 'output-command' is not defined")
-
-
-def check_output_list(node):
-    if 'output' not in node:
-        raise ValueError("'output-command' defined but 'output' is not defined")
-    if not isinstance(node['output'], list):
-        raise ValueError(f"'output' in 'configuration' should be of type list.")
-
-
-def check_output_name(output, output_names):
-    if 'name' not in output:
-        raise ValueError("Missing 'name' in 'output' element.")
-    if not isinstance(output['name'], str):
-        raise ValueError(f"'name' in 'output' should be of type str.")
-    if output['name'] in output_names:
-        raise ValueError(f"Value  of 'name' must be unique. '{output['name']}' is duplicated.")
-    output_names.append(output['name'])
-
-
-def check_output_type(output):
-    if 'type' not in output:
-        raise ValueError("Missing 'name' in 'output' element.")
-    if output['type'] not in ALLOWED_OUTPUT_TYPES:
-        raise ValueError(f"'type' in 'output' should be equal to one value from ${ALLOWED_OUTPUT_TYPES}")
-
-
-def check_output_group(group_types, output):
-    if 'group' not in output:
-        raise ValueError("Missing 'group' in 'output' element.")
-    if not isinstance(output['group'], int):
-        raise ValueError(f"'group' in 'output' should be of type int.")
-    if "[]" in output['type']:
-        output_type = "list"
-    else:
-        output_type = "scalar"
-    if output['group'] in group_types:
-        if group_types[output['group']] != output_type:
-            raise ValueError(f"Scalar and list outputs assigned to the same plot group.")
-    else:
-        group_types[output['group']] = output_type
-
-
 def check_output_defined(output_names):
     if not output_names:
         raise ValueError('No output defined')
+
+
+def check_plots_section(yaml_data):
+    if 'plots' not in yaml_data:
+        raise ValueError("Missing 'plots' section.")
+    if not isinstance(yaml_data['plots'], list):
+        raise ValueError("'plots' section should be of type list.")
+
+
+def check_plot(plot):
+    plot_type = check_plot_type(plot)
+    check_title(plot)
+    check_xaxis(plot, plot_type)
+    check_yaxis(plot)
+    check_data(plot, plot_type)
+
+
+def check_plot_type(plot):
+    if 'type' not in plot:
+        raise ValueError("Missing 'type' in 'plots' element.")
+    if plot['type'] not in ALLOWED_PLOT_TYPES:
+        raise ValueError(f"'type' in 'plots' should be equal to one value from {ALLOWED_PLOT_TYPES}")
+    return plot['type']
+
+
+def check_title(plot):
+    check_str('title', plot, 'plots')
+
+
+def check_xaxis(plot, plot_type):
+    if plot_type == 'scatter':
+        if 'xaxis' in plot:
+            raise ValueError(
+                "Parameter 'xaxis' not allowed for 'scatter' type. X-axis is always an execution timestamp")
+    elif plot_type == 'line':
+        check_str('xaxis', plot, 'plots')
+
+
+def check_yaxis(plot):
+    check_str('yaxis', plot, 'plots')
+
+
+def check_data(plot, plot_type):
+    if 'data' not in plot:
+        raise ValueError("Missing 'data' in 'plots' section.")
+    if not isinstance(plot['data'], list):
+        raise ValueError("'data' should be of type list.")
+    for data in plot['data']:
+        check_str('y', data, 'data')
+        check_str('legend', data, 'data')
+        if plot_type == 'scatter':
+            if 'x' in data:
+                raise ValueError("Parameter 'x' not allowed for 'scatter' type. "
+                                 "X-axis is always an execution timestamp")
+        elif plot_type == 'line':
+            check_str('x', data, 'data')
+
+
+def check_str(key, dictionary, dictionary_name):
+    if key not in dictionary:
+        raise ValueError(f"Missing '{key}' in '{dictionary_name}' section.")
+    if not isinstance(dictionary[key], str):
+        raise ValueError(f"'{key}' in '{dictionary_name}' should be of type str.")
 
 
 def print_stderr(*args, **kwargs):

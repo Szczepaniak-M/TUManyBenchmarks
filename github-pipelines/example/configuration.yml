@@ -23,22 +23,28 @@ nodes:
     output-command: python3 format_output.py benchmark_output.txt
     instance-type: c7gn.16xlarge
     image: ubuntu-with-benchmark-iso
-    output:
-      - name: sender_time
-        type: int
-        group: 1
-      - name: sender_throughput
-        type: int[]
-        group: 2
 
   - node-id: 2
     ansible-configuration: ansible-2.yaml
     benchmark-command: ./benchmark-2 > benchmark_output.txt
     output-command: python3 format_output.py benchmark_output.txt
-    output:
-      - name: receiver_time
-        type: long
-        group: 1
-      - name: receiver_throughput
-        type: double[]
-        group: 2
+plots:
+  - type: scatter
+    title: Example scatter plot
+    yaxis: Time [ms]
+    data:
+      - y: node1InputScalar
+        legend: Some name of series
+      - y: node2InputScalar
+        legend: Some other name
+  - type: line
+    title: Example line plot
+    xaxis: Execution number
+    yaxis: Time [ms]
+    data:
+      - x: increasingNumbers
+        y: node1InputScalar
+        legend: Some name of series
+      - x: someCustomXInput
+        y: node2InputScalar
+        legend: Some other name
