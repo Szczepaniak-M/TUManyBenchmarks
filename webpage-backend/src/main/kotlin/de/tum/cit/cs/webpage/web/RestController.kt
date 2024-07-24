@@ -1,16 +1,15 @@
 package de.tum.cit.cs.webpage.web
 
 import de.tum.cit.cs.webpage.common.Headers.X_FORWARDED_FOR_HEADER
+import de.tum.cit.cs.webpage.model.ExplorerRequest
 import de.tum.cit.cs.webpage.service.ApiKeyService
-import de.tum.cit.cs.webpage.service.InstanceService
+import de.tum.cit.cs.webpage.service.ExplorerService
 import de.tum.cit.cs.webpage.service.InstanceDetailsService
+import de.tum.cit.cs.webpage.service.InstanceService
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.reactive.function.server.ServerRequest
-import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.bodyAndAwait
-import org.springframework.web.reactive.function.server.bodyValueAndAwait
+import org.springframework.web.reactive.function.server.*
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -18,7 +17,8 @@ import kotlin.jvm.optionals.getOrNull
 class RestController(
     private val apiKeyService: ApiKeyService,
     private val instanceService: InstanceService,
-    private val instanceDetailsService: InstanceDetailsService
+    private val instanceDetailsService: InstanceDetailsService,
+    private val explorerService: ExplorerService
 ) {
 
     suspend fun getApiKey(request: ServerRequest): ServerResponse {
@@ -59,5 +59,15 @@ class RestController(
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValueAndAwait(instanceDetails)
         }
+    }
+
+    suspend fun getExplorerResponse(request: ServerRequest): ServerResponse {
+        val query = request.awaitBody(ExplorerRequest::class)
+        val requestId = request.attribute("requestId").getOrNull() as String?
+        val apiKey = request.attribute("apiKey").getOrNull() as String?
+        val instanceDetails = explorerService.parseQuery(query, requestId, apiKey)
+        return ServerResponse.status(HttpStatus.OK)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValueAndAwait(instanceDetails)
     }
 }

@@ -14,6 +14,7 @@ class Router {
                 GET("/api/key").invoke(restController::getApiKey)
                 GET("/api/instance").invoke(restController::listInstances)
                 GET("/api/instance/{instanceType}").invoke(restController::getInstance)
+                POST("/api/explorer").invoke(restController::getExplorerResponse)
             }
         }
 }

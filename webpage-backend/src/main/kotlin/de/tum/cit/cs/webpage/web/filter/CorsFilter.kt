@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono
 class CorsFilter : WebFilter {
 
     private val allowedOrigin = "http://localhost:4200"
-    private val allowedMethods = "GET"
+    private val allowedMethods = "GET, POST, OPTIONS"
     private val maxAge = "3600"
     private val allowedHeaders = "x-requested-with, Content-Type, X-XSRF-TOKEN, x-api-key"
 
