@@ -20,7 +20,7 @@ export class InstanceDetailsService {
   constructor(private http: HttpClient, private authService: AuthService) {
   }
 
-  public getInstanceDetails(instanceName: String): Observable<InstanceDetails> {
+  public getInstanceDetails(instanceName: string): Observable<InstanceDetails> {
     return this.http.get<InstanceDetailsDto>(`${this.apiUrl}/instance/${instanceName}`)
       .pipe(
         catchError(error => {

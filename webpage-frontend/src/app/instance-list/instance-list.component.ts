@@ -7,7 +7,6 @@ import {InstanceListService} from "./instance-list.service";
   selector: 'app-instance-list',
   template: `
     <div class="container mx-auto p-4">
-      <!-- Filter Section -->
       <app-instance-list-filter
         [allTags]="allTags"
         [allVCPUs]="allVCPUs"

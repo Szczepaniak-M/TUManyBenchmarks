@@ -33,6 +33,8 @@ import {InstanceDetailsService} from "./instance-details.service";
     <div *ngIf="!instance" class="container mx-auto p-4">
       <p>Instance details not found.</p>
     </div>
+
+    <app-benchmark-plot/>
   `
 })
 export class InstanceDetailsComponent implements OnInit {

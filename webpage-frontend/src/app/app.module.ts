@@ -17,6 +17,10 @@ import { CompareInstancesBenchmarkComponent } from './compare-instances/compare-
 import { InstanceExplorerComponent } from './instance-explorer/instance-explorer.component';
 import { JsonViewerComponent } from './instance-explorer/json-viewer/json-viewer.component';
 import {NgxJsonViewerModule} from "ngx-json-viewer";
+import {MonacoEditorModule} from "ngx-monaco-editor-v2";
+import { MonacoEditorComponent } from './instance-explorer/monaco-editor/monaco-editor.component';
+import { ScatterBenchmarkPlotComponent} from "./benchmark-plot/benchmark-plot.component";
+import {NgApexchartsModule} from "ng-apexcharts";
 
 
 @NgModule({
@@ -32,6 +36,8 @@ import {NgxJsonViewerModule} from "ngx-json-viewer";
     AboutComponent,
     InstanceExplorerComponent,
     JsonViewerComponent,
+    MonacoEditorComponent,
+    ScatterBenchmarkPlotComponent,
   ],
   imports: [
     BrowserModule,
@@ -39,7 +45,9 @@ import {NgxJsonViewerModule} from "ngx-json-viewer";
     FormsModule,
     NgForOf,
     NgIf,
-    NgxJsonViewerModule
+    NgxJsonViewerModule,
+    MonacoEditorModule.forRoot(),
+    NgApexchartsModule
   ],
   providers: [
     provideHttpClient(
