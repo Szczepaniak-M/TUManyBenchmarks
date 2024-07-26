@@ -22,7 +22,7 @@ import {InstanceDetailsService} from "../instance-details/instance-details.servi
 
           <div class="mb-4">
             <h2 class="text-xl font-semibold">Instance Details</h2>
-            <p><strong>vCPU:</strong> {{ instance.vCpu }}</p>
+            <p><strong>vCPU:</strong> {{ instance.vcpu }}</p>
             <p><strong>Network:</strong> {{ instance.network }}</p>
             <p><strong>Memory:</strong> {{ instance.memory }}</p>
             <p><strong>Tags:</strong> {{ instance.otherTags.join(', ') }}</p>

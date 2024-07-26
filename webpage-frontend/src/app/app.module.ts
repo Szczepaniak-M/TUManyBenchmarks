@@ -9,18 +9,23 @@ import {AppRoutingModule} from "./app-routing.module";
 import {BrowserModule} from "@angular/platform-browser";
 import {HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi} from "@angular/common/http";
 import {AuthInterceptor} from "./auth/auth.interceptor";
-import { NavbarComponent } from './navbar/navbar.component';
-import { AboutComponent } from './about/about.component';
-import { InstanceListRowComponent } from './instance-list/instance-list-row/instance-list-row.component';
-import { InstanceListFilterComponent } from './instance-list/instance-list-filter/instance-list-filter.component';
-import { CompareInstancesBenchmarkComponent } from './compare-instances/compare-instances-benchmark.component';
-import { InstanceExplorerComponent } from './instance-explorer/instance-explorer.component';
-import { JsonViewerComponent } from './instance-explorer/json-viewer/json-viewer.component';
+import {NavbarComponent} from './navbar/navbar.component';
+import {AboutComponent} from './about/about.component';
+import {InstanceListRowComponent} from './instance-list/instance-list-row/instance-list-row.component';
+import {InstanceListFilterComponent} from './instance-list/instance-list-filter/instance-list-filter.component';
+import {CompareInstancesBenchmarkComponent} from './compare-instances/compare-instances-benchmark.component';
+import {InstanceExplorerComponent} from './instance-explorer/instance-explorer.component';
+import {JsonViewerComponent} from './instance-explorer/json-viewer/json-viewer.component';
 import {NgxJsonViewerModule} from "ngx-json-viewer";
 import {MonacoEditorModule} from "ngx-monaco-editor-v2";
-import { MonacoEditorComponent } from './instance-explorer/monaco-editor/monaco-editor.component';
-import { ScatterBenchmarkPlotComponent} from "./benchmark-plot/benchmark-plot.component";
+import {MonacoEditorComponent} from './instance-explorer/monaco-editor/monaco-editor.component';
+import {ScatterBenchmarkPlotComponent} from "./common/benchmark-plot/benchmark-plot.component";
 import {NgApexchartsModule} from "ng-apexcharts";
+import {provideAnimationsAsync} from '@angular/platform-browser/animations/async';
+import {MatFormField, MatLabel} from "@angular/material/form-field";
+import {MatOption, MatSelect} from "@angular/material/select";
+import {MatInput} from "@angular/material/input";
+import {InstanceListSortComponent} from "./instance-list/instance-list-sort/instance-list-sort.component";
 
 
 @NgModule({
@@ -30,6 +35,7 @@ import {NgApexchartsModule} from "ng-apexcharts";
     InstanceListComponent,
     InstanceListRowComponent,
     InstanceListFilterComponent,
+    InstanceListSortComponent,
     InstanceDetailsComponent,
     CompareInstancesComponent,
     CompareInstancesBenchmarkComponent,
@@ -47,13 +53,19 @@ import {NgApexchartsModule} from "ng-apexcharts";
     NgIf,
     NgxJsonViewerModule,
     MonacoEditorModule.forRoot(),
-    NgApexchartsModule
+    NgApexchartsModule,
+    MatFormField,
+    MatSelect,
+    MatOption,
+    MatInput,
+    MatLabel
   ],
   providers: [
     provideHttpClient(
       withInterceptorsFromDi(),
     ),
     {provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true},
+    provideAnimationsAsync(),
   ],
   bootstrap: [AppComponent]
 })

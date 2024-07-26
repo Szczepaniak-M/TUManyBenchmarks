@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Instance} from "../instance.model";
 
 @Component({
@@ -9,10 +9,10 @@ import {Instance} from "../instance.model";
            [routerLink]="['/instance', instance.name]">
         {{ instance.name }}
       </div>
-      <div class="py-2 px-4 w-1/12">{{ instance.vCpu }}</div>
-      <div class="py-2 px-4 w-1/6">{{ instance.memory }}</div>
+      <div class="py-2 px-4 w-1/6">{{ instance.vcpu }} vCPUs</div>
+      <div class="py-2 px-4 w-1/6">{{ instance.memory }} GiB</div>
       <div class="py-2 px-4 w-1/6">{{ instance.network }}</div>
-      <div class="py-2 px-4 w-1/4">
+      <div class="py-2 px-4 w-1/3">
         <span *ngFor="let tag of instance.otherTags"
               class="inline-block bg-gray-400 rounded-full px-3 py-1 text-sm font-semibold text-gray-800 mr-2 mb-2">
           {{ tag }}
@@ -23,23 +23,11 @@ import {Instance} from "../instance.model";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InstanceListRowComponent {
-  @Input() instance: Instance = {
-    id: "",
-    name: "",
-    vCpu: "",
-    memory: "",
-    network: "",
-    otherTags: [],
-  };
-  @Input() isInComparison: boolean = true;
-  @Input() onToggleComparison: (obj: Instance) => boolean = ()=> false;
-
-  constructor(private changeDetectorRef: ChangeDetectorRef) {
-  }
+  @Input({ required: true }) instance!: Instance
+  @Input({ required: true }) isInComparison!: boolean;
+  @Input({ required: true }) onToggleComparison!: (obj: Instance) => boolean
 
   toggleComparison(): void {
     this.isInComparison = this.onToggleComparison(this.instance);
-    // this.changeDetectorRef.markForCheck()
   }
-
 }

@@ -1,3 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*Material UI override*/
+:root {
+  --mat-full-pseudo-checkbox-selected-icon-color: #1F2937;
+  --mat-select-panel-background-color: #FFFFFF;
+  --mdc-filled-text-field-container-color: #FFFFFF;
+  --mdc-filled-text-field-focus-label-text-color: #44474E;
+  --mat-select-focused-arrow-color: #44474E;
+  --mdc-filled-text-field-focus-active-indicator-color: #1F2937;
+  --mdc-filled-text-field-active-indicator-height: 0;
+}
+
+.mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+.w-1\/8 {
+  width: 12.5%;
+}

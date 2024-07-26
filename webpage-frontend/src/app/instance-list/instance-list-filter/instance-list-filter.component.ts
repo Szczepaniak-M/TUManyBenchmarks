@@ -1,70 +1,75 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {Filter} from "./instance-list-filter.model";
 
 @Component({
   selector: 'app-instance-list-filter',
-  template:`
-    <div class="mb-4 p-4 border border-gray-300 rounded flex">
-      <div class="mb-4">
-        <label class="block mb-1 font-medium">Name:</label>
-        <input type="text" [(ngModel)]="selectedFilters.name" (ngModelChange)="onFilterChange()"
-               class="border p-2 rounded w-full" placeholder="Filter by name">
-      </div>
-      <div class="mb-4">
-        <label class="block mb-1 font-medium">vCPU:</label>
-        <select multiple [(ngModel)]="selectedFilters.vCPU" (ngModelChange)="onFilterChange()"
-                class="border p-2 rounded w-full">
-          <option *ngFor="let vCPU of allVCPUs" [value]="vCPU">{{ vCPU }}</option>
-        </select>
-      </div>
-      <div class="mb-4">
-        <label class="block mb-1 font-medium">Network:</label>
-        <select multiple [(ngModel)]="selectedFilters.network" (ngModelChange)="onFilterChange()"
-                class="border p-2 rounded w-full">
-          <option *ngFor="let network of allNetworks" [value]="network">{{ network }}</option>
-        </select>
-      </div>
-      <div class="mb-4">
-        <label class="block mb-1 font-medium">RAM:</label>
-        <select multiple [(ngModel)]="selectedFilters.RAM" (ngModelChange)="onFilterChange()"
-                class="border p-2 rounded w-full">
-          <option *ngFor="let ram of allRAMs" [value]="ram">{{ ram }}</option>
-        </select>
-      </div>
-      <div class="mb-4">
-        <label class="block mb-1 font-medium">Tags:</label>
-        <select multiple [(ngModel)]="selectedFilters.tags" (ngModelChange)="onFilterChange()"
-                class="border p-2 rounded w-full">
-          <option *ngFor="let tag of allTags" [value]="tag">{{ tag }}</option>
-        </select>
-      </div>
-      <button (click)="onRedirectToComparison()" class="bg-blue-500 text-white px-4 py-2 rounded">Go to Comparison
-        ({{ selectedFilters.tags.length }})
+  template: `
+    <div class="p-2 border border-gray-300 rounded flex">
+      <mat-form-field class="border rounded m-1 w-1/8">
+        <mat-label class="font-medium">Name:</mat-label>
+        <input matInput type="text" [(ngModel)]="filter.name" (ngModelChange)="onFilterChange()"
+               class="border p-2 rounded w-full" placeholder="Name">
+      </mat-form-field>
+      <mat-form-field class="border rounded m-1 w-1/8">
+        <mat-label class="font-medium">Min vCPU:</mat-label>
+        <input matInput type="text" [(ngModel)]="filter.minCpu" (ngModelChange)="onFilterChange()"
+               class="border p-2 rounded w-full" placeholder="Min vCPU">
+      </mat-form-field>
+      <mat-form-field class="border rounded m-1 w-1/8">
+        <mat-label class="font-medium">Max vCPU:</mat-label>
+        <input matInput type="text" [(ngModel)]="filter.maxCpu" (ngModelChange)="onFilterChange()"
+               class="border p-2 rounded w-full" placeholder="Min vCPU">
+      </mat-form-field>
+      <mat-form-field class="border rounded m-1 w-1/8">
+        <mat-label class="font-medium">Min Memory:</mat-label>
+        <input matInput type="text" [(ngModel)]="filter.minMemory" (ngModelChange)="onFilterChange()"
+               class="border p-2 rounded w-full" placeholder="Min Memory">
+      </mat-form-field>
+      <mat-form-field class="border rounded m-1 w-1/8">
+        <mat-label class="font-medium">Max Memory:</mat-label>
+        <input matInput type="text" [(ngModel)]="filter.maxMemory" (ngModelChange)="onFilterChange()"
+               class="border p-2 rounded w-full" placeholder="Max Memory">
+      </mat-form-field>
+      <mat-form-field class="border rounded m-1 w-1/8">
+        <mat-label>Network</mat-label>
+        <mat-select multiple [(ngModel)]="filter.network" (ngModelChange)="onFilterChange()">
+          <mat-option
+            *ngFor="let network of allNetworks.sort()"
+            [value]="network">{{ network }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field class="border rounded m-1 w-1/8">
+        <mat-label>Tags:</mat-label>
+        <mat-select multiple [(ngModel)]="filter.tags" (ngModelChange)="onFilterChange()">
+          <mat-option
+            *ngFor="let tag of allTags.sort()"
+            [value]="tag">{{ tag }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <button (click)="onRedirectToComparison()"
+              [disabled]="selectedInstances < 2"
+              class=" m-1 bg-gray-800 text-white w-1/8 p-2 rounded disabled:bg-slate-500">
+        <p>Compare</p>
+        <p>({{ selectedInstances }} / 3)</p>
       </button>
     </div>
-  `
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
 export class InstanceListFilterComponent {
-  @Input() allTags: string[] = [];
-  @Input() allVCPUs: string[] = [];
-  @Input() allNetworks: string[] = [];
-  @Input() allRAMs: string[] = [];
-  @Output() filterChange = new EventEmitter<any>();
+  @Input({ required: true }) allNetworks!: string[];
+  @Input({ required: true }) allTags!: string[];
+  @Input({ required: true }) selectedInstances!: number;
+  @Output() filterChange = new EventEmitter<Filter>();
   @Output() redirectToComparison = new EventEmitter<void>();
 
-  selectedFilters = {
-    name: '',
-    vCPU: [] as string[],
-    network: [] as string[],
-    RAM: [] as string[],
-    tags: [] as string[],
-  };
-
-  constructor() {}
-
-  ngOnInit(): void {}
+  filter: Filter = {}
 
   onFilterChange(): void {
-    this.filterChange.emit(this.selectedFilters);
+    this.filterChange.emit(this.filter);
   }
 
   onRedirectToComparison(): void {

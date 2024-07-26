@@ -8,9 +8,9 @@ export interface InstanceDetailsDto {
 export interface InstanceDetails {
   id: string;
   name: string;
-  vCpu: string;
+  vcpu: number;
+  memory: number;
   network: string;
-  memory: string;
   otherTags: string[];
   benchmarks: Benchmark[];
 }

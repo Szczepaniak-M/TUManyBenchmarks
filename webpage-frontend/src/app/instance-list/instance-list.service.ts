@@ -5,6 +5,7 @@ import {catchError, switchMap} from 'rxjs/operators';
 import {environment} from "../../environemnts/environment";
 import {Instance, InstanceDto} from "./instance.model";
 import {AuthService} from "../auth/auth.service";
+import {convertInstanceDtoToInstance} from "../common/instance.utils";
 
 
 @Injectable({
@@ -12,9 +13,6 @@ import {AuthService} from "../auth/auth.service";
 })
 export class InstanceListService {
   private apiUrl = environment.apiUrl;
-  private vCPUsPattern = /\d+ vCPUs/;
-  private memoryPattern = /[\S ]+ Memory/;
-  private networkPattern = /[\S ]+ Network/;
 
   constructor(private http: HttpClient, private authService: AuthService) {
   }
@@ -36,25 +34,9 @@ export class InstanceListService {
       )
       .pipe(
         map((instances: InstanceDto[]) =>
-          instances.map(instance => this.extractInformationFromTags(instance)
+          instances.map(instance => convertInstanceDtoToInstance(instance)
           )
         )
       );
-  }
-
-  private extractInformationFromTags(instance: InstanceDto): Instance {
-    const vCpu = instance.tags.filter(tag => this.vCPUsPattern.test(tag))[0]
-    const memory = instance.tags.filter(tag => this.memoryPattern.test(tag))[0]
-    const network = instance.tags.filter(tag => this.networkPattern.test(tag))[0]
-    const excludeTags = [vCpu, memory, network];
-    const otherTags = instance.tags.filter(tag => !excludeTags.includes(tag))
-    return {
-      id: instance.id,
-      name: instance.name,
-      vCpu: vCpu,
-      memory: memory,
-      network: network,
-      otherTags: otherTags
-    }
   }
 }

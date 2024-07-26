@@ -22,7 +22,7 @@ class ApiKeyService {
     private val logger = KotlinLogging.logger {}
 
     private val apiKeyToBucketCache = Caffeine.newBuilder()
-        .expireAfterWrite(15, TimeUnit.MINUTES)
+        .expireAfterAccess(15, TimeUnit.MINUTES)
         .maximumSize(1000)
         .build<String, Bucket>()
 
