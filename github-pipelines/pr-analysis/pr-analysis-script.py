@@ -259,7 +259,7 @@ def check_plot(plot):
     check_title(plot)
     check_xaxis(plot, plot_type)
     check_yaxis(plot)
-    check_data(plot, plot_type)
+    check_series(plot, plot_type)
 
 
 def check_plot_type(plot):
@@ -287,20 +287,20 @@ def check_yaxis(plot):
     check_str('yaxis', plot, 'plots')
 
 
-def check_data(plot, plot_type):
-    if 'data' not in plot:
-        raise ValueError("Missing 'data' in 'plots' section.")
-    if not isinstance(plot['data'], list):
-        raise ValueError("'data' should be of type list.")
-    for data in plot['data']:
-        check_str('y', data, 'data')
-        check_str('legend', data, 'data')
+def check_series(plot, plot_type):
+    if 'series' not in plot:
+        raise ValueError("Missing 'series' in 'plots' section.")
+    if not isinstance(plot['series'], list):
+        raise ValueError("'series' should be of type list.")
+    for series in plot['series']:
+        check_str('y', series, 'series')
+        check_str('legend', series, 'series')
         if plot_type == 'scatter':
-            if 'x' in data:
+            if 'x' in series:
                 raise ValueError("Parameter 'x' not allowed for 'scatter' type. "
                                  "X-axis is always an execution timestamp")
         elif plot_type == 'line':
-            check_str('x', data, 'data')
+            check_str('x', series, 'series')
 
 
 def check_str(key, dictionary, dictionary_name):

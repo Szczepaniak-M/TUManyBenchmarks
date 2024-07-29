@@ -11,7 +11,7 @@ configuration:
     instance-tags:
       - - 1 GiB Memory
         - 1 vCPUs
-      - - hdd
+      - - HDD
         - Up to 10 Gigabit Network
 nodes:
   - node-id: 0
@@ -32,7 +32,7 @@ plots:
   - type: scatter
     title: Example scatter plot
     yaxis: Time [ms]
-    data:
+    series:
       - y: node1InputScalar
         legend: Some name of series
       - y: node2InputScalar
@@ -41,7 +41,7 @@ plots:
     title: Example line plot
     xaxis: Execution number
     yaxis: Time [ms]
-    data:
+    series:
       - x: increasingNumbers
         y: node1InputScalar
         legend: Some name of series
