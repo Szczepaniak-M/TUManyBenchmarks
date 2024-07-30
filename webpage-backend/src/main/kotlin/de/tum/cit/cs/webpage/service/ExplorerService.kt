@@ -6,6 +6,8 @@ import de.tum.cit.cs.webpage.model.ExplorerResponse
 import kotlinx.coroutines.reactor.awaitSingle
 import org.bson.Document
 import org.bson.json.JsonParseException
+import org.springframework.dao.InvalidDataAccessApiUsageException
+import org.springframework.dao.UncategorizedDataAccessException
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.aggregation.Aggregation
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation
@@ -66,9 +68,13 @@ class ExplorerService(
                 .map { it.joinToString(", ", "[", "]") }.awaitSingle()
         } catch (e: JsonParseException) {
             error = e.message
-        } catch (e: Exception) {
+        } catch (e: InvalidDataAccessApiUsageException) {
+            error = "All elements in the list should be JSON objects"
+        } catch (e: UncategorizedDataAccessException) {
             val exception = e.cause as MongoCommandException
             error = exception.errorMessage.replace("Atlas documentation", "MongoDB documentation")
+        }catch (e :Exception) {
+            error = "Unknown error occurred"
         }
         return result to error
     }
