@@ -2,30 +2,37 @@ import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {InstanceDetails} from "../instance-details/instance-details.model";
 import {InstanceDetailsService} from "../instance-details/instance-details.service";
+import {forkJoin} from "rxjs";
 
 @Component({
   selector: "app-compare-instances",
   template: `
-    <div class="container mx-auto p-4">
+    <div class="container mx-auto p-4 my-2 border-2 rounded">
       <h1 class="text-2xl font-bold mb-4">Comparison</h1>
 
       <div class="mb-4">
         <mat-slide-toggle (change)="toggleShowOnlyCommon()">
-          <span class="ml-2 text-l">Show only common benchmarks</span>
+          <span class="ml-2 text-xl">Show only common benchmarks</span>
         </mat-slide-toggle>
       </div>
 
       <div class="flex flex-row">
-        <div class="mb-2 border-2 p-2"
+        <div class="mb-2 p-2"
              *ngFor="let instance of instances" [style.width.%]="100/instances.length">
           <h1 class="text-2xl font-bold mb-4">{{ instance.name }}</h1>
 
           <div class="mb-4">
-            <h2 class="text-xl font-semibold">Instance Details</h2>
-            <p><strong>vCPU:</strong> {{ instance.vcpu }}</p>
-            <p><strong>Network:</strong> {{ instance.network }}</p>
-            <p><strong>Memory:</strong> {{ instance.memory }}</p>
-            <p><strong>Tags:</strong> {{ instance.otherTags.join(", ") }}</p>
+            <h2 class="text-xl font-semibold mb-2">Instance Details</h2>
+            <div class="text-gray-700">
+              <p><strong class="text-black">vCPU:</strong> {{ instance.vcpu }}</p>
+              <p><strong class="text-black">Network:</strong> {{ instance.network }}</p>
+              <p><strong class="text-black">Memory:</strong> {{ instance.memory }} GiB</p>
+              <p><strong class="text-black">Tags: </strong>
+                <span *ngFor="let tag of instance.otherTags"
+                      class="inline-block bg-gray-400 rounded-full px-3 py-1 text-sm font-semibold text-gray-800 mr-2 my-1">
+          {{ tag }}
+        </span></p>
+            </div>
           </div>
         </div>
       </div>
@@ -51,12 +58,11 @@ export class CompareInstancesComponent implements OnInit {
 
   ngOnInit(): void {
     const names = this.route.snapshot.queryParamMap.get("instances")!.split(",");
-    names.forEach(name => {
-      this.instanceDetailsService.getInstanceDetails(name).subscribe(data => {
-        this.instances.push(data);
-        this.calculateBenchmarks()
-        this.calculateCommonBenchmarks();
-      });
+    const responses = names.map(name => this.instanceDetailsService.getInstanceDetails(name))
+    forkJoin(responses).subscribe(responses => {
+      responses.forEach(data => this.instances.push(data))
+      this.calculateBenchmarks()
+      this.calculateCommonBenchmarks();
     });
   }
 

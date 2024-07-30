@@ -1,16 +1,16 @@
 import {Component, Input, OnInit} from "@angular/core";
-import {InstanceDetails} from "../../instance-details/instance-details.model";
-import {CompareInstancesBenchmark} from "./compare-instances-benchmark.model";
+import {BenchmarkResult, InstanceDetails, Plot} from "../../instance-details/instance-details.model";
 
 @Component({
   selector: "app-compare-instances-benchmark",
   template: `
-    <div>
-      <div>{{this.benchmarkName}}</div>
-      <div>{{this.benchmarkDescription}}</div>
-      <div *ngFor="let plot of benchmarkResults[0].plots" class="mb-2">
+    <div class="border-2 rounded p-2">
+      <div class="text-2xl">{{ this.benchmarkName }}</div>
+      <div class="text-lg mb-2">{{ this.benchmarkDescription }}</div>
+      <div *ngFor="let plot of plots" class="mb-4 border-2 rounded">
         <app-benchmark-plot [benchmarkResults]="benchmarkResults"
-                            [plot]="plot"/>
+                            [plot]="plot"
+                            [instances]="instanceNames"/>
       </div>
     </div>
   `
@@ -18,21 +18,22 @@ import {CompareInstancesBenchmark} from "./compare-instances-benchmark.model";
 export class CompareInstancesBenchmarkComponent implements OnInit {
   @Input({required: true}) benchmarkId!: string;
   @Input({required: true}) instances!: InstanceDetails[];
-  benchmarkResults: CompareInstancesBenchmark[] = []
   benchmarkName: string = ""
   benchmarkDescription: string = ""
+  benchmarkResults: BenchmarkResult[][] = []
+  plots: Plot[] = []
+  instanceNames: string[] = []
+
 
   ngOnInit(): void {
     this.instances.forEach(instance => {
       const foundBenchmark = instance.benchmarks.find(benchmark => benchmark.id === this.benchmarkId)
       if (foundBenchmark !== undefined) {
-        this.benchmarkResults.push({
-          instanceName: instance.name,
-          benchmarkResults: foundBenchmark.results,
-          plots: foundBenchmark.plots
-        })
-        this.benchmarkName = foundBenchmark.name
-        this.benchmarkDescription = foundBenchmark.description
+        this.benchmarkName = foundBenchmark.name;
+        this.benchmarkDescription = foundBenchmark.description;
+        this.benchmarkResults.push(foundBenchmark.results);
+        this.plots = foundBenchmark.plots;
+        this.instanceNames.push(instance.name);
       }
     })
   }

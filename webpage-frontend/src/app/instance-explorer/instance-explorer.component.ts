@@ -7,34 +7,38 @@ import {MatSlideToggleChange} from "@angular/material/slide-toggle";
   selector: "app-instance-explorer",
   template: `
     <div class="container mx-auto my-4 border rounded flex flex-row">
-      <div class="p-2 w-1/2 h-85-vh">
-        <app-monaco-editor (isContentValid)="onContentValid($event)"/>
-
-      </div>
-
-      <div class="flex flex-col p-2 w-1/2 ">
-        <div class="flex flex-row">
-          <mat-slide-toggle labelPosition="before" (change)="onToogleChange($event)">
-            <p class="font-bold">Show partial results</p>
+      <div class="p-2 w-1/2">
+        <div class="flex flex-row justify-between items-center h-14">
+          <mat-slide-toggle (change)="onToogleChange($event)">
+            <p class="font-bold text-xl">Show partial results</p>
           </mat-slide-toggle>
-          <button (click)="executeQuery()"
-                  [disabled]="!isContentValid"
-                  class="m-1 bg-gray-800 text-white w-1/4 p-2 rounded disabled:bg-slate-500">
-            Execute
-          </button>
-          <button class="m-1 bg-gray-800 text-white w-1/4 p-2 rounded disabled:bg-slate-500"
-                  (click)="downloadJson()"
-                  [disabled]="results.length == 0">
-            Download JSON
-          </button>
+          <div class="w-1/2 flex flex-row">
+            <button (click)="executeQuery()"
+                    [disabled]="!isContentValid"
+                    class="m-1 bg-gray-800 text-white w-1/2 p-2 rounded disabled:bg-slate-500">
+              Execute
+            </button>
+            <button class="m-1 bg-gray-800 text-white w-1/2 p-2 rounded disabled:bg-slate-500"
+                    (click)="downloadJson()"
+                    [disabled]="results.length == 0 || error">
+              Download JSON
+            </button>
+          </div>
         </div>
-        <h1>Results</h1>
+        <div class="h-80-vh">
+          <app-monaco-editor (isContentValid)="onContentValid($event)"/>
+        </div>
+      </div>
+      <div class="flex flex-col p-2 w-1/2 ">
+        <div class="h-14 flex items-center">
+          <div class="text-2xl font-semibold">Results</div>
+        </div>
         <app-json-viewer
-          class="border p-2 mt-2"
+          class="border rounded p-2 mb-2"
           *ngFor="let result of results"
           [inputJson]="result"
         />
-        <div *ngIf="error" class="p-4 mt-2 bg-red-100 border rounded border-red-400 text-red-700">
+        <div *ngIf="error" class="p-4 bg-red-100 border-2 rounded border-red-400 text-red-700">
           {{ error }}
         </div>
       </div>
@@ -46,8 +50,8 @@ import {MatSlideToggleChange} from "@angular/material/slide-toggle";
 export class InstanceExplorerComponent {
   isContentValid: boolean = false;
   partialResults: boolean = false;
-  results: any[] = [{"a":"a"}];
-  error: string | undefined = "lorem ipsum"
+  results: any[] = [];
+  error: string | undefined;
   @ViewChild(MonacoEditorComponent) editor!: MonacoEditorComponent;
 
   constructor(private instanceDetailsService: InstanceDetailsService, private changeDetectorRef: ChangeDetectorRef) {
@@ -78,7 +82,6 @@ export class InstanceExplorerComponent {
     a.remove();
   }
 
-
   onContentValid($event: boolean) {
     this.isContentValid = $event;
     this.changeDetectorRef.markForCheck();
@@ -88,9 +91,3 @@ export class InstanceExplorerComponent {
     this.partialResults = $event.checked
   }
 }
-
-// [
-//   { "$match": { "name": "t2.micro" } },
-//   { "$project": { "name": 1 } }
-// ]
-

@@ -10,18 +10,18 @@ import {BenchmarkResult, Plot} from "../../instance-details/instance-details.mod
         *ngIf="plot.type === 'scatter'"
         [benchmarkResults]="benchmarkResults"
         [plot]="plot"
-        [multipleInstances]="multipleInstances"/>
+        [instances]="instances"/>
       <app-benchmark-line-plot
         *ngIf="plot.type === 'line'"
         [benchmarkResults]="benchmarkResults"
         [plot]="plot"
-        [multipleInstances]="multipleInstances"
+        [instances]="instances"
       />
     </div>
   `
 })
 export class BenchmarkPlotComponent {
-  @Input({required: true}) benchmarkResults!: BenchmarkResult[]
+  @Input({required: true}) benchmarkResults!: BenchmarkResult[][]
   @Input({required: true}) plot!: Plot;
-  @Input() multipleInstances: boolean = false;
+  @Input() instances: string[] = [];
 }

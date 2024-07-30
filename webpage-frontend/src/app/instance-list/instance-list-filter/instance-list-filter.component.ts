@@ -31,7 +31,7 @@ import {Filter} from "./instance-list-filter.model";
                class="border p-2 rounded w-full" placeholder="Max Memory">
       </mat-form-field>
       <mat-form-field class="border rounded m-1 w-1/8">
-        <mat-label>Network</mat-label>
+        <mat-label class="font-medium">Network</mat-label>
         <mat-select multiple [(ngModel)]="filter.network" (ngModelChange)="onFilterChange()">
           <mat-option
             *ngFor="let network of allNetworks.sort()"
@@ -40,7 +40,7 @@ import {Filter} from "./instance-list-filter.model";
         </mat-select>
       </mat-form-field>
       <mat-form-field class="border rounded m-1 w-1/8">
-        <mat-label>Tags:</mat-label>
+        <mat-label class="font-medium">Tags:</mat-label>
         <mat-select multiple [(ngModel)]="filter.tags" (ngModelChange)="onFilterChange()">
           <mat-option
             *ngFor="let tag of allTags.sort()"

@@ -25,15 +25,16 @@ import {BenchmarkResult, Plot, PlotSeries} from "../../instance-details/instance
   `
 })
 export class BenchmarkLinePlotComponent implements OnInit {
-  @Input({required: true}) benchmarkResults!: BenchmarkResult[]
+  @Input({required: true}) benchmarkResults!: BenchmarkResult[][]
   @Input({required: true}) plot!: Plot;
-  @Input() multipleInstances: boolean = false;
+  @Input() instances: string[] = [];
   chartOptions!: Partial<ChartOptions>;
 
   ngOnInit(): void {
     const numberOfSeries = this.plot.series.length;
+    const numberOfInstances = this.instances.length > 0 ? this.instances.length : 1
     this.chartOptions = {
-      series: this.getBenchmarkSeries(this.benchmarkResults, this.plot.series),
+      series: this.getBenchmarkSeries(this.benchmarkResults, this.plot.series, this.instances),
       chart: {
         animations: {
           enabled: false,
@@ -57,7 +58,10 @@ export class BenchmarkLinePlotComponent implements OnInit {
         '#33B2DF',
         "#A133FF",
         "#FF9933",
-        "#33FF57"
+        "#33FF57",
+        "#FF33FF",
+        "#FFFF44",
+        "#44FFFF"
       ], 3),
       dataLabels: {
         enabled: false
@@ -83,14 +87,17 @@ export class BenchmarkLinePlotComponent implements OnInit {
       },
       xaxis: {
         type: "numeric",
+        decimalsInFloat: 5,
         title: {
           text: this.plot.xaxis,
+          offsetX: -20,
           style: {
             fontSize: "14px"
           }
         },
       },
       yaxis: {
+        decimalsInFloat: 5,
         title: {
           text: this.plot.yaxis,
           style: {
@@ -99,11 +106,11 @@ export class BenchmarkLinePlotComponent implements OnInit {
         },
       },
       fill: {
-        opacity: this.repeatArray([1, 0.5, 0.25], numberOfSeries)
+        opacity: this.repeatArray([1, 0.25, 0.15], numberOfSeries * numberOfInstances)
       },
       stroke: {
         curve: 'straight',
-        width: this.repeatArray([2, 0, 0], numberOfSeries)
+        width: this.repeatArray([2, 0, 0], numberOfSeries * numberOfInstances)
       },
       markers: {
         hover: {
@@ -125,32 +132,81 @@ export class BenchmarkLinePlotComponent implements OnInit {
     };
   }
 
-  private getBenchmarkSeries(benchmarkResults: BenchmarkResult[], series: PlotSeries[]): Series[] {
+  private getBenchmarkSeries(benchmarkResults: BenchmarkResult[][], series: PlotSeries[], instances: string[]): Series[] {
     const result: Series[] = []
+    if (instances.length > 0) {
+      this.extractSeriesForMultipleInstances(instances, series, benchmarkResults, result);
+    } else {
+      this.extractSeriesForSingleInstance(series, benchmarkResults, result);
+    }
+    return result;
+  }
+
+  private extractSeriesForSingleInstance(series: PlotSeries[], benchmarkResults: BenchmarkResult[][], result: Series[]) {
     for (const serie of series) {
-      const yValues = this.getBenchmarkYValues(benchmarkResults, serie);
-      const xValues = this.getBenchmarkXValues(serie, yValues, benchmarkResults);
+      const yValues = this.getBenchmarkYValues(benchmarkResults[0], serie);
+      const xValues = this.getBenchmarkXValues(serie, yValues, benchmarkResults[0]);
 
-      const averages = yValues.map(this.calculateAverage);
-      const averagePlusStd: number[] = [];
-      const averageMinusStd: number[] = [];
-      yValues.forEach((list: number[], index: number) => {
-        const stdDev = this.calculateStandardDeviation(list, averages[index]);
-        averagePlusStd.push(stdDev + averages[index]);
-        averageMinusStd.push(averages[index] - stdDev);
-      });
-      const maxes = yValues.map(this.calculateMax);
-      const mins = yValues.map(this.calculateMin);
+      const {averages, averagePlusStd, averageMinusStd, maxes, mins} = this.getStatistics(yValues);
 
-      result.push({type: "line", name: `${serie.legend} - Average`, data: this.zipLists2(xValues, averages)})
+      result.push({
+        type: "line",
+        name: `${serie.legend} - Average`,
+        data: this.zipLists2(xValues, averages
+        )
+      })
       result.push({
         type: "rangeArea",
         name: `${serie.legend} - Std`,
         data: this.zipLists3(xValues, averageMinusStd, averagePlusStd)
       })
-      result.push({type: "rangeArea", name: `${serie.legend} - Max/Min`, data: this.zipLists3(xValues, mins, maxes)})
+      result.push({
+        type: "rangeArea",
+        name: `${serie.legend} - Max/Min`,
+        data: this.zipLists3(xValues, mins, maxes)
+      })
     }
-    return result;
+  }
+
+  private extractSeriesForMultipleInstances(instances: string[], series: PlotSeries[], benchmarkResults: BenchmarkResult[][], result: Series[]) {
+    for (const [index, instance] of instances.entries()) {
+      for (const serie of series) {
+        const yValues = this.getBenchmarkYValues(benchmarkResults[index], serie);
+        const xValues = this.getBenchmarkXValues(serie, yValues, benchmarkResults[index]);
+
+        const {averages, averagePlusStd, averageMinusStd, maxes, mins} = this.getStatistics(yValues);
+
+        result.push({
+          type: "line",
+          name: `${instance} - ${serie.legend} - Average`,
+          data: this.zipLists2(xValues, averages)
+        })
+        result.push({
+          type: "rangeArea",
+          name: `${instance} - ${serie.legend} - Std`,
+          data: this.zipLists3(xValues, averageMinusStd, averagePlusStd)
+        })
+        result.push({
+          type: "rangeArea",
+          name: `${instance} - ${serie.legend} - Max/Min`,
+          data: this.zipLists3(xValues, mins, maxes)
+        })
+      }
+    }
+  }
+
+  private getStatistics(yValues: number[][]) {
+    const averages = yValues.map(this.calculateAverage);
+    const averagePlusStd: number[] = [];
+    const averageMinusStd: number[] = [];
+    yValues.forEach((list: number[], index: number) => {
+      const stdDev = this.calculateStandardDeviation(list, averages[index]);
+      averagePlusStd.push(stdDev + averages[index]);
+      averageMinusStd.push(averages[index] - stdDev);
+    });
+    const maxes = yValues.map(this.calculateMax);
+    const mins = yValues.map(this.calculateMin);
+    return {averages, averagePlusStd, averageMinusStd, maxes, mins};
   }
 
   private getBenchmarkXValues(serie: PlotSeries, values: number[][], benchmarkResults: BenchmarkResult[]) {
@@ -170,21 +226,21 @@ export class BenchmarkLinePlotComponent implements OnInit {
 
   private calculateAverage(arr: number[]): number {
     const sum = arr.reduce((acc, val) => acc + val, 0);
-    return sum / arr.length;
+    return Number((sum / arr.length).toPrecision(5));
   }
 
   private calculateStandardDeviation(arr: number[], avg: number): number {
     const squareDiffs = arr.map(val => Math.pow(val - avg, 2));
     const avgSquareDiff = this.calculateAverage(squareDiffs);
-    return Math.sqrt(avgSquareDiff);
+    return Number(Math.sqrt(avgSquareDiff).toPrecision(5));
   }
 
   private calculateMax(arr: number[]): number {
-    return Math.max(...arr);
+    return Number(Math.max(...arr).toPrecision(5));
   }
 
   private calculateMin(arr: number[]): number {
-    return Math.min(...arr);
+    return Number(Math.min(...arr).toPrecision(5));
   }
 
   private zipLists2(list1: number[], list2: number[]): DataPoint[] {

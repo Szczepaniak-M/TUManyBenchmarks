@@ -9,7 +9,7 @@ import {InstanceListSortComponent} from "./instance-list-sort/instance-list-sort
 @Component({
   selector: "app-instance-list",
   template: `
-    <div class="container mx-auto py-4">
+    <div class="container mx-auto my-2 border-2 rounded">
       <app-instance-list-filter
         [allTags]="allTags"
         [allNetworks]="allNetworks"
@@ -125,14 +125,13 @@ export class InstanceListComponent implements OnInit {
   }
 
   goToDetails(instance: Instance): void {
-    this.router.navigate(["/instance", instance.name]).then();
+    this.router.navigate(["/instance", instance.name]);
   }
 
   compareSelectedItems(): void {
     const selectedNames = this.selectedInstances.map(item => item.name);
     this.router.navigate(["/instance/compare"],
-      {queryParams: {instances: selectedNames.join(",")}})
-      .then();
+      {queryParams: {instances: selectedNames.join(",")}});
   }
 
   isInComparison(instance: Instance): boolean {

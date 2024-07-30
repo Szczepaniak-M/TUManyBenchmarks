@@ -5,16 +5,16 @@ import {Instance} from "../instance.model";
   selector: "app-instance-list-row",
   template: `
     <div class="flex flex-row border" (click)="toggleComparison()" [class.bg-gray-200]="isInComparison">
-      <div class="py-2 px-4 w-1/6 text-blue-500 hover:underline"
+      <div class="py-2 px-4 my-1 w-1/6 text-blue-500 hover:underline"
            [routerLink]="['/instance', instance.name]">
         {{ instance.name }}
       </div>
-      <div class="py-2 px-4 w-1/6">{{ instance.vcpu }} vCPUs</div>
-      <div class="py-2 px-4 w-1/6">{{ instance.memory }} GiB</div>
-      <div class="py-2 px-4 w-1/6">{{ instance.network }}</div>
-      <div class="py-2 px-4 w-1/3">
+      <div class="py-2 px-4 my-1 w-1/6">{{ instance.vcpu }} vCPUs</div>
+      <div class="py-2 px-4 my-1 w-1/6">{{ instance.memory }} GiB</div>
+      <div class="py-2 px-4 my-1 w-1/6">{{ instance.network }}</div>
+      <div class="px-4 my-2 w-1/3">
         <span *ngFor="let tag of instance.otherTags"
-              class="inline-block bg-gray-400 rounded-full px-3 py-1 text-sm font-semibold text-gray-800 mr-2 mb-2">
+              class="inline-block bg-gray-400 rounded-full px-3 py-1 text-sm font-semibold text-gray-800 mr-2 my-1">
           {{ tag }}
         </span>
       </div>
