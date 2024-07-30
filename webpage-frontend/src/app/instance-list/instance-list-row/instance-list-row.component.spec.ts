@@ -1,8 +1,8 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { InstanceListRowComponent } from './instance-list-row.component';
+import { InstanceListRowComponent } from "./instance-list-row.component";
 
-describe('InstanceListRowComponent', () => {
+describe("InstanceListRowComponent", () => {
   let component: InstanceListRowComponent;
   let fixture: ComponentFixture<InstanceListRowComponent>;
 
@@ -17,7 +17,7 @@ describe('InstanceListRowComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

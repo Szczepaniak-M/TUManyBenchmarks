@@ -1,8 +1,8 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { CompareInstancesBenchmarkComponent } from './compare-instances-benchmark.component';
+import { CompareInstancesBenchmarkComponent } from "./compare-instances-benchmark.component";
 
-describe('CompareInstancesBenchmarkComponent', () => {
+describe("CompareInstancesBenchmarkComponent", () => {
   let component: CompareInstancesBenchmarkComponent;
   let fixture: ComponentFixture<CompareInstancesBenchmarkComponent>;
 
@@ -17,7 +17,7 @@ describe('CompareInstancesBenchmarkComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

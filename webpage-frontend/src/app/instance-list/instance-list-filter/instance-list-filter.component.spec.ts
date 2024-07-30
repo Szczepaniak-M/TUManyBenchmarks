@@ -1,8 +1,8 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { InstanceListFilterComponent } from './instance-list-filter.component';
+import { InstanceListFilterComponent } from "./instance-list-filter.component";
 
-describe('InstanceListFilterComponent', () => {
+describe("InstanceListFilterComponent", () => {
   let component: InstanceListFilterComponent;
   let fixture: ComponentFixture<InstanceListFilterComponent>;
 
@@ -17,7 +17,7 @@ describe('InstanceListFilterComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

@@ -1,8 +1,8 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
 import {Filter} from "./instance-list-filter.model";
 
 @Component({
-  selector: 'app-instance-list-filter',
+  selector: "app-instance-list-filter",
   template: `
     <div class="p-2 border border-gray-300 rounded flex">
       <mat-form-field class="border rounded m-1 w-1/8">

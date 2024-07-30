@@ -1,17 +1,17 @@
-import {Injectable} from '@angular/core';
-import {HttpClient, HttpContext} from '@angular/common/http';
-import {Observable, of} from 'rxjs';
-import {switchMap, tap} from 'rxjs/operators';
+import {Injectable} from "@angular/core";
+import {HttpClient, HttpContext} from "@angular/common/http";
+import {Observable, of} from "rxjs";
+import {switchMap, tap} from "rxjs/operators";
 import {environment} from "../../environemnts/environment";
 import {BYPASS_INTERCEPTOR} from "./auth.interceptor";
 
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root"
 })
 export class AuthService {
   private apiUrl = environment.apiUrl;
-  private localStorageKey = 'public_api_key';
+  private localStorageKey = "public_api_key";
 
   constructor(private http: HttpClient) {
   }

@@ -1,8 +1,8 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { InstanceExplorerComponent } from './instance-explorer.component';
+import { InstanceExplorerComponent } from "./instance-explorer.component";
 
-describe('InstanceExplorerComponent', () => {
+describe("InstanceExplorerComponent", () => {
   let component: InstanceExplorerComponent;
   let fixture: ComponentFixture<InstanceExplorerComponent>;
 
@@ -17,7 +17,7 @@ describe('InstanceExplorerComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

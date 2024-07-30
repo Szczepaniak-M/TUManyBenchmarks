@@ -1,14 +1,14 @@
-import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {catchError, switchMap} from 'rxjs/operators';
+import {Injectable} from "@angular/core";
+import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs";
+import {catchError, switchMap} from "rxjs/operators";
 import {environment} from "../../environemnts/environment";
 import {AuthService} from "../auth/auth.service";
 import {InstanceExplorerRequest, InstanceExplorerResponse} from "./instance-explorer.model";
 
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root"
 })
 export class InstanceDetailsService {
   private apiUrl = environment.apiUrl;

@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, QueryList, ViewChildren} from '@angular/core';
-import {Router} from '@angular/router';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, QueryList, ViewChildren} from "@angular/core";
+import {Router} from "@angular/router";
 import {Instance} from "./instance.model";
 import {InstanceListService} from "./instance-list.service";
 import {Filter} from "./instance-list-filter/instance-list-filter.model";
@@ -7,7 +7,7 @@ import {SortDirection, SortEvent} from "./instance-list-sort/instance-list-sort.
 import {InstanceListSortComponent} from "./instance-list-sort/instance-list-sort.component";
 
 @Component({
-  selector: 'app-instance-list',
+  selector: "app-instance-list",
   template: `
     <div class="container mx-auto py-4">
       <app-instance-list-filter
@@ -71,9 +71,7 @@ export class InstanceListComponent implements OnInit {
   selectedInstances: Instance[] = [];
   allTags: string[] = [];
   allNetworks: string[] = [];
-
   @ViewChildren(InstanceListSortComponent) headers!: QueryList<InstanceListSortComponent>;
-
 
   constructor(private instanceListService: InstanceListService,
               private router: Router,
@@ -127,13 +125,13 @@ export class InstanceListComponent implements OnInit {
   }
 
   goToDetails(instance: Instance): void {
-    this.router.navigate(['/instance', instance.name]).then();
+    this.router.navigate(["/instance", instance.name]).then();
   }
 
   compareSelectedItems(): void {
     const selectedNames = this.selectedInstances.map(item => item.name);
-    this.router.navigate(['/instance/compare'],
-      {queryParams: {instances: selectedNames.join(',')}})
+    this.router.navigate(["/instance/compare"],
+      {queryParams: {instances: selectedNames.join(",")}})
       .then();
   }
 
@@ -159,14 +157,14 @@ export class InstanceListComponent implements OnInit {
   }
 
   sort(column: string, direction: SortDirection) {
-    if (direction === '' || column === '') {
-      direction = 'asc'
-      column = 'name'
+    if (direction === "" || column === "") {
+      direction = "asc"
+      column = "name"
     }
     this.displayedInstances = this.displayedInstances.sort((a, b) => {
       // @ts-ignore
       const res = this.compare(a[column], b[column]);
-      return direction === 'asc' ? res : -res;
+      return direction === "asc" ? res : -res;
     });
 
   }

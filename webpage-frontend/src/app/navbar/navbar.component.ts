@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component } from "@angular/core";
 
 @Component({
-  selector: 'app-navbar',
+  selector: "app-navbar",
   template: `
     <nav class="bg-gray-800 p-4">
       <div class="container mx-auto flex justify-between items-center">

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { ScatterBenchmarkPlotComponent } from "./benchmark-plot.component";
+import { ScatterBenchmarkPlotComponent } from "./benchmark-scatter-plot.component";
 
 describe("BenchmarkPlotComponent", () => {
   let component: ScatterBenchmarkPlotComponent;

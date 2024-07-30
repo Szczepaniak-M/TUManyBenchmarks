@@ -1,8 +1,8 @@
-import {TestBed} from '@angular/core/testing';
-import {RouterModule} from '@angular/router';
-import {AppComponent} from './app.component';
+import {TestBed} from "@angular/core/testing";
+import {RouterModule} from "@angular/router";
+import {AppComponent} from "./app.component";
 
-describe('AppComponent', () => {
+describe("AppComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
@@ -14,15 +14,15 @@ describe('AppComponent', () => {
     }).compileComponents();
   });
 
-  it('should create the app', () => {
+  it("should create the app", () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'webpage-frontend'`, () => {
+  it(`should have as title "webpage-frontend"`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('webpage-frontend');
+    expect(app.title).toEqual("webpage-frontend");
   });
 });

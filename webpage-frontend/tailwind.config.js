@@ -1,4 +1,4 @@
-/** @type {import('tailwindcss').Config} */
+/** @type {import("tailwindcss").Config} */
 module.exports = {
   content: [
     "./src/**/*.{html,ts}",
@@ -8,7 +8,7 @@ module.exports = {
   },
   plugins: [],
   safelist: [
-    'bg-gray-200',
+    "bg-gray-200",
   ],
 }
 

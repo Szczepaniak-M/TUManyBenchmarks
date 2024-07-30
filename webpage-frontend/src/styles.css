@@ -11,6 +11,16 @@
   --mat-select-focused-arrow-color: #44474E;
   --mdc-filled-text-field-focus-active-indicator-color: #1F2937;
   --mdc-filled-text-field-active-indicator-height: 0;
+
+}
+.mat-accent.mat-mdc-slide-toggle {
+   --mdc-switch-selected-focus-state-layer-color: #1F2937;
+   --mdc-switch-selected-hover-state-layer-color: #1F2937;
+   --mdc-switch-selected-pressed-state-layer-color: #1F2937;
+  --mdc-switch-selected-focus-track-color: #1F2937;
+  --mdc-switch-selected-hover-track-color: #1F2937;
+  --mdc-switch-selected-pressed-track-color: #1F2937;
+  --mdc-switch-selected-track-color: #1F2937;
 }
 
 .mat-mdc-form-field-subscript-wrapper {
@@ -19,4 +29,8 @@
 
 .w-1\/8 {
   width: 12.5%;
+}
+
+.h-85-vh {
+  height: 85vh;
 }

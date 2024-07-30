@@ -1,8 +1,8 @@
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
 import {Instance} from "../instance.model";
 
 @Component({
-  selector: 'app-instance-list-row',
+  selector: "app-instance-list-row",
   template: `
     <div class="flex flex-row border" (click)="toggleComparison()" [class.bg-gray-200]="isInComparison">
       <div class="py-2 px-4 w-1/6 text-blue-500 hover:underline"

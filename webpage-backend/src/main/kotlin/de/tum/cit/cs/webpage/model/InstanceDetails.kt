@@ -16,10 +16,25 @@ data class Benchmark(
     val id: String,
     val name: String,
     val description: String,
-    val results: List<BenchmarkResult>
+    val results: List<BenchmarkResult>,
+    val plots: List<Plot>
 )
 
 data class BenchmarkResult(
     val timestamp: Long,
     val values: Map<String, Any>,
+)
+
+data class Plot(
+    val type: String,
+    val title: String,
+    val xaxis: String?,
+    val yaxis: String,
+    val series: List<PlotSeries>
+)
+
+data class PlotSeries(
+    val x: String?,
+    val y: String,
+    val legend: String
 )

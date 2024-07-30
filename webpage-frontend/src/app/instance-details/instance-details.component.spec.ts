@@ -1,12 +1,12 @@
-import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {InstanceDetailsComponent} from './instance-details.component';
-import {ActivatedRoute} from '@angular/router';
-import {InstanceDetailsService} from './instance-details.service';
-import {of} from 'rxjs';
-import {InstanceDetails} from './instance-details.model';
-import {NO_ERRORS_SCHEMA} from '@angular/core';
+import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {InstanceDetailsComponent} from "./instance-details.component";
+import {ActivatedRoute} from "@angular/router";
+import {InstanceDetailsService} from "./instance-details.service";
+import {of} from "rxjs";
+import {InstanceDetails} from "./instance-details.model";
+import {NO_ERRORS_SCHEMA} from "@angular/core";
 
-describe('InstanceDetailsComponent', () => {
+describe("InstanceDetailsComponent", () => {
   let component: InstanceDetailsComponent;
   let fixture: ComponentFixture<InstanceDetailsComponent>;
   let mockActivatedRoute;
@@ -14,12 +14,12 @@ describe('InstanceDetailsComponent', () => {
   let instanceDetail: InstanceDetails;
 
   beforeEach(async () => {
-    instanceDetail = {id: 'id1', name: 't2.micro', tags: ['tag1', 'tag2'], benchmarks: []};
+    instanceDetail = {id: "id1", name: "t2.micro", tags: ["tag1", "tag2"], benchmarks: []};
 
     mockActivatedRoute = {
       snapshot: {
         paramMap: {
-          get: () => 't2.micro'
+          get: () => "t2.micro"
         }
       }
     };
@@ -41,15 +41,15 @@ describe('InstanceDetailsComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize with instance details', () => {
+  it("should initialize with instance details", () => {
     fixture.detectChanges();
 
     expect(component.instance).toEqual(instanceDetail);
-    expect(component.instance.name).toBe('t2.micro');
-    expect(component.instance.tags).toEqual(['tag1', 'tag2']);
+    expect(component.instance.name).toBe("t2.micro");
+    expect(component.instance.tags).toEqual(["tag1", "tag2"]);
   });
 });

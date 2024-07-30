@@ -1,8 +1,8 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { MonacoEditorComponent } from './monaco-editor.component';
+import { MonacoEditorComponent } from "./monaco-editor.component";
 
-describe('MonacoEditorComponent', () => {
+describe("MonacoEditorComponent", () => {
   let component: MonacoEditorComponent;
   let fixture: ComponentFixture<MonacoEditorComponent>;
 
@@ -17,7 +17,7 @@ describe('MonacoEditorComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });
