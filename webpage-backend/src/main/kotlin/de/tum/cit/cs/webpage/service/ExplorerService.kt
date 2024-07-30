@@ -11,6 +11,7 @@ import org.springframework.dao.UncategorizedDataAccessException
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.aggregation.Aggregation
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation
+import org.springframework.data.mongodb.core.aggregation.LimitOperation
 import org.springframework.stereotype.Service
 
 @Service
@@ -35,6 +36,9 @@ class ExplorerService(
         for (stage in aggregationStages) {
             totalQueries++
             compiledStages.add(AggregationOperation { _ -> Document.parse(stage) })
+            if (aggregationStages.size != totalQueries) {
+                compiledStages.add(LimitOperation(5))
+            }
             val (result, e) = tryToExecuteQuery(compiledStages)
             if (result != null) {
                 results.add(result)
@@ -42,6 +46,9 @@ class ExplorerService(
             } else {
                 error = e
                 break
+            }
+            if (aggregationStages.size != totalQueries) {
+                compiledStages.removeLast()
             }
         }
         return ExplorerResponse(totalQueries, successfulQueries, results, error)
