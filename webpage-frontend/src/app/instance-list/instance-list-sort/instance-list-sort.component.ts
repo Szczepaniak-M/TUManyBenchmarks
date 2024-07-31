@@ -24,9 +24,9 @@ import {SortDirection, SortEvent} from "./instance-list-sort.model";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InstanceListSortComponent {
-  @Input({required: true}) column!: string
+  @Input({required: true}) column!: string;
   @Output() sort = new EventEmitter<SortEvent>();
-  direction: SortDirection = ""
+  direction: SortDirection = "";
 
   private rotateMap: { [key: string]: SortDirection } = {"asc": "desc", "desc": "", "": "asc"};
 
@@ -40,6 +40,6 @@ export class InstanceListSortComponent {
 
   resetDirection() {
     this.direction = "";
-    this.changeDetectorRef.markForCheck()
+    this.changeDetectorRef.markForCheck();
   }
 }

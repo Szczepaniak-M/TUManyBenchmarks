@@ -2,15 +2,42 @@ import {TestBed} from "@angular/core/testing";
 import {HttpTestingController, provideHttpClientTesting} from "@angular/common/http/testing";
 import {InstanceDetailsService} from "./instance-details.service";
 import {AuthService} from "../auth/auth.service";
-import {InstanceDetails} from "./instance-details.model";
+import {InstanceDetails, InstanceDetailsDto} from "./instance-details.model";
 import {of} from "rxjs";
 import {environment} from "../../environemnts/environment";
 import {provideHttpClient} from "@angular/common/http";
+import {convertInstanceDtoToInstance} from "../common/instance/instance.utils";
 
 describe("InstanceDetailsService", () => {
   let service: InstanceDetailsService;
   let httpMock: HttpTestingController;
   let mockAuthService: { refreshApiKey: any; };
+
+  const mockInstanceDetailsDto: InstanceDetailsDto = {
+    id: "instance1",
+    name: "t2.micro",
+    tags: ["8 vCPUs", "10 Gbps Network", "16 GiB Memory"],
+    benchmarks: [{
+      id: "benchmark1",
+      name: "Benchmark 1",
+      description: "Description 1",
+      results: [],
+      plots: [{title: "Plot 1", type: "scatter", yaxis: "", series: []}]
+    },
+      {
+        id: "benchmark2",
+        name: "Benchmark 2",
+        description: "Description 2",
+        results: [],
+        plots: [{title: "Plot 2", type: "scatter", yaxis: "", series: []}]
+      }
+    ]
+  };
+
+  const expectedInstanceDetails: InstanceDetails = {
+    ...convertInstanceDtoToInstance(mockInstanceDetailsDto),
+    benchmarks: mockInstanceDetailsDto.benchmarks
+  };
 
   beforeEach(() => {
     mockAuthService = {
@@ -39,24 +66,20 @@ describe("InstanceDetailsService", () => {
   });
 
   it("should fetch instance details successfully", () => {
-    const instanceName = "t2.micro";
-    const instanceDetails: InstanceDetails = {id: "id1", name: instanceName, tags: ["tag1"], benchmarks: []};
-
-    service.getInstanceDetails(instanceName).subscribe((details) => {
-      expect(details).toEqual(instanceDetails);
+    const instanceName = "t2.micro"
+    service.getInstanceDetails(instanceName).subscribe((instanceDetails) => {
+      expect(instanceDetails).toEqual(expectedInstanceDetails);
     });
 
     const req = httpMock.expectOne(`${environment.apiUrl}/instance/${instanceName}`);
     expect(req.request.method).toBe("GET");
-    req.flush(instanceDetails);
+    req.flush(mockInstanceDetailsDto);
   });
 
   it("should retry fetching instance details after 401 error and API key refresh", () => {
     const instanceName = "t2.micro";
-    const instanceDetails: InstanceDetails = {id: "id1", name: instanceName, tags: ["tag1"], benchmarks: []};
-
-    service.getInstanceDetails(instanceName).subscribe((details) => {
-      expect(details).toEqual(instanceDetails);
+    service.getInstanceDetails(instanceName).subscribe(instanceDetails => {
+      expect(instanceDetails).toEqual(expectedInstanceDetails);
     });
 
     const req = httpMock.expectOne(`${environment.apiUrl}/instance/${instanceName}`);
@@ -67,17 +90,14 @@ describe("InstanceDetailsService", () => {
 
     const retryReq = httpMock.expectOne(`${environment.apiUrl}/instance/${instanceName}`);
     expect(retryReq.request.method).toBe("GET");
-    retryReq.flush(instanceDetails);
+    retryReq.flush(mockInstanceDetailsDto);
   });
 
   it("should throw error if non-401 error occurs", () => {
     const instanceName = "t2.micro";
-
     service.getInstanceDetails(instanceName).subscribe({
       next: () => fail("expected an error, not instance details"),
-      error: (error) => {
-        expect(error.status).toBe(500);
-      }
+      error: error => expect(error.status).toBe(500)
     });
 
     const req = httpMock.expectOne(`${environment.apiUrl}/instance/${instanceName}`);

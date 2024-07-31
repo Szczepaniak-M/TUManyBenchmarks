@@ -5,7 +5,7 @@ import {BenchmarkResult, Plot} from "../../instance-details/instance-details.mod
 @Component({
   selector: "app-benchmark-plot",
   template: `
-    <div style="text-align:center">
+    <div class="text-center">
       <app-benchmark-scatter-plot
         *ngIf="plot.type === 'scatter'"
         [benchmarkResults]="benchmarkResults"
@@ -21,7 +21,7 @@ import {BenchmarkResult, Plot} from "../../instance-details/instance-details.mod
   `
 })
 export class BenchmarkPlotComponent {
-  @Input({required: true}) benchmarkResults!: BenchmarkResult[][]
+  @Input({required: true}) benchmarkResults!: BenchmarkResult[][];
   @Input({required: true}) plot!: Plot;
   @Input() instances: string[] = [];
 }

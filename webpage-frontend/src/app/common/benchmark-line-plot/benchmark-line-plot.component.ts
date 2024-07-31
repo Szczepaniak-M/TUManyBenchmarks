@@ -6,29 +6,27 @@ import {BenchmarkResult, Plot, PlotSeries} from "../../instance-details/instance
 @Component({
   selector: "app-benchmark-line-plot",
   template: `
-    <div style="text-align:center">
-      <apx-chart [series]="chartOptions.series!"
-                 [chart]="chartOptions.chart!"
-                 [colors]="chartOptions.colors!"
-                 [dataLabels]="chartOptions.dataLabels!"
-                 [title]="chartOptions.title!"
-                 [grid]="chartOptions.grid!"
-                 [xaxis]="chartOptions.xaxis!"
-                 [yaxis]="chartOptions.yaxis!"
-                 [fill]="chartOptions.fill!"
-                 [stroke]="chartOptions.stroke!"
-                 [legend]="chartOptions.legend!"
-                 [markers]="chartOptions.markers!"
-                 [tooltip]="chartOptions.tooltip!"
-      ></apx-chart>
-    </div>
+    <apx-chart [series]="chartOptions.series!"
+               [chart]="chartOptions.chart!"
+               [colors]="chartOptions.colors!"
+               [dataLabels]="chartOptions.dataLabels!"
+               [title]="chartOptions.title!"
+               [grid]="chartOptions.grid!"
+               [xaxis]="chartOptions.xaxis!"
+               [yaxis]="chartOptions.yaxis!"
+               [fill]="chartOptions.fill!"
+               [stroke]="chartOptions.stroke!"
+               [legend]="chartOptions.legend!"
+               [markers]="chartOptions.markers!"
+               [tooltip]="chartOptions.tooltip!"
+    ></apx-chart>
   `
 })
 export class BenchmarkLinePlotComponent implements OnInit {
   @Input({required: true}) benchmarkResults!: BenchmarkResult[][]
   @Input({required: true}) plot!: Plot;
   @Input() instances: string[] = [];
-  chartOptions!: Partial<ChartOptions>;
+  chartOptions!: ChartOptions;
 
   ngOnInit(): void {
     const numberOfSeries = this.plot.series.length;
@@ -54,8 +52,8 @@ export class BenchmarkLinePlotComponent implements OnInit {
         },
       },
       colors: this.repeatElements([
-        '#D4526E',
-        '#33B2DF',
+        "#D4526E",
+        "#33B2DF",
         "#A133FF",
         "#FF9933",
         "#33FF57",
@@ -109,7 +107,7 @@ export class BenchmarkLinePlotComponent implements OnInit {
         opacity: this.repeatArray([1, 0.25, 0.15], numberOfSeries * numberOfInstances)
       },
       stroke: {
-        curve: 'straight',
+        curve: "straight",
         width: this.repeatArray([2, 0, 0], numberOfSeries * numberOfInstances)
       },
       markers: {
@@ -120,11 +118,12 @@ export class BenchmarkLinePlotComponent implements OnInit {
       tooltip: {
         x: {
           show: true,
+          // original formater has problem with doubles when user hover the value
           formatter: function (value: any, opts: any): string {
             if (value === undefined || opts === undefined) {
               return `${value}`;
             }
-            const newValue = opts.w.config.series[opts.seriesIndex].data[opts.dataPointIndex][0]
+            const newValue = opts.w.config.series[opts.seriesIndex].data[opts.dataPointIndex][0];
             return `${newValue}`;
           }
         }
@@ -133,7 +132,7 @@ export class BenchmarkLinePlotComponent implements OnInit {
   }
 
   private getBenchmarkSeries(benchmarkResults: BenchmarkResult[][], series: PlotSeries[], instances: string[]): Series[] {
-    const result: Series[] = []
+    const result: Series[] = [];
     if (instances.length > 0) {
       this.extractSeriesForMultipleInstances(instances, series, benchmarkResults, result);
     } else {
@@ -154,17 +153,17 @@ export class BenchmarkLinePlotComponent implements OnInit {
         name: `${serie.legend} - Average`,
         data: this.zipLists2(xValues, averages
         )
-      })
+      });
       result.push({
         type: "rangeArea",
         name: `${serie.legend} - Std`,
         data: this.zipLists3(xValues, averageMinusStd, averagePlusStd)
-      })
+      });
       result.push({
         type: "rangeArea",
         name: `${serie.legend} - Max/Min`,
         data: this.zipLists3(xValues, mins, maxes)
-      })
+      });
     }
   }
 
@@ -180,17 +179,17 @@ export class BenchmarkLinePlotComponent implements OnInit {
           type: "line",
           name: `${instance} - ${serie.legend} - Average`,
           data: this.zipLists2(xValues, averages)
-        })
+        });
         result.push({
           type: "rangeArea",
           name: `${instance} - ${serie.legend} - Std`,
           data: this.zipLists3(xValues, averageMinusStd, averagePlusStd)
-        })
+        });
         result.push({
           type: "rangeArea",
           name: `${instance} - ${serie.legend} - Max/Min`,
           data: this.zipLists3(xValues, mins, maxes)
-        })
+        });
       }
     }
   }
@@ -213,14 +212,14 @@ export class BenchmarkLinePlotComponent implements OnInit {
     if (serie.x == "increasingValues") {
       return Array.from({length: values.length}, (_, i) => i + 1);
     } else {
-      const extractedKeys: number[][] = benchmarkResults.map(benchmarkResult => benchmarkResult.values[serie.x!])
+      const extractedKeys: number[][] = benchmarkResults.map(benchmarkResult => benchmarkResult.values[serie.x!]);
       const transposedKeys = extractedKeys[0].map((_: any, colIndex: number) => extractedKeys.map(row => row[colIndex]));
       return transposedKeys.map(this.calculateAverage);
     }
   }
 
   private getBenchmarkYValues(benchmarkResults: BenchmarkResult[], serie: PlotSeries) {
-    const values: number[][] = benchmarkResults.map(benchmarkResult => benchmarkResult.values[serie.y])
+    const values: number[][] = benchmarkResults.map(benchmarkResult => benchmarkResult.values[serie.y]);
     return values[0].map((_: any, colIndex: number) => values.map(row => row[colIndex]));
   }
 

@@ -9,6 +9,10 @@ describe("AuthService", () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
 
+  const apiUrl = environment.apiUrl;
+  const localStorageKey = "public_api_key";
+  const mockApiKey = "mock-api-key";
+
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
@@ -19,11 +23,11 @@ describe("AuthService", () => {
     });
     service = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
+    localStorage.clear();
   });
 
   afterEach(() => {
     httpMock.verify();
-    localStorage.clear();
   });
 
   it("should be created", () => {
@@ -31,46 +35,41 @@ describe("AuthService", () => {
   });
 
   describe("getApiKey", () => {
-    it("should return stored API key if present", (done) => {
-      const storedKey = "stored-api-key";
-      localStorage.setItem("public_api_key", storedKey);
+    it("should return stored API key if it exists", done => {
+      localStorage.setItem(localStorageKey, mockApiKey);
 
-      service.getApiKey().subscribe((key) => {
-        expect(key).toBe(storedKey);
+      service.getApiKey().subscribe(apiKey => {
+        expect(apiKey).toBe(mockApiKey);
         done();
       });
     });
 
-    it("should refresh API key if not present in local storage", (done) => {
-      const newKey = "new-api-key";
-
-      service.getApiKey().subscribe((key) => {
-        expect(key).toBe(newKey);
-        expect(localStorage.getItem("public_api_key")).toBe(newKey);
+    it("should refresh API key if not present in local storage", done => {
+      service.getApiKey().subscribe(apiKey => {
+        expect(apiKey).toBe(mockApiKey);
+        expect(localStorage.getItem("public_api_key")).toBe(mockApiKey);
         done();
       });
 
-      const req = httpMock.expectOne(`${environment.apiUrl}/key`);
+      const req = httpMock.expectOne(`${apiUrl}/key`);
       expect(req.request.method).toBe("GET");
       expect(req.request.context.get(BYPASS_INTERCEPTOR)).toBeTrue();
-      req.flush({apiKey: newKey});
+      req.flush({apiKey: mockApiKey});
     });
   });
 
   describe("refreshApiKey", () => {
-    it("should fetch new API key and store it in local storage", (done) => {
-      const newKey = "new-api-key";
-
-      service.refreshApiKey().subscribe((key) => {
-        expect(key).toBe(newKey);
-        expect(localStorage.getItem("public_api_key")).toBe(newKey);
+    it("should fetch new API key and store it in local storage", done => {
+      service.refreshApiKey().subscribe(apiKey => {
+        expect(apiKey).toBe(mockApiKey);
+        expect(localStorage.getItem(localStorageKey)).toBe(mockApiKey);
         done();
       });
 
-      const req = httpMock.expectOne(`${environment.apiUrl}/key`);
+      const req = httpMock.expectOne(`${apiUrl}/key`);
       expect(req.request.method).toBe("GET");
       expect(req.request.context.get(BYPASS_INTERCEPTOR)).toBeTrue();
-      req.flush({apiKey: newKey});
+      req.flush({apiKey: mockApiKey});
     });
   });
 });

@@ -9,13 +9,13 @@ import {MatSlideToggleChange} from "@angular/material/slide-toggle";
     <div class="container mx-auto my-4 border rounded flex flex-row">
       <div class="p-2 w-1/2">
         <div class="flex flex-row justify-between items-center h-14">
-          <mat-slide-toggle (change)="onToogleChange($event)">
+          <mat-slide-toggle (change)="onToggleChange($event)">
             <p class="font-bold text-xl">Show partial results</p>
           </mat-slide-toggle>
           <div class="w-1/2 flex flex-row">
-            <button (click)="executeQuery()"
-                    [disabled]="!isContentValid"
-                    class="m-1 bg-gray-800 text-white w-1/2 p-2 rounded disabled:bg-slate-500">
+            <button class="m-1 bg-gray-800 text-white w-1/2 p-2 rounded disabled:bg-slate-500"
+                    (click)="executeQuery()"
+                    [disabled]="!isContentValid">
               Execute
             </button>
             <button class="m-1 bg-gray-800 text-white w-1/2 p-2 rounded disabled:bg-slate-500"
@@ -45,7 +45,6 @@ import {MatSlideToggleChange} from "@angular/material/slide-toggle";
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
-
 })
 export class InstanceExplorerComponent {
   isContentValid: boolean = false;
@@ -58,12 +57,12 @@ export class InstanceExplorerComponent {
   }
 
   executeQuery() {
-    const query = this.editor.code
+    const query = this.editor.code;
     const stagesAsJson = JSON.parse(query);
     const stagesAsStrings = stagesAsJson.map((stage: any) => JSON.stringify(stage));
     this.instanceDetailsService.executeQuery(stagesAsStrings, this.partialResults).subscribe(response => {
-      this.results = response.results.map(result => JSON.parse(result))
-      this.error = response.error
+      this.results = response.results.map(result => JSON.parse(result));
+      this.error = response.error;
       this.changeDetectorRef.markForCheck();
     });
   }
@@ -87,7 +86,7 @@ export class InstanceExplorerComponent {
     this.changeDetectorRef.markForCheck();
   }
 
-  onToogleChange($event: MatSlideToggleChange) {
-    this.partialResults = $event.checked
+  onToggleChange($event: MatSlideToggleChange) {
+    this.partialResults = $event.checked;
   }
 }

@@ -5,7 +5,7 @@ import {catchError, switchMap} from "rxjs/operators";
 import {environment} from "../../environemnts/environment";
 import {InstanceDetails, InstanceDetailsDto} from "./instance-details.model";
 import {AuthService} from "../auth/auth.service";
-import {convertInstanceDtoToInstance} from "../common/instance.utils";
+import {convertInstanceDtoToInstance} from "../common/instance/instance.utils";
 
 
 @Injectable({
@@ -42,6 +42,6 @@ export class InstanceDetailsService {
       ...instance,
       benchmarks: instanceDto.benchmarks
     };
-    return instanceDetails
+    return instanceDetails;
   }
 }

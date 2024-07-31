@@ -30,10 +30,9 @@ export class MonacoEditorComponent {
   checkForErrors() {
     try {
       const parsed = JSON.parse(this.code);
-      this.isContentValid.emit(Array.isArray(parsed) && parsed.length > 0)
+      this.isContentValid.emit(Array.isArray(parsed) && parsed.length > 0);
     } catch (e) {
-      this.isContentValid.emit(false)
+      this.isContentValid.emit(false);
     }
   }
-
 }

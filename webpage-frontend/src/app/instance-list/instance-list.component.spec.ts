@@ -4,39 +4,47 @@ import {InstanceListService} from "./instance-list.service";
 import {Router} from "@angular/router";
 import {of} from "rxjs";
 import {Instance} from "./instance.model";
-import {NO_ERRORS_SCHEMA} from "@angular/core";
+import {Filter} from "./instance-list-filter/instance-list-filter.model";
+import {SortEvent} from "./instance-list-sort/instance-list-sort.model";
+import {By} from "@angular/platform-browser";
+import {InstanceListSortComponent} from "./instance-list-sort/instance-list-sort.component";
+import {MockComponent} from "ng-mocks";
+import {InstanceListFilterComponent} from "./instance-list-filter/instance-list-filter.component";
+import {InstanceListRowComponent} from "./instance-list-row/instance-list-row.component";
 
 describe("InstanceListComponent", () => {
   let component: InstanceListComponent;
   let fixture: ComponentFixture<InstanceListComponent>;
-  let mockInstanceListService;
+  let mockInstanceListService: { getInstances: any }
   let mockRouter: { navigate: any; };
-  let instances: Instance[];
+  let mockInstances: Instance[];
 
-  beforeEach(async () => {
-    instances = [
-      {id: "id1", name: "t2.micro", tags: ["value1"]},
-      {id: "id2", name: "t3.micro", tags: ["value2"]},
-      {id: "id3", name: "t2.small", tags: ["value2"]},
-      {id: "id4", name: "t3.small", tags: ["value2"]}
+  beforeEach(() => {
+    mockInstances = [
+      {id: "id1", name: "t2.micro", vcpu: 4, memory: 16, network: "Network1", otherTags: ["tag1", "tag2"]},
+      {id: "id2", name: "t2.nano", vcpu: 2, memory: 8, network: "Network1", otherTags: ["tag3"]},
+      {id: "id3", name: "t2.small", vcpu: 8, memory: 32, network: "Network2", otherTags: ["tag2"]},
     ];
 
     mockInstanceListService = {
-      getInstances: () => of(instances)
+      getInstances: jasmine.createSpy("getInstances").and.returnValue(of(mockInstances))
     };
-
     mockRouter = {
       navigate: jasmine.createSpy("navigate").and.returnValue(Promise.resolve(true))
     };
 
-    await TestBed.configureTestingModule({
-      declarations: [InstanceListComponent],
+    TestBed.configureTestingModule({
+      declarations: [
+        InstanceListComponent,
+        MockComponent(InstanceListFilterComponent),
+        MockComponent(InstanceListSortComponent),
+        MockComponent(InstanceListRowComponent)
+      ],
       providers: [
         {provide: InstanceListService, useValue: mockInstanceListService},
         {provide: Router, useValue: mockRouter}
-      ],
-      schemas: [NO_ERRORS_SCHEMA]
-    }).compileComponents();
+      ]
+    });
 
     fixture = TestBed.createComponent(InstanceListComponent);
     component = fixture.componentInstance;
@@ -46,69 +54,74 @@ describe("InstanceListComponent", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should initialize with instances", () => {
-    fixture.detectChanges();
-    expect(component.instances.length).toBe(4);
-    expect(component.instances).toEqual(instances);
+  it("should initialize instances and filters on ngOnInit", () => {
+    fixture.detectChanges()
+    expect(component.instances).toEqual(mockInstances);
+    expect(component.displayedInstances).toEqual(mockInstances);
+    expect(component.allTags).toEqual(["tag1", "tag2", "tag3"]);
+    expect(component.allNetworks).toEqual(["Network1", "Network2"]);
   });
 
-  it("should select and deselect instances", () => {
-    fixture.detectChanges();
-
-    component.onSelectItem(instances[0]);
-    expect(component.selectedInstances).toContain(instances[0]);
-
-    component.onSelectItem(instances[0]);
-    expect(component.selectedInstances).not.toContain(instances[0]);
+  it("should filter instances based on filter criteria", () => {
+    fixture.detectChanges()
+    const filter: Filter = {name: "micro"};
+    component.applyFilters(filter);
+    expect(component.displayedInstances).toEqual([mockInstances[0]]);
   });
 
-  it("should not select more than 3 instances", () => {
-    fixture.detectChanges();
-
-    component.onSelectItem(instances[0]);
-    component.onSelectItem(instances[1]);
-    component.onSelectItem(instances[2]);
-    expect(component.selectedInstances.length).toBe(3);
-
-    component.onSelectItem(instances[3]);
-    expect(component.selectedInstances.length).toBe(3);
-
-    component.onSelectItem(instances[0]);
-    component.onSelectItem(instances[3]);
-    expect(component.selectedInstances.length).toBe(3);
+  it("should add and remove instances from comparison", () => {
+    expect(component.selectedInstances).toEqual([]);
+    component.toggleComparison(mockInstances[0]);
+    expect(component.selectedInstances).toContain(mockInstances[0]);
+    component.toggleComparison(mockInstances[0]);
+    expect(component.selectedInstances).not.toContain(mockInstances[0]);
   });
 
-  it("should navigate to details on goToDetails", () => {
-    fixture.detectChanges();
-
-    component.goToDetails(instances[0]);
-    expect(mockRouter.navigate).toHaveBeenCalledWith(["/instance", "t2.micro"]);
+  it("should navigate to instance details", () => {
+    component.goToDetails(mockInstances[0]);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(["/instance", mockInstances[0].name]);
   });
 
-  it("should navigate to compare selected items", () => {
-    fixture.detectChanges();
-
-    component.onSelectItem(instances[0]);
-    component.onSelectItem(instances[1]);
-
+  it("should navigate to comparison page with selected instances", () => {
+    component.selectedInstances = [mockInstances[0], mockInstances[1]];
     component.compareSelectedItems();
     expect(mockRouter.navigate).toHaveBeenCalledWith(["/instance/compare"], {
-      queryParams: {instances: "t2.micro,t3.micro"}
+      queryParams: {instances: "t2.micro,t2.nano"}
     });
   });
 
-  it("should disable compare button if less than 2 items selected", () => {
-    fixture.detectChanges();
+  it("should correctly identify if an instance is in comparison", () => {
+    component.selectedInstances = [mockInstances[0]];
+    expect(component.isInComparison(mockInstances[0])).toBeTrue();
+    expect(component.isInComparison(mockInstances[1])).toBeFalse();
+  });
 
-    let compareButton = fixture.nativeElement.querySelector("button");
-    expect(compareButton.disabled).toBeTrue();
+  it("should sort instances based on the selected column and direction", () => {
+    fixture.detectChanges()
+    const sortEvent: SortEvent = {column: "memory", direction: "desc"};
+    component.onSort(sortEvent);
+    fixture.detectChanges()
+    expect(component.displayedInstances[0].memory).toBeGreaterThanOrEqual(component.displayedInstances[1].memory);
+  });
 
-    component.onSelectItem(instances[0]);
-    fixture.detectChanges();
-    expect(compareButton.disabled).toBeTrue();
+  it("should track instances by name", () => {
+    const instance = mockInstances[0];
+    expect(component.trackByName(0, instance)).toBe(instance.name);
+  });
 
-    component.onSelectItem(instances[1]);
-    fixture.detectChanges();
-    expect(compareButton.disabled).toBeFalse();
+  it("should reset sorting direction for other columns when sorting by a new column", () => {
+    fixture.detectChanges()
+    const sortComponents = fixture.debugElement.queryAll(By.directive(InstanceListSortComponent));
+    sortComponents.forEach(sortComponent => {
+      spyOn(sortComponent.componentInstance, "resetDirection");
+    });
+
+    component.onSort({column: "memory", direction: "asc"});
+    sortComponents.forEach(sortComponent => {
+      if (sortComponent.componentInstance.column !== "memory") {
+        expect(sortComponent.componentInstance.resetDirection).toHaveBeenCalled();
+      }
+    });
   });
 });
+

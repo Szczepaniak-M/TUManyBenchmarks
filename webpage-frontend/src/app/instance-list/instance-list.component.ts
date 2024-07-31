@@ -60,17 +60,17 @@ import {InstanceListSortComponent} from "./instance-list-sort/instance-list-sort
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InstanceListComponent implements OnInit {
-  columns = {
-    name: "Name",
-    vCpu: "vCPU",
-    memory: "Memory",
-    network: "Network"
-  }
   instances: Instance[] = [];
   displayedInstances: Instance[] = [];
   selectedInstances: Instance[] = [];
   allTags: string[] = [];
   allNetworks: string[] = [];
+  columns = {
+    name: "Name",
+    vCpu: "vCPU",
+    memory: "Memory",
+    network: "Network"
+  };
   @ViewChildren(InstanceListSortComponent) headers!: QueryList<InstanceListSortComponent>;
 
   constructor(private instanceListService: InstanceListService,
@@ -82,7 +82,7 @@ export class InstanceListComponent implements OnInit {
     this.instanceListService.getInstances().subscribe(response => {
       this.instances = response.sort((a, b) => a.name.localeCompare(b.name));
       this.displayedInstances = this.instances;
-      this.updateFilters()
+      this.updateFilters();
       this.changeDetectorRef.markForCheck();
     });
   }
@@ -103,10 +103,10 @@ export class InstanceListComponent implements OnInit {
   applyFilters(filter: Filter): void {
     this.displayedInstances = this.instances.filter(instance => {
       const matchesName = filter.name ? instance.name.toLowerCase().includes(filter.name.toLowerCase()) : true;
-      const matchesMinCpu = filter.minCpu ? instance.vcpu >= filter.minCpu : true
-      const matchesMaxCpu = filter.maxCpu ? instance.vcpu <= filter.maxCpu : true
-      const matchesMinMemory = filter.minMemory ? instance.memory >= filter.minMemory : true
-      const matchesMaxMemory = filter.maxMemory ? instance.memory <= filter.maxMemory : true
+      const matchesMinCpu = filter.minCpu ? instance.vcpu >= filter.minCpu : true;
+      const matchesMaxCpu = filter.maxCpu ? instance.vcpu <= filter.maxCpu : true;
+      const matchesMinMemory = filter.minMemory ? instance.memory >= filter.minMemory : true;
+      const matchesMaxMemory = filter.maxMemory ? instance.memory <= filter.maxMemory : true;
       const matchesNetwork = filter.network && filter.network.length ? filter.network.includes(instance.network) : true;
       const matchesTags = filter.tags && filter.tags.length ? filter.tags.every(tag => instance.otherTags.includes(tag)) : true;
       return matchesName && matchesMinCpu && matchesMaxCpu && matchesMinMemory && matchesMaxMemory && matchesNetwork && matchesTags;
@@ -116,12 +116,12 @@ export class InstanceListComponent implements OnInit {
   toggleComparison(instance: Instance): boolean {
     if (this.isInComparison(instance)) {
       this.selectedInstances = this.selectedInstances.filter(item => item !== instance);
-      return false
+      return false;
     } else if (this.selectedInstances.length < 3) {
       this.selectedInstances.push(instance);
-      return true
+      return true;
     }
-    return false
+    return false;
   }
 
   goToDetails(instance: Instance): void {
@@ -157,14 +157,13 @@ export class InstanceListComponent implements OnInit {
 
   sort(column: string, direction: SortDirection) {
     if (direction === "" || column === "") {
-      direction = "asc"
-      column = "name"
+      direction = "asc";
+      column = "name";
     }
     this.displayedInstances = this.displayedInstances.sort((a, b) => {
       // @ts-ignore
       const res = this.compare(a[column], b[column]);
       return direction === "asc" ? res : -res;
     });
-
   }
 }

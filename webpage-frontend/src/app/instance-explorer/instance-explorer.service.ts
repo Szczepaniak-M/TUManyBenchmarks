@@ -20,7 +20,7 @@ export class InstanceDetailsService {
     const request: InstanceExplorerRequest = {
       aggregationStages: aggregationStages,
       partialResults: partialResults,
-    }
+    };
     return this.http.post<InstanceExplorerResponse>(`${this.apiUrl}/explorer`, request)
       .pipe(
         catchError(error => {
@@ -33,6 +33,7 @@ export class InstanceDetailsService {
           } else {
             throw error;
           }
-        }))
+        })
+      );
   }
 }

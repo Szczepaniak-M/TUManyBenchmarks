@@ -18,16 +18,15 @@ import {BenchmarkResult, InstanceDetails, Plot} from "../../instance-details/ins
 export class CompareInstancesBenchmarkComponent implements OnInit {
   @Input({required: true}) benchmarkId!: string;
   @Input({required: true}) instances!: InstanceDetails[];
-  benchmarkName: string = ""
-  benchmarkDescription: string = ""
-  benchmarkResults: BenchmarkResult[][] = []
-  plots: Plot[] = []
-  instanceNames: string[] = []
-
+  benchmarkName: string = "";
+  benchmarkDescription: string = "";
+  benchmarkResults: BenchmarkResult[][] = [];
+  plots: Plot[] = [];
+  instanceNames: string[] = [];
 
   ngOnInit(): void {
     this.instances.forEach(instance => {
-      const foundBenchmark = instance.benchmarks.find(benchmark => benchmark.id === this.benchmarkId)
+      const foundBenchmark = instance.benchmarks.find(benchmark => benchmark.id === this.benchmarkId);
       if (foundBenchmark !== undefined) {
         this.benchmarkName = foundBenchmark.name;
         this.benchmarkDescription = foundBenchmark.description;
@@ -35,6 +34,6 @@ export class CompareInstancesBenchmarkComponent implements OnInit {
         this.plots = foundBenchmark.plots;
         this.instanceNames.push(instance.name);
       }
-    })
+    });
   }
 }

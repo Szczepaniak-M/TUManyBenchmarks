@@ -13,8 +13,9 @@ export class AuthInterceptor implements HttpInterceptor {
   }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    if (req.context.get(BYPASS_INTERCEPTOR))
+    if (req.context.get(BYPASS_INTERCEPTOR)) {
       return next.handle(req);
+    }
 
     return this.authService.getApiKey().pipe(
       switchMap(key => {

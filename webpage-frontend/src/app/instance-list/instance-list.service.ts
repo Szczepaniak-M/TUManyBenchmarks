@@ -5,7 +5,7 @@ import {catchError, switchMap} from "rxjs/operators";
 import {environment} from "../../environemnts/environment";
 import {Instance, InstanceDto} from "./instance.model";
 import {AuthService} from "../auth/auth.service";
-import {convertInstanceDtoToInstance} from "../common/instance.utils";
+import {convertInstanceDtoToInstance} from "../common/instance/instance.utils";
 
 
 @Injectable({
@@ -34,8 +34,7 @@ export class InstanceListService {
       )
       .pipe(
         map((instances: InstanceDto[]) =>
-          instances.map(instance => convertInstanceDtoToInstance(instance)
-          )
+          instances.map(instance => convertInstanceDtoToInstance(instance))
         )
       );
   }

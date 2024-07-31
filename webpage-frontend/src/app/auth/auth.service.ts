@@ -17,7 +17,7 @@ export class AuthService {
   }
 
   public getApiKey(): Observable<string> {
-    const storedKey = localStorage.getItem(this.localStorageKey)
+    const storedKey = localStorage.getItem(this.localStorageKey);
     if (storedKey) {
       return of(storedKey);
     } else {

@@ -2,15 +2,25 @@ import {TestBed} from "@angular/core/testing";
 import {HttpTestingController, provideHttpClientTesting} from "@angular/common/http/testing";
 import {InstanceListService} from "./instance-list.service";
 import {AuthService} from "../auth/auth.service";
-import {Instance} from "./instance.model";
+import {Instance, InstanceDto} from "./instance.model";
 import {of} from "rxjs";
 import {provideHttpClient} from "@angular/common/http";
 import {environment} from "../../environemnts/environment";
+import {convertInstanceDtoToInstance} from "../common/instance/instance.utils";
 
 describe("InstanceListService", () => {
-  let service: InstanceListService;
+  let instanceListService: InstanceListService;
   let httpMock: HttpTestingController;
   let mockAuthService: { refreshApiKey: any; };
+
+  const mockApiUrl = environment.apiUrl;
+  const mockInstancesDto: InstanceDto[] = [
+    {id: "id1", name: "t2.micro", tags: ["4 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"]},
+    {id: "id2", name: "t2.small", tags: ["8 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"]},
+    {id: "id3", name: "t2.nano", tags: ["16 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"]}
+  ];
+
+  const expectedInstances: Instance[] = mockInstancesDto.map(convertInstanceDtoToInstance);
 
   beforeEach(() => {
     mockAuthService = {
@@ -26,7 +36,7 @@ describe("InstanceListService", () => {
       ]
     });
 
-    service = TestBed.inject(InstanceListService);
+    instanceListService = TestBed.inject(InstanceListService);
     httpMock = TestBed.inject(HttpTestingController);
   });
 
@@ -35,54 +45,42 @@ describe("InstanceListService", () => {
   });
 
   it("should be created", () => {
-    expect(service).toBeTruthy();
+    expect(instanceListService).toBeTruthy();
   });
 
   it("should fetch instances successfully", () => {
-    const instances: Instance[] = [
-      {id: "id1", name: "t2.micro", tags: ["value1"]},
-      {id: "id2", name: "t3.micro", tags: ["value2"]},
-    ];
-
-    service.getInstances().subscribe((data) => {
-      expect(data).toEqual(instances);
+    instanceListService.getInstances().subscribe((data) => {
+      expect(data).toEqual(expectedInstances);
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/instance`);
+    const req = httpMock.expectOne(`${mockApiUrl}/instance`);
     expect(req.request.method).toBe("GET");
-    req.flush(instances);
+    req.flush(mockInstancesDto);
   });
 
   it("should retry fetching instances after 401 error and API key refresh", () => {
-    const instances: Instance[] = [
-      {id: "id1", name: "t2.micro", tags: ["value1"]},
-      {id: "id2", name: "t3.micro", tags: ["value2"]},
-    ];
-
-    service.getInstances().subscribe((data) => {
-      expect(data).toEqual(instances);
+    instanceListService.getInstances().subscribe((data) => {
+      expect(data).toEqual(expectedInstances);
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/instance`);
+    const req = httpMock.expectOne(`${mockApiUrl}/instance`);
     expect(req.request.method).toBe("GET");
     req.flush(null, {status: 401, statusText: "Unauthorized"});
 
     expect(mockAuthService.refreshApiKey).toHaveBeenCalled();
 
-    const retryReq = httpMock.expectOne(`${environment.apiUrl}/instance`);
+    const retryReq = httpMock.expectOne(`${mockApiUrl}/instance`);
     expect(retryReq.request.method).toBe("GET");
-    retryReq.flush(instances);
+    retryReq.flush(mockInstancesDto);
   });
 
   it("should throw error if non-401 error occurs", () => {
-    service.getInstances().subscribe({
+    instanceListService.getInstances().subscribe({
       next: () => fail("expected an error, not instances"),
-      error: (error) => {
-        expect(error.status).toBe(500);
-      }
+      error: error => expect(error.status).toBe(500)
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/instance`);
+    const req = httpMock.expectOne(`${mockApiUrl}/instance`);
     expect(req.request.method).toBe("GET");
     req.flush(null, {status: 500, statusText: "Internal Server Error"});
   });

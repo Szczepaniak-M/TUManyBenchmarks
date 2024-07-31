@@ -6,26 +6,24 @@ import {BenchmarkResult, Plot, PlotSeries} from "../../instance-details/instance
 @Component({
   selector: "app-benchmark-scatter-plot",
   template: `
-    <div style="text-align:center">
-      <apx-chart [series]="chartOptions.series!"
-                 [chart]="chartOptions.chart!"
-                 [colors]="chartOptions.colors!"
-                 [dataLabels]="chartOptions.dataLabels!"
-                 [title]="chartOptions.title!"
-                 [grid]="chartOptions.grid!"
-                 [xaxis]="chartOptions.xaxis!"
-                 [yaxis]="chartOptions.yaxis!"
-                 [markers]="chartOptions.markers!"
-                 [tooltip]="chartOptions.tooltip!"
-      ></apx-chart>
-    </div>
+    <apx-chart [series]="chartOptions.series!"
+               [chart]="chartOptions.chart!"
+               [colors]="chartOptions.colors!"
+               [dataLabels]="chartOptions.dataLabels!"
+               [title]="chartOptions.title!"
+               [grid]="chartOptions.grid!"
+               [xaxis]="chartOptions.xaxis!"
+               [yaxis]="chartOptions.yaxis!"
+               [markers]="chartOptions.markers!"
+               [tooltip]="chartOptions.tooltip!"
+    ></apx-chart>
   `
 })
 export class BenchmarkScatterPlotComponent implements OnInit {
-  @Input({required: true}) benchmarkResults!: BenchmarkResult[][]
+  @Input({required: true}) benchmarkResults!: BenchmarkResult[][];
   @Input({required: true}) plot!: Plot;
   @Input() instances: string[] = [];
-  chartOptions!: Partial<ChartOptions>;
+  chartOptions!: ChartOptions;
 
   ngOnInit(): void {
     this.chartOptions = {
@@ -117,7 +115,7 @@ export class BenchmarkScatterPlotComponent implements OnInit {
   }
 
   private getBenchmarkSeries(benchmarkResults: BenchmarkResult[][], plotSeries: PlotSeries[], instances: string[]): Series[] {
-    const seriesMap = new Map<string, DataPoint[]>()
+    const seriesMap = new Map<string, DataPoint[]>();
     const result: Series[] = [];
     if (instances.length > 0) {
       this.extractSeriesForMultipleInstances(instances, plotSeries, seriesMap, benchmarkResults);
@@ -127,16 +125,16 @@ export class BenchmarkScatterPlotComponent implements OnInit {
     seriesMap.forEach((value, key) => {
       result.push({type: "scatter", name: key, data: value});
     })
-    return result
+    return result;
   }
 
   private extractSeriesForSingleInstance(plotSeries: PlotSeries[], seriesMap: Map<string, DataPoint[]>, benchmarkResults: BenchmarkResult[][]) {
     for (const series of plotSeries) {
-      seriesMap.set(series.legend, [])
+      seriesMap.set(series.legend, []);
     }
     for (const benchmarkResult of benchmarkResults[0]) {
       for (const series of plotSeries) {
-        seriesMap.get(series.legend)!!.push([benchmarkResult.timestamp * 1000, benchmarkResult.values[series.y]])
+        seriesMap.get(series.legend)!!.push([benchmarkResult.timestamp * 1000, benchmarkResult.values[series.y]]);
       }
     }
   }
@@ -144,11 +142,11 @@ export class BenchmarkScatterPlotComponent implements OnInit {
   private extractSeriesForMultipleInstances(instances: string[], plotSeries: PlotSeries[], seriesMap: Map<string, DataPoint[]>, benchmarkResults: BenchmarkResult[][]) {
     for (const [index, instance] of instances.entries()) {
       for (const series of plotSeries) {
-        seriesMap.set(`${instance} - ${series.legend}`, [])
+        seriesMap.set(`${instance} - ${series.legend}`, []);
       }
       for (const benchmarkResult of benchmarkResults[index]) {
         for (const series of plotSeries) {
-          seriesMap.get(`${instance} - ${series.legend}`)!!.push([benchmarkResult.timestamp * 1000, benchmarkResult.values[series.y]])
+          seriesMap.get(`${instance} - ${series.legend}`)!!.push([benchmarkResult.timestamp * 1000, benchmarkResult.values[series.y]]);
         }
       }
     }

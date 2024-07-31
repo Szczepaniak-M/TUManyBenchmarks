@@ -24,14 +24,15 @@ import {forkJoin} from "rxjs";
           <div class="mb-4">
             <h2 class="text-xl font-semibold mb-2">Instance Details</h2>
             <div class="text-gray-700">
-              <p><strong class="text-black">vCPU:</strong> {{ instance.vcpu }}</p>
-              <p><strong class="text-black">Network:</strong> {{ instance.network }}</p>
-              <p><strong class="text-black">Memory:</strong> {{ instance.memory }} GiB</p>
+              <p><strong class="text-black">vCPU: </strong>{{ instance.vcpu }}</p>
+              <p><strong class="text-black">Network: </strong>{{ instance.network }}</p>
+              <p><strong class="text-black">Memory: </strong>{{ instance.memory }} GiB</p>
               <p><strong class="text-black">Tags: </strong>
                 <span *ngFor="let tag of instance.otherTags"
                       class="inline-block bg-gray-400 rounded-full px-3 py-1 text-sm font-semibold text-gray-800 mr-2 my-1">
-          {{ tag }}
-        </span></p>
+                    {{ tag }}
+                </span>
+              </p>
             </div>
           </div>
         </div>
@@ -58,10 +59,10 @@ export class CompareInstancesComponent implements OnInit {
 
   ngOnInit(): void {
     const names = this.route.snapshot.queryParamMap.get("instances")!.split(",");
-    const responses = names.map(name => this.instanceDetailsService.getInstanceDetails(name))
+    const responses = names.map(name => this.instanceDetailsService.getInstanceDetails(name));
     forkJoin(responses).subscribe(responses => {
-      responses.forEach(data => this.instances.push(data))
-      this.calculateBenchmarks()
+      responses.forEach(data => this.instances.push(data));
+      this.calculateBenchmarks();
       this.calculateCommonBenchmarks();
     });
   }
@@ -93,5 +94,4 @@ export class CompareInstancesComponent implements OnInit {
       );
     }
   }
-
 }
