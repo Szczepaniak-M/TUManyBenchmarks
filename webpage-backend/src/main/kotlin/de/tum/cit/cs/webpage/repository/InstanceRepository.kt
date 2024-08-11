@@ -6,4 +6,6 @@ import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface InstanceRepository : CoroutineCrudRepository<Instance, String>
+interface InstanceRepository : CoroutineCrudRepository<Instance, String> {
+    suspend fun findByName(instanceName: String): Instance?
+}

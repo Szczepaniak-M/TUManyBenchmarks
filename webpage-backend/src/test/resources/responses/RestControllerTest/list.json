@@ -1,0 +1,240 @@
+[
+  {
+    "id": "id1",
+    "name": "t3.micro",
+    "memory": 1.0,
+    "network": "Low",
+    "tags": [
+      "1 vCPU"
+    ],
+    "benchmarks": [
+      {
+        "id": "benchId1",
+        "name": "benchmark1",
+        "description": "benchmarkDescription1",
+        "statistics": {
+          "key1": {
+            "min": 1,
+            "max": 1,
+            "avg": 1,
+            "median": 1
+          }
+        },
+        "results": [
+          {
+            "timestamp": 1000,
+            "values": {
+              "key1": 1
+            }
+          }
+        ],
+        "plots": [
+          {
+            "type": "scatter",
+            "title": "Title 1",
+            "xaxis": null,
+            "yaxis": "Y",
+            "series": [
+              {
+                "x": null,
+                "y": "key1",
+                "legend": "legend1"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "benchId2",
+        "name": "benchmark2",
+        "description": "benchmarkDescription2",
+        "statistics": {
+          "key2": {
+            "min": 1,
+            "max": 4,
+            "avg": 2.5,
+            "median": 2.5
+          },
+          "key3": {
+            "min": 4,
+            "max": 7,
+            "avg": 5.5,
+            "median": 5.5
+          }
+        },
+        "results": [
+          {
+            "timestamp": 1000,
+            "values": {
+              "key2": [
+                1,
+                2,
+                3
+              ],
+              "key3": [
+                4,
+                5,
+                6
+              ]
+            }
+          },
+          {
+            "timestamp": 1100,
+            "values": {
+              "key2": [
+                2,
+                3,
+                4
+              ],
+              "key3": [
+                5,
+                6,
+                7
+              ]
+            }
+          }
+        ],
+        "plots": [
+          {
+            "type": "line",
+            "title": "Title 2",
+            "xaxis": "X",
+            "yaxis": "Y",
+            "series": [
+              {
+                "x": "increasingValues",
+                "y": "key2",
+                "legend": "legend2"
+              },
+              {
+                "x": "increasingValues",
+                "y": "key3",
+                "legend": "legend3"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "vcpu": 1
+  },
+  {
+    "id": "id1",
+    "name": "t3.small",
+    "memory": 2.0,
+    "network": "Low",
+    "tags": [
+      "2 vCPU"
+    ],
+    "benchmarks": [
+      {
+        "id": "benchId1",
+        "name": "benchmark1",
+        "description": "benchmarkDescription1",
+        "statistics": {
+          "key1": {
+            "min": 0.5,
+            "max": 0.5,
+            "avg": 0.5,
+            "median": 0.5
+          }
+        },
+        "results": [
+          {
+            "timestamp": 1000,
+            "values": {
+              "key1": 0.5
+            }
+          }
+        ],
+        "plots": [
+          {
+            "type": "scatter",
+            "title": "Title 1",
+            "xaxis": null,
+            "yaxis": "Y",
+            "series": [
+              {
+                "x": null,
+                "y": "key1",
+                "legend": "legend1"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "benchId2",
+        "name": "benchmark2",
+        "description": "benchmarkDescription2",
+        "statistics": {
+          "key2": {
+            "min": 1,
+            "max": 4,
+            "avg": 2.5,
+            "median": 2.5
+          },
+          "key3": {
+            "min": 2,
+            "max": 3.5,
+            "avg": 2.75,
+            "median": 2.75
+          }
+        },
+        "results": [
+          {
+            "timestamp": 1000,
+            "values": {
+              "key2": [
+                0.5,
+                1,
+                1.5
+              ],
+              "key3": [
+                2,
+                2.5,
+                3
+              ]
+            }
+          },
+          {
+            "timestamp": 1100,
+            "values": {
+              "key2": [
+                1,
+                1.5,
+                2
+              ],
+              "key3": [
+                2.5,
+                3,
+                3.5
+              ]
+            }
+          }
+        ],
+        "plots": [
+          {
+            "type": "line",
+            "title": "Title 2",
+            "xaxis": "X",
+            "yaxis": "Y",
+            "series": [
+              {
+                "x": "increasingValues",
+                "y": "key2",
+                "legend": "legend2"
+              },
+              {
+                "x": "increasingValues",
+                "y": "key3",
+                "legend": "legend3"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "vcpu": 2
+  }
+]

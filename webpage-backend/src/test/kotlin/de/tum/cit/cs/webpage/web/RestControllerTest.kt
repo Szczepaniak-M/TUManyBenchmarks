@@ -1,15 +1,10 @@
 package de.tum.cit.cs.webpage.web
 
 import com.ninjasquad.springmockk.MockkBean
-import de.tum.cit.cs.webpage.model.Benchmark
-import de.tum.cit.cs.webpage.model.BenchmarkResult
-import de.tum.cit.cs.webpage.model.Instance
-import de.tum.cit.cs.webpage.model.InstanceDetails
+import de.tum.cit.cs.webpage.model.*
 import de.tum.cit.cs.webpage.repository.InstanceRepository
-import de.tum.cit.cs.webpage.repository.InstanceDetailsRepository
 import de.tum.cit.cs.webpage.service.ApiKeyService
 import de.tum.cit.cs.webpage.service.InstanceService
-import de.tum.cit.cs.webpage.service.InstanceDetailsService
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -22,6 +17,7 @@ import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
+import org.springframework.core.io.ClassPathResource
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.EntityExchangeResult
@@ -34,13 +30,7 @@ class RestControllerTest {
     private lateinit var instanceService: InstanceService
 
     @MockkBean
-    private lateinit var instanceDetailsService: InstanceDetailsService
-
-    @MockkBean
     private lateinit var apiKeyService: ApiKeyService
-
-    @MockkBean
-    private lateinit var instanceDetailsRepository: InstanceDetailsRepository
 
     @MockkBean
     private lateinit var instanceRepository: InstanceRepository
@@ -111,30 +101,91 @@ class RestControllerTest {
         // given
         val apiKey = "apiKey123"
         val instanceList = listOf(
-            Instance("id1", "t3.micro", listOf("1 vCPU")),
-            Instance("id2", "t3.small", listOf("2 vCPU"))
+            Instance(
+                "id1", "t3.micro", 1, 1.0, "Low", listOf("1 vCPU"),
+                listOf(
+                    Benchmark(
+                        "benchId1", "benchmark1", "benchmarkDescription1",
+                        mapOf("key1" to mapOf("min" to 1, "max" to 1, "avg" to 1, "median" to 1)),
+                        listOf(BenchmarkResult(1000, mapOf(Pair("key1", 1)))),
+                        listOf(
+                            Plot(
+                                "scatter", "Title 1", null, "Y",
+                                listOf(PlotSeries(null, "key1", "legend1"))
+                            )
+                        )
+                    ),
+                    Benchmark(
+                        "benchId2", "benchmark2", "benchmarkDescription2",
+                        mapOf(
+                            "key2" to mapOf("min" to 1, "max" to 4, "avg" to 2.5, "median" to 2.5),
+                            "key3" to mapOf("min" to 4, "max" to 7, "avg" to 5.5, "median" to 5.5)
+                        ),
+                        listOf(
+                            BenchmarkResult(1000, mapOf(Pair("key2", listOf(1, 2, 3)), Pair("key3", listOf(4, 5, 6)))),
+                            BenchmarkResult(1100, mapOf(Pair("key2", listOf(2, 3, 4)), Pair("key3", listOf(5, 6, 7))))
+                        ),
+                        listOf(
+                            Plot(
+                                "line", "Title 2", "X", "Y",
+                                listOf(
+                                    PlotSeries("increasingValues", "key2", "legend2"),
+                                    PlotSeries("increasingValues", "key3", "legend3")
+                                )
+                            )
+                        )
+                    )
+                )
+            ),
+            Instance(
+                "id1", "t3.small", 2, 2.0, "Low", listOf("2 vCPU"),
+                listOf(
+                    Benchmark(
+                        "benchId1", "benchmark1", "benchmarkDescription1",
+                        mapOf("key1" to mapOf("min" to 0.5, "max" to 0.5, "avg" to 0.5, "median" to 0.5)),
+                        listOf(BenchmarkResult(1000, mapOf(Pair("key1", 0.5)))),
+                        listOf(
+                            Plot(
+                                "scatter", "Title 1", null, "Y",
+                                listOf(PlotSeries(null, "key1", "legend1"))
+                            )
+                        )
+                    ),
+                    Benchmark(
+                        "benchId2", "benchmark2", "benchmarkDescription2",
+                        mapOf(
+                            "key2" to mapOf("min" to 1, "max" to 4, "avg" to 2.5, "median" to 2.5),
+                            "key3" to mapOf("min" to 2, "max" to 3.5, "avg" to 2.75, "median" to 2.75)
+                        ),
+                        listOf(
+                            BenchmarkResult(
+                                1000,
+                                mapOf(Pair("key2", listOf(0.5, 1, 1.5)), Pair("key3", listOf(2, 2.5, 3)))
+                            ),
+                            BenchmarkResult(
+                                1100,
+                                mapOf(Pair("key2", listOf(1, 1.5, 2)), Pair("key3", listOf(2.5, 3, 3.5)))
+                            )
+                        ),
+                        listOf(
+                            Plot(
+                                "line", "Title 2", "X", "Y",
+                                listOf(
+                                    PlotSeries("increasingValues", "key2", "legend2"),
+                                    PlotSeries("increasingValues", "key3", "legend3")
+                                )
+                            )
+                        )
+                    )
+                )
+            ),
         )
         coEvery { instanceService.findAll(any<String>(), apiKey) } returns instanceList.asFlow()
         every { apiKeyService.isAccessAllowed(apiKey) } returns true
 
-        val expectedResponse = """
-            [
-                {
-                    "id": "id1",
-                    "name": "t3.micro",
-                    "tags": [
-                        "1 vCPU"
-                    ]
-                },
-                {
-                    "id": "id2",
-                    "name": "t3.small",
-                    "tags": [
-                        "2 vCPU"
-                    ]
-                }
-            ]
-            """.trimIndent()
+        val expectedResponse = ClassPathResource("/responses/RestControllerTest/list.json")
+            .getContentAsString(Charsets.UTF_8)
+            .trimIndent()
 
         // when-then
         webTestClient.get()
@@ -253,65 +304,52 @@ class RestControllerTest {
         // given
         val apiKey = "apiKey123"
         val instanceType = "t3.micro"
-        val benchmarkResults = listOf(
-            Benchmark(
-                "benchId1", "benchmark1", "benchmarkDescription1",
-                listOf(BenchmarkResult(1000, mapOf(Pair("key1", "value1"))))
-            ),
-            Benchmark(
-                "benchId2", "benchmark2", "benchmarkDescription2",
-                listOf(
-                    BenchmarkResult(1000, mapOf(Pair("key2", "value2"))),
-                    BenchmarkResult(1000, mapOf(Pair("key3", "value3")))
+        val instance = Instance(
+            "id1", "t3.small", 2, 2.0, "Low", listOf("2 vCPU"), listOf(
+                Benchmark(
+                    "benchId1", "benchmark1", "benchmarkDescription1",
+                    mapOf("key1" to mapOf("min" to 1, "max" to 1, "avg" to 1, "median" to 1)),
+                    listOf(BenchmarkResult(1000, mapOf(Pair("key1", 1)))),
+                    listOf(
+                        Plot(
+                            "scatter", "Title 1", null, "Y",
+                            listOf(PlotSeries(null, "key1", "legend1"))
+                        )
+                    )
+                ),
+                Benchmark(
+                    "benchId2", "benchmark2", "benchmarkDescription2",
+                    mapOf(
+                        "key2" to mapOf("min" to 1, "max" to 4, "avg" to 2.5, "median" to 2.5),
+                        "key3" to mapOf("min" to 2, "max" to 3.5, "avg" to 2.75, "median" to 2.75)
+                    ),
+                    listOf(
+                        BenchmarkResult(1000, mapOf(Pair("key2", listOf(1, 2, 3)), Pair("key3", listOf(4, 5, 6)))),
+                        BenchmarkResult(1100, mapOf(Pair("key2", listOf(2, 3, 4)), Pair("key3", listOf(5, 6, 7))))
+                    ),
+                    listOf(
+                        Plot(
+                            "line", "Title 2", "X", "Y",
+                            listOf(
+                                PlotSeries("increasingValues", "key2", "legend2"),
+                                PlotSeries("increasingValues", "key3", "legend3")
+                            )
+                        )
+                    )
                 )
             )
         )
-        val instanceDetails = InstanceDetails("id1", "t3.micro", listOf("1 vCPU"), benchmarkResults)
-        coEvery { instanceDetailsService.findByInstanceType(instanceType, any<String>(), apiKey) } returns instanceDetails
+        coEvery {
+            instanceService.findByInstanceType(
+                instanceType,
+                any<String>(),
+                apiKey
+            )
+        } returns instance
         every { apiKeyService.isAccessAllowed(apiKey) } returns true
-        val expectedResponse = """
-            {
-                "id": "id1",
-                "name": "t3.micro",
-                "tags": [
-                    "1 vCPU"
-                ],
-                "benchmarks": [
-                    {
-                        "id": "benchId1",
-                        "name": "benchmark1",
-                        "description": "benchmarkDescription1",
-                        "results": [
-                            {
-                                "timestamp": 1000,
-                                "values": {
-                                    "key1":"value1"
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "id": "benchId2",
-                        "name":"benchmark2",
-                        "description":"benchmarkDescription2",
-                        "results": [
-                            {
-                                "timestamp": 1000,
-                                "values": {
-                                    "key2":"value2"
-                                }
-                            },
-                            {
-                                "timestamp": 1000,
-                                "values": {
-                                    "key3":"value3"
-                                }
-                            }
-                        ]
-                     }
-                ]
-            }
-            """.trimIndent()
+        val expectedResponse = ClassPathResource("/responses/RestControllerTest/single.json")
+            .getContentAsString(Charsets.UTF_8)
+            .trimIndent()
 
         // when-then
         webTestClient.get()
@@ -330,7 +368,7 @@ class RestControllerTest {
                     getBodyAsString(it)
                 )
             }
-        coVerify(exactly = 1) { instanceDetailsService.findByInstanceType(instanceType, any<String>(), apiKey) }
+        coVerify(exactly = 1) { instanceService.findByInstanceType(instanceType, any<String>(), apiKey) }
         verify(exactly = 1) { apiKeyService.isAccessAllowed(apiKey) }
     }
 
@@ -339,7 +377,7 @@ class RestControllerTest {
         // given
         val apiKey = "apiKey123"
         val instanceType = "notExisting"
-        coEvery { instanceDetailsService.findByInstanceType(instanceType, any<String>(), apiKey) } returns null
+        coEvery { instanceService.findByInstanceType(instanceType, any<String>(), apiKey) } returns null
         every { apiKeyService.isAccessAllowed(apiKey) } returns true
 
         val expectedResponse = """
@@ -365,7 +403,7 @@ class RestControllerTest {
                     getBodyAsString(it)
                 )
             }
-        coVerify(exactly = 1) { instanceDetailsService.findByInstanceType(instanceType, any<String>(), apiKey) }
+        coVerify(exactly = 1) { instanceService.findByInstanceType(instanceType, any<String>(), apiKey) }
         verify(exactly = 1) { apiKeyService.isAccessAllowed(apiKey) }
     }
 
