@@ -1,6 +1,5 @@
 package de.tum.cit.cs.benchmarkservice.service
 
-import aws.sdk.kotlin.services.ec2.model.InstanceTypeInfo
 import de.tum.cit.cs.benchmarkservice.model.Benchmark
 import de.tum.cit.cs.benchmarkservice.model.Instance
 import de.tum.cit.cs.benchmarkservice.model.InstanceWithBenchmarks
@@ -59,13 +58,7 @@ class InstanceService(
 
     private suspend fun getInstancesFromAws(): List<Instance> {
         return awsService.getInstancesFromAws()
-            .map { parseInstanceTypeInfo(it) }
-    }
-
-    private fun parseInstanceTypeInfo(instanceTypeInfo: InstanceTypeInfo): Instance {
-        val name = instanceTypeInfoParser.parseInstanceName(instanceTypeInfo)
-        val tags = instanceTypeInfoParser.parseInstanceTags(instanceTypeInfo)
-        return Instance(null, name, tags)
+            .map { instanceTypeInfoParser.parse(it) }
     }
 
     private fun getInstancesFromDatabase(): Flow<Instance> {

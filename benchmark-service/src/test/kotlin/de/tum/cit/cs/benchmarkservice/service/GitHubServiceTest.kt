@@ -63,9 +63,9 @@ class GitHubServiceTest {
         assertEquals(3, result.size)
         assertEquals(
             listOf(
-                "curl --create-dirs -o \"benchmark/README.md\" \"https://raw.githubusercontent.com/MyUserName/MyRepository/main/benchmark/README.md\"",
-                "curl --create-dirs -o \"benchmark/Makefile\" \"https://raw.githubusercontent.com/MyUserName/MyRepository/main/benchmark/Makefile\"",
-                "curl --create-dirs -o \"benchmark/src/main.c\" \"https://raw.githubusercontent.com/MyUserName/MyRepository/main/benchmark/src/main.c\"",
+                """curl --create-dirs -o "benchmark/README.md" "https://raw.githubusercontent.com/MyUserName/MyRepository/main/benchmark/README.md"""",
+                """curl --create-dirs -o "benchmark/Makefile" "https://raw.githubusercontent.com/MyUserName/MyRepository/main/benchmark/Makefile"""",
+                """curl --create-dirs -o "benchmark/src/main.c" "https://raw.githubusercontent.com/MyUserName/MyRepository/main/benchmark/src/main.c"""",
             ),
             result
         )

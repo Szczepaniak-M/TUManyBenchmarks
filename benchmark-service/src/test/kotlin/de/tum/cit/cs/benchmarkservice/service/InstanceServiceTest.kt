@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import java.math.BigDecimal
 
 @ExtendWith(SpringExtension::class)
 class InstanceServiceTest {
@@ -30,7 +31,10 @@ class InstanceServiceTest {
     private lateinit var parser: InstanceTypeInfoParser
 
     companion object {
-        private val TEMPLATE_INSTANCE = Instance(id = "id", name = "t2.micro", tags = emptyList())
+        private val TEMPLATE_INSTANCE = Instance(
+            "id", "t2.micro", 8, BigDecimal(4),
+            "Up to 25 Gigabit", emptyList()
+        )
         private val TEMPLATE_CONFIGURATION = Configuration(
             name = "", description = "", cron = "", directory = "", instanceNumber = 0,
             instanceTags = null, instanceTypes = null
@@ -54,12 +58,15 @@ class InstanceServiceTest {
             instanceStorageSupported = true
             networkInfo = NETWORK_INFO
         }
+        private const val VCPUS = 8
+        private val MEMORY = BigDecimal(4)
+        private const val NETWORK = "Up to 25 Gigabit"
         private val TAG_LISTS_1 = listOf("8 vCPUs", "4 GiB Memory", "x86_64", "i386", "Up to 25 Gigabit Network")
         private val TAG_LISTS_2 = listOf("8 vCPUs", "4 GiB Memory", "x86_64", "i386")
-        private val INSTANCE_1 = Instance(null, INSTANCE_NAME_1_STRING, TAG_LISTS_1)
-        private val INSTANCE_2 = Instance(ID_2, INSTANCE_NAME_2_STRING, TAG_LISTS_2)
-        private val INSTANCE_1_OUT_OF_DATE = Instance(ID_1, INSTANCE_NAME_1_STRING, TAG_LISTS_2)
-        private val INSTANCE_1_WITH_ID = Instance(ID_1, INSTANCE_NAME_1_STRING, TAG_LISTS_1)
+        private val INSTANCE_1 = Instance(null, INSTANCE_NAME_1_STRING, VCPUS, MEMORY, NETWORK, TAG_LISTS_1)
+        private val INSTANCE_2 = Instance(ID_2, INSTANCE_NAME_2_STRING, VCPUS, MEMORY, NETWORK, TAG_LISTS_2)
+        private val INSTANCE_1_OUT_OF_DATE = Instance(ID_1, INSTANCE_NAME_1_STRING, VCPUS, MEMORY, NETWORK, TAG_LISTS_2)
+        private val INSTANCE_1_WITH_ID = Instance(ID_1, INSTANCE_NAME_1_STRING, VCPUS, MEMORY, NETWORK, TAG_LISTS_1)
     }
 
     @Test
@@ -210,8 +217,7 @@ class InstanceServiceTest {
         coEvery { awsService.getInstancesFromAws() } returns listOf(INSTANCE_TYPE_INFO_1)
         coEvery { instanceRepository.findAll() } returns flowOf(INSTANCE_2)
         coEvery { instanceRepository.save(INSTANCE_1) } returns INSTANCE_1
-        every { parser.parseInstanceName(INSTANCE_TYPE_INFO_1) } returns INSTANCE_NAME_1_STRING
-        every { parser.parseInstanceTags(INSTANCE_TYPE_INFO_1) } returns TAG_LISTS_1
+        every { parser.parse(INSTANCE_TYPE_INFO_1) } returns INSTANCE_1
 
         // when
         service.updateInstances()
@@ -220,8 +226,7 @@ class InstanceServiceTest {
         coVerify { awsService.getInstancesFromAws() }
         coVerify { instanceRepository.findAll() }
         coVerify { instanceRepository.save(INSTANCE_1) }
-        verify { parser.parseInstanceName(INSTANCE_TYPE_INFO_1) }
-        verify { parser.parseInstanceTags(INSTANCE_TYPE_INFO_1) }
+        verify { parser.parse(INSTANCE_TYPE_INFO_1) }
         coVerify(exactly = 0) { instanceRepository.updateTagsById(any(), any()) }
     }
 
@@ -232,8 +237,7 @@ class InstanceServiceTest {
         coEvery { awsService.getInstancesFromAws() } returns listOf(INSTANCE_TYPE_INFO_1)
         coEvery { instanceRepository.findAll() } returns flowOf(INSTANCE_1_OUT_OF_DATE)
         coEvery { instanceRepository.updateTagsById(ID_1, TAG_LISTS_1) } returns 1
-        every { parser.parseInstanceName(INSTANCE_TYPE_INFO_1) } returns INSTANCE_NAME_1_STRING
-        every { parser.parseInstanceTags(INSTANCE_TYPE_INFO_1) } returns TAG_LISTS_1
+        every { parser.parse(INSTANCE_TYPE_INFO_1) } returns INSTANCE_1
 
         // when
         service.updateInstances()
@@ -242,8 +246,7 @@ class InstanceServiceTest {
         coVerify { awsService.getInstancesFromAws() }
         coVerify { instanceRepository.findAll() }
         coVerify { instanceRepository.updateTagsById(ID_1, TAG_LISTS_1) }
-        verify { parser.parseInstanceName(INSTANCE_TYPE_INFO_1) }
-        verify { parser.parseInstanceTags(INSTANCE_TYPE_INFO_1) }
+        verify { parser.parse(INSTANCE_TYPE_INFO_1) }
         coVerify(exactly = 0) { instanceRepository.save(any()) }
     }
 
@@ -253,8 +256,7 @@ class InstanceServiceTest {
         val service = InstanceService(instanceRepository, awsService, parser)
         coEvery { awsService.getInstancesFromAws() } returns listOf(INSTANCE_TYPE_INFO_1)
         coEvery { instanceRepository.findAll() } returns flowOf(INSTANCE_1_WITH_ID)
-        every { parser.parseInstanceName(INSTANCE_TYPE_INFO_1) } returns INSTANCE_NAME_1_STRING
-        every { parser.parseInstanceTags(INSTANCE_TYPE_INFO_1) } returns TAG_LISTS_1
+        every { parser.parse(INSTANCE_TYPE_INFO_1) } returns INSTANCE_1
 
         // when
         service.updateInstances()
@@ -262,8 +264,7 @@ class InstanceServiceTest {
         // then
         coVerify { awsService.getInstancesFromAws() }
         coVerify { instanceRepository.findAll() }
-        verify { parser.parseInstanceName(INSTANCE_TYPE_INFO_1) }
-        verify { parser.parseInstanceTags(INSTANCE_TYPE_INFO_1) }
+        verify { parser.parse(INSTANCE_TYPE_INFO_1) }
         coVerify(exactly = 0) { instanceRepository.updateTagsById(any(), any()) }
         coVerify(exactly = 0) { instanceRepository.save(any()) }
     }

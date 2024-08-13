@@ -28,7 +28,7 @@ class BenchmarkService(
     private val logger = KotlinLogging.logger {}
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun runBenchmarks() = runBlocking {
+    fun runBenchmarks(): Int = runBlocking {
         val benchmarkIdsToRun = getBenchmarksWithMatchingCron()
         val benchmarks = benchmarkRepository.findAllById(benchmarkIdsToRun).toList()
         logger.info { "Found ${benchmarks.size} benchmarks with matching CRON expression" }
@@ -54,6 +54,7 @@ class BenchmarkService(
             }
             .fold(0) { accumulator, value -> accumulator + value }
         logger.info { "Finished running $benchmarksCount benchmarks" }
+        return@runBlocking benchmarksCount
     }
 
     private fun getBenchmarksWithMatchingCron(): Flow<String> {

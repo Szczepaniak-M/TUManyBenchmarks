@@ -211,7 +211,7 @@ class AwsService(
             val describeSpotRequestsRequest = DescribeSpotInstanceRequestsRequest {
                 spotInstanceRequestIds = spotRequestIds
             }
-            val describeRequestResponse = ec2Client.describeSpotInstanceRequests(describeSpotRequestsRequest)
+            val describeRequestResponse = retryIfException { ec2Client.describeSpotInstanceRequests(describeSpotRequestsRequest) }
             instanceIds = describeRequestResponse.spotInstanceRequests
                 ?.filter { it.state == SpotInstanceState.Active }
                 ?.mapNotNull { it.instanceId }
@@ -278,7 +278,7 @@ class AwsService(
                 var terminatedInstances = emptyList<Instance>()
                 while (terminatedInstances.size != instances.size) {
                     delay(15_000)
-                    val describeInstancesResponse = ec2Client.describeInstances(describeInstancesRequest)
+                    val describeInstancesResponse = retryIfException { ec2Client.describeInstances(describeInstancesRequest) }
                     val reservations = describeInstancesResponse.reservations ?: emptyList()
                     terminatedInstances = reservations.flatMap { it.instances ?: emptyList() }
                         .filter { it.state?.name == InstanceStateName.Terminated }

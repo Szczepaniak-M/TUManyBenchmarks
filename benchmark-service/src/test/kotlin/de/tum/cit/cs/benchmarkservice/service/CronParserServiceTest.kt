@@ -3,15 +3,22 @@ package de.tum.cit.cs.benchmarkservice.service
 import de.tum.cit.cs.benchmarkservice.model.BenchmarkCron
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.ZonedDateTime
 
 class CronParserServiceTest {
 
+    private lateinit var cronParserService: CronParserService
+
     companion object {
         private const val TEST_ID = "ID"
         private val DEFAULT_DATE = ZonedDateTime.now().withMonth(1).withMinute(0)
-        private val cronParserService = CronParserService()
+    }
+
+    @BeforeEach
+    fun setUp() {
+        cronParserService = CronParserService()
     }
 
     @Test

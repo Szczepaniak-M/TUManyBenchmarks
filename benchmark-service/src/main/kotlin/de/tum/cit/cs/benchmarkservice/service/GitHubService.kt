@@ -22,7 +22,7 @@ class GitHubService(
                 if (it.type == "dir") {
                     directories.add(it.path)
                 } else if (it.type == "file" && it.downloadUrl != null) {
-                    curlsCommands.add("curl --create-dirs -o \"${it.path}\" \"${it.downloadUrl}\"")
+                    curlsCommands.add("""curl --create-dirs -o "${it.path}" "${it.downloadUrl}"""")
                 }
             }
         val subdirectories = directories.flatMap { getCurlsForFilesFromDirectory(it) }

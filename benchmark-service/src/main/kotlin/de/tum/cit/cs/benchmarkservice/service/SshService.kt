@@ -107,6 +107,7 @@ class SshService(
         execChannel.open().verify()
         execChannel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), 0)
         val output = outputStream.toString()
+        execChannel.close()
         if (output.contains("FAILED!")) {
             logger.error {
                 "Benchmark ${ec2Configuration.benchmarkRunId}: Benchmark failed during setting up nodes. "
@@ -122,6 +123,7 @@ class SshService(
         val execChannel = session.createExecChannel(command)
         execChannel.open().verify()
         execChannel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), 0)
+        execChannel.close()
     }
 
     private suspend fun getBenchmarkOutput(
@@ -134,7 +136,9 @@ class SshService(
         execChannel.out = outputStream
         execChannel.open().verify()
         execChannel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), 0)
-        return outputStream.toString()
+        val output = outputStream.toString()
+        execChannel.close()
+        return output
     }
 
     private suspend fun prepareSetUpCommands(
@@ -151,7 +155,7 @@ class SshService(
             commands.add("ansible-playbook --connection=local --inventory 127.0.0.1, $ansibleFile")
         }
         commands.addAll(createEtcHosts(ec2Configuration))
-        val nodeIdCommand = "echo 'export NODE_ID=\"${node.nodeId}\"' >> ~/.bashrc"
+        val nodeIdCommand = """echo 'export NODE_ID="${node.nodeId}"' >> ~/.bashrc"""
         val updateSource = "source ~/.bashrc"
         commands.add(nodeIdCommand)
         commands.add(updateSource)
@@ -162,8 +166,8 @@ class SshService(
         val etcHostsCommand = mutableListOf<String>()
         for (node in ec2Configuration.nodes) {
             if (node.nodeId > 0) {
-                etcHostsCommand.add("echo \"${node.ipv4} node-${node.nodeId}\" | sudo tee -a /etc/hosts")
-                etcHostsCommand.add("echo \"${node.ipv6} node-${node.nodeId}\" | sudo tee -a /etc/hosts")
+                etcHostsCommand.add("""echo "${node.ipv4} node-${node.nodeId}" | sudo tee -a /etc/hosts""")
+                etcHostsCommand.add("""echo "${node.ipv6} node-${node.nodeId}" | sudo tee -a /etc/hosts""")
             }
         }
         return etcHostsCommand

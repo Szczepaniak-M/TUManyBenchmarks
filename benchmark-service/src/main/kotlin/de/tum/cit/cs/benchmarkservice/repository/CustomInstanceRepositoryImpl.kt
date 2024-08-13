@@ -18,6 +18,10 @@ class CustomInstanceRepositoryImpl(
 ) : CustomInstanceRepository {
 
     override suspend fun updateBenchmarksById(instance: String, benchmarks: List<BenchmarkResult>): Int {
+        if(benchmarks.isEmpty()) {
+            return 0
+        }
+
         val bulkOperations = mutableListOf<WriteModel<Document>>()
         val instanceId = ObjectId(instance)
         for (benchmark in benchmarks) {

@@ -53,12 +53,12 @@ class Ec2ConfigurationService(
     private suspend fun getDefaultImage(node: Node?, instance: Instance): String {
         return if (node?.instanceType != null && node.instanceType != instance.name && node.image == null) {
             val tempInstance = instanceRepository.findInstanceByName(node.instanceType)
-            if (tempInstance.tags.contains("arm64")) {
+            if (tempInstance.tags.contains("ARM64")) {
                 amiArm
             } else {
                 amiX86_64
             }
-        } else if (instance.tags.contains("arm64")) {
+        } else if (instance.tags.contains("ARM64")) {
             amiArm
         } else {
             amiX86_64

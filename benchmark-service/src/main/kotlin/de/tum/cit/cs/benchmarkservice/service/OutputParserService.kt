@@ -17,7 +17,7 @@ class OutputParserService {
             val resultsAsMap: Map<String, Any> = mapper.readValue(result, typeRef)
             parsedResults.putAll(resultsAsMap)
         }
-        val time = ZonedDateTime.now().withMinute(0).toEpochSecond()
+        val time = ZonedDateTime.now().withSecond(0).toEpochSecond()
         return BenchmarkResult(
             instance.id!!,
             instance.name,

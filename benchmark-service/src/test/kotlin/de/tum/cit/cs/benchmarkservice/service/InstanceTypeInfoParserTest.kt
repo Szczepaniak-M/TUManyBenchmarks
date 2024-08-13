@@ -1,9 +1,9 @@
 package de.tum.cit.cs.benchmarkservice.service
 
 import aws.sdk.kotlin.services.ec2.model.*
+import aws.smithy.kotlin.runtime.content.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-
 
 class InstanceTypeInfoParserTest {
 
@@ -21,19 +21,7 @@ class InstanceTypeInfoParserTest {
     private val parser = InstanceTypeInfoParser()
 
     @Test
-    fun `parse instance name`() {
-        // given
-        val instanceTypeInfo = InstanceTypeInfo { instanceType = INSTANCE_NAME }
-
-        // when
-        val result = parser.parseInstanceName(instanceTypeInfo)
-
-        // then
-        assertEquals(INSTANCE_NAME_STRING, result)
-    }
-
-    @Test
-    fun `parse instance tags`() {
+    fun `parse instance type info`() {
         // given
         val instanceTypeInfo = InstanceTypeInfo {
             instanceType = INSTANCE_NAME
@@ -47,16 +35,20 @@ class InstanceTypeInfoParserTest {
             bareMetal = false
             currentGeneration = false
         }
+        val expectedTags = listOf(
+            "Family t3", "8 vCPUs", "4 GiB Memory", "Up to 25 Gigabit Network",
+            "x86-64", "i386", "SSD", "Hypervisor Nitro", "Previous Generation"
+        )
 
         // when
-        val result = parser.parseInstanceTags(instanceTypeInfo)
+        val result = parser.parse(instanceTypeInfo)
 
         // then
-        val expectedTags = listOf(
-            "Family t3", "8 vCPUs", "4 GiB Memory", "x86-64", "i386", "SSD",
-            "Up to 25 Gigabit Network", "Hypervisor Nitro", "Previous Generation"
-        )
-        assertEquals(expectedTags, result)
+        assertEquals(INSTANCE_NAME_STRING, result.name)
+        assertEquals(8, result.vCpu)
+        assertEquals(BigDecimal(4), result.memory)
+        assertEquals("Up to 25 Gigabit", result.network)
+        assertEquals(expectedTags, result.tags)
     }
 
     @Test
@@ -71,13 +63,13 @@ class InstanceTypeInfoParserTest {
             instanceStorageInfo = INSTANCE_STORAGE_INFO
             networkInfo = NETWORK_INFO
         }
+        val expectedTags = listOf("Family t3", "8 vCPUs", "4 GiB Memory", "Up to 25 Gigabit Network", "x86-64", "i386")
 
         // when
-        val result = parser.parseInstanceTags(instanceTypeInfo)
+        val result = parser.parse(instanceTypeInfo)
 
         // then
-        val expectedTags = listOf("Family t3", "8 vCPUs", "4 GiB Memory", "x86-64", "i386", "Up to 25 Gigabit Network")
-        assertEquals(expectedTags, result)
+        assertEquals(expectedTags, result.tags)
     }
 
     @Test
@@ -94,15 +86,15 @@ class InstanceTypeInfoParserTest {
             hypervisor = null
             bareMetal = true
         }
+        val expectedTags = listOf(
+            "Family t3", "8 vCPUs", "4 GiB Memory", "Up to 25 Gigabit Network",
+            "x86-64", "i386", "Bare Metal"
+        )
 
         // when
-        val result = parser.parseInstanceTags(instanceTypeInfo)
+        val result = parser.parse(instanceTypeInfo)
 
         // then
-        val expectedTags = listOf(
-            "Family t3", "8 vCPUs", "4 GiB Memory", "x86-64",
-            "i386", "Up to 25 Gigabit Network", "Bare Metal"
-        )
-        assertEquals(expectedTags, result)
+        assertEquals(expectedTags, result.tags)
     }
 }

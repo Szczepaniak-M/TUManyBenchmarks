@@ -1,6 +1,7 @@
 package de.tum.cit.cs.benchmarkservice.service
 
 import aws.sdk.kotlin.services.ec2.model.InstanceTypeInfo
+import de.tum.cit.cs.benchmarkservice.model.Instance
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -8,18 +9,42 @@ import java.math.RoundingMode
 @Service
 class InstanceTypeInfoParser {
 
-    fun parseInstanceName(instanceTypeInfo: InstanceTypeInfo): String {
+    fun parse(instanceTypeInfo: InstanceTypeInfo): Instance {
+        val name = parseInstanceName(instanceTypeInfo)
+        val vCpu = parseCpu(instanceTypeInfo)
+        val memory = parseMemory(instanceTypeInfo)
+        val network = parseNetwork(instanceTypeInfo)
+        val tags = parseInstanceTags(instanceTypeInfo)
+        return Instance(null, name, vCpu, memory, network, tags)
+    }
+
+    private fun parseInstanceName(instanceTypeInfo: InstanceTypeInfo): String {
         return instanceTypeInfo.instanceType?.value ?: "UNKNOWN"
     }
 
-    fun parseInstanceTags(instanceTypeInfo: InstanceTypeInfo): List<String> {
+    private fun parseCpu(instanceTypeInfo: InstanceTypeInfo): Int {
+        return instanceTypeInfo.vCpuInfo?.defaultVCpus ?: 0
+    }
+
+    private fun parseMemory(instanceTypeInfo: InstanceTypeInfo): BigDecimal {
+        val memory = instanceTypeInfo.memoryInfo?.sizeInMib?.div(1024.0) ?: 0.0
+        return BigDecimal(memory)
+            .setScale(3, RoundingMode.HALF_EVEN)
+            .stripTrailingZeros()
+    }
+
+    private fun parseNetwork(instanceTypeInfo: InstanceTypeInfo): String {
+        return instanceTypeInfo.networkInfo?.networkPerformance ?: ""
+    }
+
+    private fun parseInstanceTags(instanceTypeInfo: InstanceTypeInfo): List<String> {
         val tags = mutableListOf<String>()
         tags.add(parseFamily(instanceTypeInfo))
-        tags.add(parseCPUs(instanceTypeInfo))
-        tags.add(parseMemory(instanceTypeInfo))
+        tags.add(parseCpuTag(instanceTypeInfo))
+        tags.add(parseMemoryTag(instanceTypeInfo))
+        tags.add(parseNetworkTag(instanceTypeInfo))
         tags.addAll(parseArchitectures(instanceTypeInfo))
         tags.addAll(parseStorageInfo(instanceTypeInfo))
-        tags.add(parseNetwork(instanceTypeInfo))
         parseHypervisor(instanceTypeInfo)?.let { tags.add(it) }
         parseMetal(instanceTypeInfo)?.let { tags.add(it) }
         parsePreviousGeneration(instanceTypeInfo)?.let { tags.add(it) }
@@ -31,18 +56,19 @@ class InstanceTypeInfoParser {
         return "Family $family"
     }
 
-    private fun parseCPUs(instanceTypeInfo: InstanceTypeInfo): String {
-        val vCpu = instanceTypeInfo.vCpuInfo?.defaultVCpus
+    private fun parseCpuTag(instanceTypeInfo: InstanceTypeInfo): String {
+        val vCpu = parseCpu(instanceTypeInfo)
         return "$vCpu vCPUs"
     }
 
-    private fun parseMemory(instanceTypeInfo: InstanceTypeInfo): String {
-        val memory = instanceTypeInfo.memoryInfo?.sizeInMib?.div(1024.0) ?: 0.0
-        val memoryDecimal = BigDecimal(memory)
-            .setScale(3, RoundingMode.HALF_EVEN)
-            .stripTrailingZeros()
-            .toPlainString()
+    private fun parseMemoryTag(instanceTypeInfo: InstanceTypeInfo): String {
+        val memoryDecimal = parseMemory(instanceTypeInfo)
         return "$memoryDecimal GiB Memory"
+    }
+
+    private fun parseNetworkTag(instanceTypeInfo: InstanceTypeInfo): String {
+        val networkSpeed = parseNetwork(instanceTypeInfo)
+        return "$networkSpeed Network"
     }
 
     private fun parseArchitectures(instanceTypeInfo: InstanceTypeInfo): List<String> {
@@ -59,11 +85,6 @@ class InstanceTypeInfoParser {
             disk?.type?.let { tags.add(it.value.uppercase()) }
         }
         return tags
-    }
-
-    private fun parseNetwork(instanceTypeInfo: InstanceTypeInfo): String {
-        val networkSpeed = instanceTypeInfo.networkInfo?.networkPerformance
-        return "$networkSpeed Network"
     }
 
     private fun parseHypervisor(instanceTypeInfo: InstanceTypeInfo): String? {
