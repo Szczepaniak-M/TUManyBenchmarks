@@ -2,6 +2,7 @@ package de.tum.cit.cs.webpage.model
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import java.math.BigDecimal
 
 @Document(collection = "instance-details")
 data class Instance(
@@ -9,7 +10,7 @@ data class Instance(
     val id: String?,
     val name: String,
     val vCpu: Int,
-    val memory: Double,
+    val memory: BigDecimal,
     val network: String,
     val tags: List<String>,
     val benchmarks: List<Benchmark>
@@ -19,7 +20,6 @@ data class Benchmark(
     val id: String,
     val name: String,
     val description: String,
-    val statistics: Map<String, Any>,
     val results: List<BenchmarkResult>,
     val plots: List<Plot>
 )

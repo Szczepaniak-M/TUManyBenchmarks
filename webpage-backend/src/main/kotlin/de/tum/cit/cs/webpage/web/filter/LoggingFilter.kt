@@ -74,10 +74,10 @@ data class LogRequestDetails(
         val ip = if (sourceIp == null) {
             "null"
         } else {
-            "\"${sourceIp}\""
+            """"$sourceIp""""
         }
-        return "{ \"request\": \"$request\", " +
-                "\"sourceIp\": $ip," +
-                "\"agent\": \"$agent\" }"
+        return """{ "request": "$request",""" +
+                """ "sourceIp": $ip,""" +
+                """ "agent": "$agent" }"""
     }
 }

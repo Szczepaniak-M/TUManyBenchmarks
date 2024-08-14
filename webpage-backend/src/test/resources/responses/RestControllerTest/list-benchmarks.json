@@ -1,0 +1,42 @@
+[
+  {
+    "id": "id1",
+    "name": "name1",
+    "description": "description2",
+    "instanceTypes": [
+      "t2.micro",
+      "t3.micro"
+    ],
+    "instanceTags": [],
+    "seriesX": [
+      "seriesX1"
+    ],
+    "seriesY": [
+      "seriesY1",
+      "seriesY2"
+    ]
+  },
+  {
+    "id": "id1",
+    "name": "name1",
+    "description": "description2",
+    "instanceTypes": [],
+    "instanceTags": [
+      [
+        "tag1",
+        "tag2"
+      ],
+      [
+        "tag3",
+        "tag4"
+      ]
+    ],
+    "seriesX": [
+      "seriesX2"
+    ],
+    "seriesY": [
+      "seriesY3",
+      "seriesY4"
+    ]
+  }
+]

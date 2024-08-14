@@ -1,0 +1,20 @@
+[
+  {
+    "instanceId": "instanceId1",
+    "benchmarkId": "benchmarkId1",
+    "series": "series1",
+    "min": 1.0,
+    "max": 2.0,
+    "avg": 3.0,
+    "median": 4.0
+  },
+  {
+    "instanceId": "instanceId2",
+    "benchmarkId": "benchmarkId2",
+    "series": "series2",
+    "min": 5.0,
+    "max": 6.0,
+    "avg": 7.0,
+    "median": 8.0
+  }
+]

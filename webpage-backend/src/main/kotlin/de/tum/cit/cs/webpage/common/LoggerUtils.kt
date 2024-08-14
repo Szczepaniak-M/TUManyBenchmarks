@@ -33,13 +33,12 @@ object LoggerUtils {
         val formattedMessage = if (message.startsWith("{")) {
             message
         } else {
-            "\"$message\""
+            """"$message""""
         }
-        return "{ \"timestamp\": \"$timestamp\", " +
-                "\"level\": \"$level\", " +
-                "\"message\": $formattedMessage, " +
-                "\"requestId\": \"$requestId\", " +
-                "\"apiKey\": \"$apiKey\" }"
-
+        return """{ "timestamp": "$timestamp",""" +
+                """ "level": "$level",""" +
+                """ "message": $formattedMessage,""" +
+                """ "requestId": "$requestId", """ +
+                """ "apiKey": "$apiKey" }"""
     }
 }

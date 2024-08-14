@@ -2,8 +2,11 @@ package de.tum.cit.cs.webpage.web
 
 import com.ninjasquad.springmockk.MockkBean
 import de.tum.cit.cs.webpage.model.*
+import de.tum.cit.cs.webpage.repository.BenchmarkDetailsRepository
+import de.tum.cit.cs.webpage.repository.BenchmarkStatisticsRepository
 import de.tum.cit.cs.webpage.repository.InstanceRepository
 import de.tum.cit.cs.webpage.service.ApiKeyService
+import de.tum.cit.cs.webpage.service.BenchmarkService
 import de.tum.cit.cs.webpage.service.InstanceService
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -22,6 +25,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.EntityExchangeResult
 import org.springframework.test.web.reactive.server.WebTestClient
+import java.math.BigDecimal
 
 @WebFluxTest(controllers = [Router::class, RestController::class])
 class RestControllerTest {
@@ -33,7 +37,16 @@ class RestControllerTest {
     private lateinit var apiKeyService: ApiKeyService
 
     @MockkBean
+    private lateinit var benchmarkService: BenchmarkService
+
+    @MockkBean
     private lateinit var instanceRepository: InstanceRepository
+
+    @MockkBean
+    private lateinit var benchmarkDetailsRepository: BenchmarkDetailsRepository
+
+    @MockkBean
+    private lateinit var benchmarkStatisticsRepository: BenchmarkStatisticsRepository
 
     @Autowired
     private lateinit var webTestClient: WebTestClient
@@ -102,11 +115,10 @@ class RestControllerTest {
         val apiKey = "apiKey123"
         val instanceList = listOf(
             Instance(
-                "id1", "t3.micro", 1, 1.0, "Low", listOf("1 vCPU"),
+                "id1", "t3.micro", 1, BigDecimal(1), "Low", listOf("1 vCPU"),
                 listOf(
                     Benchmark(
                         "benchId1", "benchmark1", "benchmarkDescription1",
-                        mapOf("key1" to mapOf("min" to 1, "max" to 1, "avg" to 1, "median" to 1)),
                         listOf(BenchmarkResult(1000, mapOf(Pair("key1", 1)))),
                         listOf(
                             Plot(
@@ -117,10 +129,6 @@ class RestControllerTest {
                     ),
                     Benchmark(
                         "benchId2", "benchmark2", "benchmarkDescription2",
-                        mapOf(
-                            "key2" to mapOf("min" to 1, "max" to 4, "avg" to 2.5, "median" to 2.5),
-                            "key3" to mapOf("min" to 4, "max" to 7, "avg" to 5.5, "median" to 5.5)
-                        ),
                         listOf(
                             BenchmarkResult(1000, mapOf(Pair("key2", listOf(1, 2, 3)), Pair("key3", listOf(4, 5, 6)))),
                             BenchmarkResult(1100, mapOf(Pair("key2", listOf(2, 3, 4)), Pair("key3", listOf(5, 6, 7))))
@@ -138,11 +146,10 @@ class RestControllerTest {
                 )
             ),
             Instance(
-                "id1", "t3.small", 2, 2.0, "Low", listOf("2 vCPU"),
+                "id1", "t3.small", 2, BigDecimal(2), "Low", listOf("2 vCPU"),
                 listOf(
                     Benchmark(
                         "benchId1", "benchmark1", "benchmarkDescription1",
-                        mapOf("key1" to mapOf("min" to 0.5, "max" to 0.5, "avg" to 0.5, "median" to 0.5)),
                         listOf(BenchmarkResult(1000, mapOf(Pair("key1", 0.5)))),
                         listOf(
                             Plot(
@@ -153,10 +160,6 @@ class RestControllerTest {
                     ),
                     Benchmark(
                         "benchId2", "benchmark2", "benchmarkDescription2",
-                        mapOf(
-                            "key2" to mapOf("min" to 1, "max" to 4, "avg" to 2.5, "median" to 2.5),
-                            "key3" to mapOf("min" to 2, "max" to 3.5, "avg" to 2.75, "median" to 2.75)
-                        ),
                         listOf(
                             BenchmarkResult(
                                 1000,
@@ -183,7 +186,7 @@ class RestControllerTest {
         coEvery { instanceService.findAll(any<String>(), apiKey) } returns instanceList.asFlow()
         every { apiKeyService.isAccessAllowed(apiKey) } returns true
 
-        val expectedResponse = ClassPathResource("/responses/RestControllerTest/list.json")
+        val expectedResponse = ClassPathResource("/responses/RestControllerTest/list-instances.json")
             .getContentAsString(Charsets.UTF_8)
             .trimIndent()
 
@@ -305,10 +308,9 @@ class RestControllerTest {
         val apiKey = "apiKey123"
         val instanceType = "t3.micro"
         val instance = Instance(
-            "id1", "t3.small", 2, 2.0, "Low", listOf("2 vCPU"), listOf(
+            "id1", "t3.small", 2, BigDecimal(2), "Low", listOf("2 vCPU"), listOf(
                 Benchmark(
                     "benchId1", "benchmark1", "benchmarkDescription1",
-                    mapOf("key1" to mapOf("min" to 1, "max" to 1, "avg" to 1, "median" to 1)),
                     listOf(BenchmarkResult(1000, mapOf(Pair("key1", 1)))),
                     listOf(
                         Plot(
@@ -319,10 +321,6 @@ class RestControllerTest {
                 ),
                 Benchmark(
                     "benchId2", "benchmark2", "benchmarkDescription2",
-                    mapOf(
-                        "key2" to mapOf("min" to 1, "max" to 4, "avg" to 2.5, "median" to 2.5),
-                        "key3" to mapOf("min" to 2, "max" to 3.5, "avg" to 2.75, "median" to 2.75)
-                    ),
                     listOf(
                         BenchmarkResult(1000, mapOf(Pair("key2", listOf(1, 2, 3)), Pair("key3", listOf(4, 5, 6)))),
                         BenchmarkResult(1100, mapOf(Pair("key2", listOf(2, 3, 4)), Pair("key3", listOf(5, 6, 7))))
@@ -347,7 +345,7 @@ class RestControllerTest {
             )
         } returns instance
         every { apiKeyService.isAccessAllowed(apiKey) } returns true
-        val expectedResponse = ClassPathResource("/responses/RestControllerTest/single.json")
+        val expectedResponse = ClassPathResource("/responses/RestControllerTest/single-instance.json")
             .getContentAsString(Charsets.UTF_8)
             .trimIndent()
 
@@ -488,6 +486,279 @@ class RestControllerTest {
             .uri {
                 it.path("/api/instance/{instanceType}")
                     .build(instanceType)
+            }
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED)
+            .expectBody()
+            .consumeWith {
+                assertJsonEquals(
+                    expectedResponse,
+                    getBodyAsString(it)
+                )
+            }
+    }
+
+    @Test
+    fun `list benchmarks`() {
+        // given
+        val apiKey = "apiKey123"
+        val benchmarkDetailsList = listOf(
+            BenchmarkDetails(
+                "id1", "name1", "description2",
+                listOf("t2.micro", "t3.micro"),
+                emptyList(),
+                listOf("seriesX1"),
+                listOf("seriesY1", "seriesY2"),
+            ),
+            BenchmarkDetails(
+                "id1", "name1", "description2",
+                emptyList(),
+                listOf(listOf("tag1", "tag2"), listOf("tag3", "tag4")),
+                listOf("seriesX2"),
+                listOf("seriesY3", "seriesY4"),
+            )
+        )
+        coEvery { benchmarkService.findAllBenchmarkDetails(any<String>(), apiKey) } returns benchmarkDetailsList.asFlow()
+        every { apiKeyService.isAccessAllowed(apiKey) } returns true
+
+        val expectedResponse = ClassPathResource("/responses/RestControllerTest/list-benchmarks.json")
+            .getContentAsString(Charsets.UTF_8)
+            .trimIndent()
+
+        // when-then
+        webTestClient.get()
+            .uri {
+                it.path("/api/benchmark")
+                    .build()
+            }
+            .accept(MediaType.APPLICATION_JSON)
+            .header("X-API-Key", apiKey)
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.OK)
+            .expectBody()
+            .consumeWith {
+                assertJsonEquals(
+                    expectedResponse,
+                    getBodyAsString(it)
+                )
+            }
+        coVerify(exactly = 1) { benchmarkService.findAllBenchmarkDetails(any<String>(), apiKey) }
+        verify(exactly = 1) { apiKeyService.isAccessAllowed(apiKey) }
+    }
+
+    @Test
+    fun `get too many requests error response for list benchmarks when access denied for given api key`() {
+        // given
+        val apiKey = "apiKey123"
+        every { apiKeyService.isAccessAllowed(apiKey) } returns false
+
+        val expectedResponse = """
+                {
+                   "error": "Too many requests in one minute"
+                }
+                 """.trimIndent()
+
+        // when-then
+        webTestClient.get()
+            .uri {
+                it.path("/api/benchmark")
+                    .build()
+            }
+            .accept(MediaType.APPLICATION_JSON)
+            .header("X-API-Key", apiKey)
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.TOO_MANY_REQUESTS)
+            .expectBody()
+            .consumeWith {
+                assertJsonEquals(
+                    expectedResponse,
+                    getBodyAsString(it)
+                )
+            }
+        verify(exactly = 1) { apiKeyService.isAccessAllowed(apiKey) }
+    }
+
+    @Test
+    fun `get unauthorized error response for list benchmarks when api key no longer valid`() {
+        // given
+        val apiKey = "apiKey123"
+        every { apiKeyService.isAccessAllowed(apiKey) } returns null
+
+        val expectedResponse = """
+                {
+                   "error": "No valid API key found"
+                }
+                 """.trimIndent()
+
+        // when-then
+        webTestClient.get()
+            .uri {
+                it.path("/api/benchmark")
+                    .build()
+            }
+            .accept(MediaType.APPLICATION_JSON)
+            .header("X-API-Key", apiKey)
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED)
+            .expectBody()
+            .consumeWith {
+                assertJsonEquals(
+                    expectedResponse,
+                    getBodyAsString(it)
+                )
+            }
+        verify(exactly = 1) { apiKeyService.isAccessAllowed(apiKey) }
+    }
+
+    @Test
+    fun `get unauthorized error response for get list benchmark request when no api key in headers`() {
+        // given
+        val expectedResponse = """
+                {
+                   "error": "No valid API key found"
+                }
+                 """.trimIndent()
+
+        // when-then
+        webTestClient.get()
+            .uri {
+                it.path("/api/benchmark")
+                    .build()
+            }
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED)
+            .expectBody()
+            .consumeWith {
+                assertJsonEquals(
+                    expectedResponse,
+                    getBodyAsString(it)
+                )
+            }
+    }
+
+
+    @Test
+    fun `list statistics`() {
+        // given
+        val apiKey = "apiKey123"
+        val statisticsList = listOf(
+            BenchmarkStatistics(
+                "instanceId1", "benchmarkId1", "series1",
+                1.0, 2.0, 3.0, 4.0
+            ),
+            BenchmarkStatistics(
+                "instanceId2", "benchmarkId2", "series2",
+                5.0, 6.0, 7.0, 8.0
+            )
+        )
+        coEvery { benchmarkService.findAllStatistics(any<String>(), apiKey) } returns statisticsList.asFlow()
+        every { apiKeyService.isAccessAllowed(apiKey) } returns true
+
+        val expectedResponse = ClassPathResource("/responses/RestControllerTest/list-statistics.json")
+            .getContentAsString(Charsets.UTF_8)
+            .trimIndent()
+
+        // when-then
+        webTestClient.get()
+            .uri {
+                it.path("/api/statistics")
+                    .build()
+            }
+            .accept(MediaType.APPLICATION_JSON)
+            .header("X-API-Key", apiKey)
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.OK)
+            .expectBody()
+            .consumeWith {
+                assertJsonEquals(
+                    expectedResponse,
+                    getBodyAsString(it)
+                )
+            }
+        coVerify(exactly = 1) { benchmarkService.findAllStatistics(any<String>(), apiKey) }
+        verify(exactly = 1) { apiKeyService.isAccessAllowed(apiKey) }
+    }
+
+    @Test
+    fun `get too many requests error response for list statistics when access denied for given api key`() {
+        // given
+        val apiKey = "apiKey123"
+        every { apiKeyService.isAccessAllowed(apiKey) } returns false
+
+        val expectedResponse = """
+                {
+                   "error": "Too many requests in one minute"
+                }
+                 """.trimIndent()
+
+        // when-then
+        webTestClient.get()
+            .uri {
+                it.path("/api/statistics")
+                    .build()
+            }
+            .accept(MediaType.APPLICATION_JSON)
+            .header("X-API-Key", apiKey)
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.TOO_MANY_REQUESTS)
+            .expectBody()
+            .consumeWith {
+                assertJsonEquals(
+                    expectedResponse,
+                    getBodyAsString(it)
+                )
+            }
+        verify(exactly = 1) { apiKeyService.isAccessAllowed(apiKey) }
+    }
+
+    @Test
+    fun `get unauthorized error response for list statistics when api key no longer valid`() {
+        // given
+        val apiKey = "apiKey123"
+        every { apiKeyService.isAccessAllowed(apiKey) } returns null
+
+        val expectedResponse = """
+                {
+                   "error": "No valid API key found"
+                }
+                 """.trimIndent()
+
+        // when-then
+        webTestClient.get()
+            .uri {
+                it.path("/api/statistics")
+                    .build()
+            }
+            .accept(MediaType.APPLICATION_JSON)
+            .header("X-API-Key", apiKey)
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED)
+            .expectBody()
+            .consumeWith {
+                assertJsonEquals(
+                    expectedResponse,
+                    getBodyAsString(it)
+                )
+            }
+        verify(exactly = 1) { apiKeyService.isAccessAllowed(apiKey) }
+    }
+
+    @Test
+    fun `get unauthorized error response for get list statistics request when no api key in headers`() {
+        // given
+        val expectedResponse = """
+                {
+                   "error": "No valid API key found"
+                }
+                 """.trimIndent()
+
+        // when-then
+        webTestClient.get()
+            .uri {
+                it.path("/api/statistics")
+                    .build()
             }
             .accept(MediaType.APPLICATION_JSON)
             .exchange()
