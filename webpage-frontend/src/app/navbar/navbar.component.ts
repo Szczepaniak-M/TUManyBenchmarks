@@ -12,9 +12,6 @@ import {Component} from "@angular/core";
           <a routerLink="/" routerLinkActive="text-blue-400" class="text-gray-300 hover:text-white">
             Home
           </a>
-          <a routerLink="/explore" routerLinkActive="text-blue-400" class="text-gray-300 hover:text-white">
-            Explore
-          </a>
           <a routerLink="/about" routerLinkActive="text-blue-400" class="text-gray-300 hover:text-white">
             About
           </a>

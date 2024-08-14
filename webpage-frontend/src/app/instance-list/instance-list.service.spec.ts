@@ -2,11 +2,10 @@ import {TestBed} from "@angular/core/testing";
 import {HttpTestingController, provideHttpClientTesting} from "@angular/common/http/testing";
 import {InstanceListService} from "./instance-list.service";
 import {AuthService} from "../auth/auth.service";
-import {Instance, InstanceDto} from "./instance.model";
+import {Instance} from "./instance.model";
 import {of} from "rxjs";
 import {provideHttpClient} from "@angular/common/http";
 import {environment} from "../../environemnts/environment";
-import {convertInstanceDtoToInstance} from "../common/instance/instance.utils";
 
 describe("InstanceListService", () => {
   let instanceListService: InstanceListService;
@@ -14,13 +13,32 @@ describe("InstanceListService", () => {
   let mockAuthService: { refreshApiKey: any; };
 
   const mockApiUrl = environment.apiUrl;
-  const mockInstancesDto: InstanceDto[] = [
-    {id: "id1", name: "t2.micro", tags: ["4 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"]},
-    {id: "id2", name: "t2.small", tags: ["8 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"]},
-    {id: "id3", name: "t2.nano", tags: ["16 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"]}
+  const mockInstancesDto: Instance[] = [
+    {
+      id: "id1", name: "t2.micro", tags: ["4 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"],
+      vCpu: 0,
+      memory: 0,
+      network: "",
+      benchmarks: []
+    },
+    {
+      id: "id2", name: "t2.small", tags: ["8 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"],
+      vCpu: 0,
+      memory: 0,
+      network: "",
+      benchmarks: []
+    },
+    {
+      id: "id3", name: "t2.nano", tags: ["16 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"],
+      vCpu: 0,
+      memory: 0,
+      network: "",
+      benchmarks: []
+    }
   ];
 
-  const expectedInstances: Instance[] = mockInstancesDto.map(convertInstanceDtoToInstance);
+  const expectedInstances: Instance[] = mockInstancesDto
+    // .map(convertInstanceDtoToInstance);
 
   beforeEach(() => {
     mockAuthService = {

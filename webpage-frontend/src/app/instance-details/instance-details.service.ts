@@ -3,9 +3,9 @@ import {HttpClient} from "@angular/common/http";
 import {map, Observable} from "rxjs";
 import {catchError, switchMap} from "rxjs/operators";
 import {environment} from "../../environemnts/environment";
-import {InstanceDetails, InstanceDetailsDto} from "./instance-details.model";
 import {AuthService} from "../auth/auth.service";
-import {convertInstanceDtoToInstance} from "../common/instance/instance.utils";
+import {removeUnnecessaryTags} from "../common/instance/instance.utils";
+import {Instance} from "../instance-list/instance.model";
 
 
 @Injectable({
@@ -17,14 +17,14 @@ export class InstanceDetailsService {
   constructor(private http: HttpClient, private authService: AuthService) {
   }
 
-  public getInstanceDetails(instanceName: string): Observable<InstanceDetails> {
-    return this.http.get<InstanceDetailsDto>(`${this.apiUrl}/instance/${instanceName}`)
+  public getInstanceDetails(instanceName: string): Observable<Instance> {
+    return this.http.get<Instance>(`${this.apiUrl}/instance/${instanceName}`)
       .pipe(
         catchError(error => {
           if (error.status === 401) {
             return this.authService.refreshApiKey().pipe(
               switchMap(_ =>
-                this.http.get<InstanceDetailsDto>(`${this.apiUrl}/instance/${instanceName}`)
+                this.http.get<Instance>(`${this.apiUrl}/instance/${instanceName}`)
               )
             );
           } else {
@@ -32,16 +32,7 @@ export class InstanceDetailsService {
           }
         }))
       .pipe(
-        map(instanceDto => this.convertInstanceDetailsDtoToInstanceDetails(instanceDto))
+        map(instance => removeUnnecessaryTags(instance))
       );
-  }
-
-  private convertInstanceDetailsDtoToInstanceDetails(instanceDto: InstanceDetailsDto) {
-    const instance = convertInstanceDtoToInstance(instanceDto);
-    const instanceDetails: InstanceDetails = {
-      ...instance,
-      benchmarks: instanceDto.benchmarks
-    };
-    return instanceDetails;
   }
 }

@@ -1,6 +1,5 @@
 import {Component, Input} from "@angular/core";
-import {BenchmarkResult, Plot} from "../../instance-details/instance-details.model";
-
+import {BenchmarkResult, Plot} from "../../instance-list/instance.model";
 
 @Component({
   selector: "app-benchmark-plot",

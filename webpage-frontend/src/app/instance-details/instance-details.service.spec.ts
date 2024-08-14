@@ -2,28 +2,32 @@ import {TestBed} from "@angular/core/testing";
 import {HttpTestingController, provideHttpClientTesting} from "@angular/common/http/testing";
 import {InstanceDetailsService} from "./instance-details.service";
 import {AuthService} from "../auth/auth.service";
-import {InstanceDetails, InstanceDetailsDto} from "./instance-details.model";
 import {of} from "rxjs";
 import {environment} from "../../environemnts/environment";
 import {provideHttpClient} from "@angular/common/http";
-import {convertInstanceDtoToInstance} from "../common/instance/instance.utils";
+import {removeCpuMemoryNetworkTags} from "../common/instance/instance.utils";
+import {Instance} from "../instance-list/instance.model";
 
 describe("InstanceDetailsService", () => {
   let service: InstanceDetailsService;
   let httpMock: HttpTestingController;
   let mockAuthService: { refreshApiKey: any; };
 
-  const mockInstanceDetailsDto: InstanceDetailsDto = {
+  const mockInstance: Instance = {
     id: "instance1",
     name: "t2.micro",
+    vCpu: 8,
+    memory: 16,
+    network: "10 Gbps Network",
     tags: ["8 vCPUs", "10 Gbps Network", "16 GiB Memory"],
-    benchmarks: [{
-      id: "benchmark1",
-      name: "Benchmark 1",
-      description: "Description 1",
-      results: [],
-      plots: [{title: "Plot 1", type: "scatter", yaxis: "", series: []}]
-    },
+    benchmarks: [
+      {
+        id: "benchmark1",
+        name: "Benchmark 1",
+        description: "Description 1",
+        results: [],
+        plots: [{title: "Plot 1", type: "scatter", yaxis: "", series: []}]
+      },
       {
         id: "benchmark2",
         name: "Benchmark 2",
@@ -34,9 +38,10 @@ describe("InstanceDetailsService", () => {
     ]
   };
 
-  const expectedInstanceDetails: InstanceDetails = {
-    ...convertInstanceDtoToInstance(mockInstanceDetailsDto),
-    benchmarks: mockInstanceDetailsDto.benchmarks
+  const expectedInstanceDetails: Instance = {
+    ...mockInstance,
+    tags: removeCpuMemoryNetworkTags(mockInstance.tags),
+    benchmarks: mockInstance.benchmarks
   };
 
   beforeEach(() => {
@@ -73,7 +78,7 @@ describe("InstanceDetailsService", () => {
 
     const req = httpMock.expectOne(`${environment.apiUrl}/instance/${instanceName}`);
     expect(req.request.method).toBe("GET");
-    req.flush(mockInstanceDetailsDto);
+    req.flush(mockInstance);
   });
 
   it("should retry fetching instance details after 401 error and API key refresh", () => {
@@ -90,7 +95,7 @@ describe("InstanceDetailsService", () => {
 
     const retryReq = httpMock.expectOne(`${environment.apiUrl}/instance/${instanceName}`);
     expect(retryReq.request.method).toBe("GET");
-    retryReq.flush(mockInstanceDetailsDto);
+    retryReq.flush(mockInstance);
   });
 
   it("should throw error if non-401 error occurs", () => {

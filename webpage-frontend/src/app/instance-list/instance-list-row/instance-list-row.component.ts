@@ -15,7 +15,7 @@ import {Instance} from "../instance.model";
       <div class="py-2 px-4 my-1 w-1/6">{{ instance.memory }} GiB</div>
       <div class="py-2 px-4 my-1 w-1/6">{{ instance.network }}</div>
       <div class="px-4 my-2 w-1/3">
-        <span *ngFor="let tag of instance.otherTags"
+        <span *ngFor="let tag of instance.tags"
               class="inline-block bg-gray-400 rounded-full px-3 py-1 text-sm font-semibold text-gray-800 mr-2 my-1">
           {{ tag }}
         </span>

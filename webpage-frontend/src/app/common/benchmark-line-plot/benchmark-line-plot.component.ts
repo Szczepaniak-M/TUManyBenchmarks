@@ -1,6 +1,6 @@
 import {Component, Input, OnInit} from "@angular/core";
 import {ChartOptions, DataPoint, Series} from "../benchmark-plot/benchmark-plot.model";
-import {BenchmarkResult, Plot, PlotSeries} from "../../instance-details/instance-details.model";
+import {BenchmarkResult, Plot, PlotSeries} from "../../instance-list/instance.model";
 
 
 @Component({

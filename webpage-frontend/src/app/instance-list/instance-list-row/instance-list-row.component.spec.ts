@@ -11,10 +11,11 @@ describe("InstanceListRowComponent", () => {
   const testInstance: Instance = {
     id: "1",
     name: "test-instance",
-    vcpu: 4,
+    vCpu: 4,
     memory: 16,
     network: "test-network",
-    otherTags: ["tag1", "tag2"],
+    tags: ["tag1", "tag2"],
+    benchmarks: []
   };
 
   beforeEach(() => {

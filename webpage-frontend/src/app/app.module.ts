@@ -14,11 +14,11 @@ import {AboutComponent} from "./about/about.component";
 import {InstanceListRowComponent} from "./instance-list/instance-list-row/instance-list-row.component";
 import {InstanceListFilterComponent} from "./instance-list/instance-list-filter/instance-list-filter.component";
 import {CompareInstancesBenchmarkComponent} from "./compare-instances/compare-instances-benchmark/compare-instances-benchmark.component";
-import {InstanceExplorerComponent} from "./instance-explorer/instance-explorer.component";
-import {JsonViewerComponent} from "./instance-explorer/json-viewer/json-viewer.component";
+// import {InstanceExplorerComponent} from "./instance-explorer/instance-explorer.component";
+// import {JsonViewerComponent} from "./instance-explorer/json-viewer/json-viewer.component";
 import {NgxJsonViewerModule} from "ngx-json-viewer";
 import {MonacoEditorModule} from "ngx-monaco-editor-v2";
-import {MonacoEditorComponent} from "./instance-explorer/monaco-editor/monaco-editor.component";
+import {MonacoEditorComponent} from "./instance-list/monaco-editor/monaco-editor.component";
 import {NgApexchartsModule} from "ng-apexcharts";
 import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {MatFormField, MatLabel} from "@angular/material/form-field";
@@ -46,8 +46,8 @@ import {BenchmarkLinePlotComponent} from "./common/benchmark-line-plot/benchmark
     CompareInstancesComponent,
     CompareInstancesBenchmarkComponent,
     AboutComponent,
-    InstanceExplorerComponent,
-    JsonViewerComponent,
+    // InstanceExplorerComponent,
+    // JsonViewerComponent,
     MonacoEditorComponent,
   ],
   imports: [

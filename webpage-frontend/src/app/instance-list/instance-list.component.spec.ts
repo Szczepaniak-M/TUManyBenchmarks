@@ -21,9 +21,9 @@ describe("InstanceListComponent", () => {
 
   beforeEach(() => {
     mockInstances = [
-      {id: "id1", name: "t2.micro", vcpu: 4, memory: 16, network: "Network1", otherTags: ["tag1", "tag2"]},
-      {id: "id2", name: "t2.nano", vcpu: 2, memory: 8, network: "Network1", otherTags: ["tag3"]},
-      {id: "id3", name: "t2.small", vcpu: 8, memory: 32, network: "Network2", otherTags: ["tag2"]},
+      {id: "id1", name: "t2.micro", vCpu: 4, memory: 16, network: "Network1", tags: ["tag1", "tag2"], benchmarks: []},
+      {id: "id2", name: "t2.nano", vCpu: 2, memory: 8, network: "Network1", tags: ["tag3"], benchmarks: []},
+      {id: "id3", name: "t2.small", vCpu: 8, memory: 32, network: "Network2", tags: ["tag2"], benchmarks: []},
     ];
 
     mockInstanceListService = {

@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from "@angular/core";
-import {BenchmarkResult, InstanceDetails, Plot} from "../../instance-details/instance-details.model";
+import {BenchmarkResult, Instance, Plot} from "../../instance-list/instance.model";
 
 @Component({
   selector: "app-compare-instances-benchmark",
@@ -17,7 +17,7 @@ import {BenchmarkResult, InstanceDetails, Plot} from "../../instance-details/ins
 })
 export class CompareInstancesBenchmarkComponent implements OnInit {
   @Input({required: true}) benchmarkId!: string;
-  @Input({required: true}) instances!: InstanceDetails[];
+  @Input({required: true}) instances!: Instance[];
   benchmarkName: string = "";
   benchmarkDescription: string = "";
   benchmarkResults: BenchmarkResult[][] = [];

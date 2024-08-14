@@ -1,7 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {BenchmarkScatterPlotComponent} from "./benchmark-scatter-plot.component";
 import {Series} from "../benchmark-plot/benchmark-plot.model";
-import {BenchmarkResult, Plot} from "../../instance-details/instance-details.model";
+import {BenchmarkResult, Plot} from "../../instance-list/instance.model";
 import {NgApexchartsModule} from "ng-apexcharts";
 import {MockModule} from "ng-mocks";
 

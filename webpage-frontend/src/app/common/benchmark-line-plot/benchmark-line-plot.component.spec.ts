@@ -1,9 +1,9 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {BenchmarkLinePlotComponent} from "./benchmark-line-plot.component";
 import {Series} from "../benchmark-plot/benchmark-plot.model";
-import {BenchmarkResult, Plot} from "../../instance-details/instance-details.model";
 import {NgApexchartsModule} from "ng-apexcharts";
 import {MockModule} from "ng-mocks";
+import {BenchmarkResult, Plot} from "../../instance-list/instance.model";
 
 describe("BenchmarkLinePlotComponent", () => {
   let component: BenchmarkLinePlotComponent;

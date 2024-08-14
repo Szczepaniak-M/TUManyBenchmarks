@@ -20,6 +20,8 @@
     "@angular/platform-browser": "^18.1.0",
     "@angular/platform-browser-dynamic": "^18.1.0",
     "@angular/router": "^18.1.0",
+    "@duckdb/duckdb-wasm": "^1.28.1-dev106.0",
+    "apache-arrow": "^17.0.0",
     "monaco-editor": "^0.49.0",
     "ng-apexcharts": "^1.11.0",
     "ngx-json-viewer": "^3.2.1",

@@ -5,6 +5,9 @@ import {InstanceListService} from "./instance-list.service";
 import {Filter} from "./instance-list-filter/instance-list-filter.model";
 import {SortDirection, SortEvent} from "./instance-list-sort/instance-list-sort.model";
 import {InstanceListSortComponent} from "./instance-list-sort/instance-list-sort.component";
+import {QueryProcessorService} from "./query-processor/query-processor.service";
+import {forkJoin} from "rxjs";
+import {removeUnnecessaryTags} from "../common/instance/instance.utils";
 
 @Component({
   selector: "app-instance-list",
@@ -75,16 +78,27 @@ export class InstanceListComponent implements OnInit {
 
   constructor(private instanceListService: InstanceListService,
               private router: Router,
-              private changeDetectorRef: ChangeDetectorRef) {
+              private changeDetectorRef: ChangeDetectorRef,
+              private queryProcessorService: QueryProcessorService) {
   }
 
   ngOnInit(): void {
-    this.instanceListService.getInstances().subscribe(response => {
-      this.instances = response.sort((a, b) => a.name.localeCompare(b.name));
+    forkJoin({
+      instances: this.instanceListService.getInstances(),
+      benchmarks: this.instanceListService.getBenchmarks(),
+      statistics: this.instanceListService.getStatistics(),
+      duckDb: this.queryProcessorService.initializeDuckDB()
+    }).subscribe(response => {
+      localStorage.setItem("instances", JSON.stringify(response.instances));
+      localStorage.setItem("benchmarks", JSON.stringify(response.benchmarks));
+      localStorage.setItem("statistics", JSON.stringify(response.statistics));
+      this.instances = response.instances.map(instance => removeUnnecessaryTags(instance))
+        .sort((a, b) => a.name.localeCompare(b.name));
       this.displayedInstances = this.instances;
       this.updateFilters();
       this.changeDetectorRef.markForCheck();
-    });
+      this.queryProcessorService.loadDatabase()
+    })
   }
 
   updateFilters(): void {
@@ -92,7 +106,7 @@ export class InstanceListComponent implements OnInit {
     const networksSet = new Set<string>();
 
     this.instances.forEach(instance => {
-      instance.otherTags.forEach(tag => tagsSet.add(tag));
+      instance.tags.forEach(tag => tagsSet.add(tag));
       networksSet.add(instance.network);
     });
 
@@ -108,7 +122,7 @@ export class InstanceListComponent implements OnInit {
       const matchesMinMemory = filter.minMemory ? instance.memory >= filter.minMemory : true;
       const matchesMaxMemory = filter.maxMemory ? instance.memory <= filter.maxMemory : true;
       const matchesNetwork = filter.network && filter.network.length ? filter.network.includes(instance.network) : true;
-      const matchesTags = filter.tags && filter.tags.length ? filter.tags.every(tag => instance.otherTags.includes(tag)) : true;
+      const matchesTags = filter.tags && filter.tags.length ? filter.tags.every(tag => instance.tags.includes(tag)) : true;
       return matchesName && matchesMinCpu && matchesMaxCpu && matchesMinMemory && matchesMaxMemory && matchesNetwork && matchesTags;
     });
   }

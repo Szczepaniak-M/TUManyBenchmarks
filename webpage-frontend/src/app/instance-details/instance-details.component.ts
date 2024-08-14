@@ -1,7 +1,7 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
-import {InstanceDetails} from "./instance-details.model";
 import {InstanceDetailsService} from "./instance-details.service";
+import {Instance} from "../instance-list/instance.model";
 
 @Component({
   selector: "app-instance-details",
@@ -15,7 +15,7 @@ import {InstanceDetailsService} from "./instance-details.service";
           <p><strong class="text-black">Network: </strong>{{ instance.network }}</p>
           <p><strong class="text-black">Memory: </strong>{{ instance.memory }} GiB</p>
           <p><strong class="text-black">Tags: </strong>
-            <span *ngFor="let tag of instance.otherTags"
+            <span *ngFor="let tag of instance.tags"
                   class="inline-block bg-gray-400 rounded-full px-3 py-1 text-sm font-semibold text-gray-800 mr-2 my-1">
                 {{ tag }}
             </span>
@@ -42,13 +42,13 @@ import {InstanceDetailsService} from "./instance-details.service";
   `
 })
 export class InstanceDetailsComponent implements OnInit {
-  instance: InstanceDetails = {
+  instance: Instance = {
     id: "",
     name: "",
     vcpu: 0,
     memory: 0,
     network: "",
-    otherTags: [],
+    tags: [],
     benchmarks: []
   };
 

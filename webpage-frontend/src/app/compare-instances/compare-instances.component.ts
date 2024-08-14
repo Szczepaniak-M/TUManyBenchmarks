@@ -1,6 +1,6 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
-import {InstanceDetails} from "../instance-details/instance-details.model";
+import {Instance} from "../instance-list/instance.model";
 import {InstanceDetailsService} from "../instance-details/instance-details.service";
 import {forkJoin} from "rxjs";
 
@@ -28,7 +28,7 @@ import {forkJoin} from "rxjs";
               <p><strong class="text-black">Network: </strong>{{ instance.network }}</p>
               <p><strong class="text-black">Memory: </strong>{{ instance.memory }} GiB</p>
               <p><strong class="text-black">Tags: </strong>
-                <span *ngFor="let tag of instance.otherTags"
+                <span *ngFor="let tag of instance.tags"
                       class="inline-block bg-gray-400 rounded-full px-3 py-1 text-sm font-semibold text-gray-800 mr-2 my-1">
                     {{ tag }}
                 </span>
@@ -49,7 +49,7 @@ import {forkJoin} from "rxjs";
   `
 })
 export class CompareInstancesComponent implements OnInit {
-  instances: InstanceDetails[] = [];
+  instances: Instance[] = [];
   showOnlyCommon: boolean = false;
   benchmarkIds: Set<string> = new Set<string>();
   commonBenchmarkIds: Set<string> = new Set<string>();

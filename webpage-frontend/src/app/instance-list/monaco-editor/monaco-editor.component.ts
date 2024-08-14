@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Output} from "@angular/core";
+import {Component} from "@angular/core";
 
 @Component({
   selector: "app-monaco-editor",
@@ -10,10 +10,9 @@ import {Component, EventEmitter, Output} from "@angular/core";
   `
 })
 export class MonacoEditorComponent {
-  @Output() isContentValid = new EventEmitter<boolean>();
   editorOptions = {
     theme: "vs-dark",
-    language: "json",
+    language: "pgsql",
     automaticLayout: true,
     scrollBeyondLastLine: false
   };
@@ -22,17 +21,5 @@ export class MonacoEditorComponent {
 
   onEditorInit(editor: any) {
     this.editor = editor;
-    this.editor.onDidChangeModelContent(() => {
-      this.checkForErrors();
-    });
-  }
-
-  checkForErrors() {
-    try {
-      const parsed = JSON.parse(this.code);
-      this.isContentValid.emit(Array.isArray(parsed) && parsed.length > 0);
-    } catch (e) {
-      this.isContentValid.emit(false);
-    }
   }
 }
