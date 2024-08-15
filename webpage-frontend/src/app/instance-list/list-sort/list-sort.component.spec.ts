@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {By} from "@angular/platform-browser";
-import {InstanceListSortComponent} from "./instance-list-sort.component";
+import {InstanceListSortComponent} from "./list-sort.component";
 import {ChangeDetectorRef} from "@angular/core";
 
 describe("InstanceListSortComponent", () => {

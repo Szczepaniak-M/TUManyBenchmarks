@@ -4,13 +4,13 @@ import {InstanceListService} from "./instance-list.service";
 import {Router} from "@angular/router";
 import {of} from "rxjs";
 import {Instance} from "./instance.model";
-import {Filter} from "./instance-list-filter/instance-list-filter.model";
-import {SortEvent} from "./instance-list-sort/instance-list-sort.model";
+import {Filter} from "./list-filter/list-filter.model";
+import {SortEvent} from "./list-sort/list-sort.model";
 import {By} from "@angular/platform-browser";
-import {InstanceListSortComponent} from "./instance-list-sort/instance-list-sort.component";
+import {ListSortComponent} from "./list-sort/list-sort.component";
 import {MockComponent} from "ng-mocks";
-import {InstanceListFilterComponent} from "./instance-list-filter/instance-list-filter.component";
-import {InstanceListRowComponent} from "./instance-list-row/instance-list-row.component";
+import {ListFilterComponent} from "./list-filter/list-filter.component";
+import {ListRowComponent} from "./list-row/list-row.component";
 
 describe("InstanceListComponent", () => {
   let component: InstanceListComponent;
@@ -21,9 +21,9 @@ describe("InstanceListComponent", () => {
 
   beforeEach(() => {
     mockInstances = [
-      {id: "id1", name: "t2.micro", vCpu: 4, memory: 16, network: "Network1", tags: ["tag1", "tag2"], benchmarks: []},
-      {id: "id2", name: "t2.nano", vCpu: 2, memory: 8, network: "Network1", tags: ["tag3"], benchmarks: []},
-      {id: "id3", name: "t2.small", vCpu: 8, memory: 32, network: "Network2", tags: ["tag2"], benchmarks: []},
+      {id: "id1", name: "t2.micro", vcpu: 4, memory: 16, network: "Network1", tags: ["tag1", "tag2"], benchmarks: []},
+      {id: "id2", name: "t2.nano", vcpu: 2, memory: 8, network: "Network1", tags: ["tag3"], benchmarks: []},
+      {id: "id3", name: "t2.small", vcpu: 8, memory: 32, network: "Network2", tags: ["tag2"], benchmarks: []},
     ];
 
     mockInstanceListService = {
@@ -36,9 +36,9 @@ describe("InstanceListComponent", () => {
     TestBed.configureTestingModule({
       declarations: [
         InstanceListComponent,
-        MockComponent(InstanceListFilterComponent),
-        MockComponent(InstanceListSortComponent),
-        MockComponent(InstanceListRowComponent)
+        MockComponent(ListFilterComponent),
+        MockComponent(ListSortComponent),
+        MockComponent(ListRowComponent)
       ],
       providers: [
         {provide: InstanceListService, useValue: mockInstanceListService},
@@ -72,9 +72,9 @@ describe("InstanceListComponent", () => {
   it("should add and remove instances from comparison", () => {
     expect(component.selectedInstances).toEqual([]);
     component.toggleComparison(mockInstances[0]);
-    expect(component.selectedInstances).toContain(mockInstances[0]);
+    expect(component.selectedInstances).toContain(mockInstances[0].name);
     component.toggleComparison(mockInstances[0]);
-    expect(component.selectedInstances).not.toContain(mockInstances[0]);
+    expect(component.selectedInstances).not.toContain(mockInstances[0].name);
   });
 
   it("should navigate to instance details", () => {
@@ -83,7 +83,7 @@ describe("InstanceListComponent", () => {
   });
 
   it("should navigate to comparison page with selected instances", () => {
-    component.selectedInstances = [mockInstances[0], mockInstances[1]];
+    component.selectedInstances = [mockInstances[0].name, mockInstances[1].name];
     component.compareSelectedItems();
     expect(mockRouter.navigate).toHaveBeenCalledWith(["/instance/compare"], {
       queryParams: {instances: "t2.micro,t2.nano"}
@@ -91,9 +91,9 @@ describe("InstanceListComponent", () => {
   });
 
   it("should correctly identify if an instance is in comparison", () => {
-    component.selectedInstances = [mockInstances[0]];
-    expect(component.isInComparison(mockInstances[0])).toBeTrue();
-    expect(component.isInComparison(mockInstances[1])).toBeFalse();
+    component.selectedInstances = [mockInstances[0].name];
+    expect(component.isInComparison(mockInstances[0].name)).toBeTrue();
+    expect(component.isInComparison(mockInstances[1].name)).toBeFalse();
   });
 
   it("should sort instances based on the selected column and direction", () => {
@@ -111,7 +111,7 @@ describe("InstanceListComponent", () => {
 
   it("should reset sorting direction for other columns when sorting by a new column", () => {
     fixture.detectChanges()
-    const sortComponents = fixture.debugElement.queryAll(By.directive(InstanceListSortComponent));
+    const sortComponents = fixture.debugElement.queryAll(By.directive(ListSortComponent));
     sortComponents.forEach(sortComponent => {
       spyOn(sortComponent.componentInstance, "resetDirection");
     });

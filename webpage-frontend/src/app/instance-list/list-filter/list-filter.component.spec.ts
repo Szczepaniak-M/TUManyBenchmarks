@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {By} from "@angular/platform-browser";
-import {InstanceListFilterComponent} from "./instance-list-filter.component";
+import {ListFilterComponent} from "./list-filter.component";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {FormsModule} from "@angular/forms";
 import {MatFormField, MatLabel} from "@angular/material/form-field";
@@ -9,8 +9,8 @@ import {MatOption, MatSelect} from "@angular/material/select";
 import {MockComponent, MockDirective, MockModule} from "ng-mocks";
 
 describe("InstanceListFilterComponent", () => {
-  let component: InstanceListFilterComponent;
-  let fixture: ComponentFixture<InstanceListFilterComponent>;
+  let component: ListFilterComponent;
+  let fixture: ComponentFixture<ListFilterComponent>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -23,10 +23,10 @@ describe("InstanceListFilterComponent", () => {
         MockModule(FormsModule),
         MockModule(BrowserAnimationsModule)
       ],
-      declarations: [InstanceListFilterComponent]
+      declarations: [ListFilterComponent]
     })
 
-    fixture = TestBed.createComponent(InstanceListFilterComponent);
+    fixture = TestBed.createComponent(ListFilterComponent);
     component = fixture.componentInstance;
     component.allNetworks = ["Network1", "Network2"];
     component.allTags = ["Tag1", "Tag2"];

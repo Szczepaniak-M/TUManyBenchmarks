@@ -16,24 +16,15 @@ describe("InstanceListService", () => {
   const mockInstancesDto: Instance[] = [
     {
       id: "id1", name: "t2.micro", tags: ["4 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"],
-      vCpu: 0,
-      memory: 0,
-      network: "",
-      benchmarks: []
+      vcpu: 0, memory: 0, network: "", benchmarks: []
     },
     {
       id: "id2", name: "t2.small", tags: ["8 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"],
-      vCpu: 0,
-      memory: 0,
-      network: "",
-      benchmarks: []
+      vcpu: 0, memory: 0, network: "", benchmarks: []
     },
     {
       id: "id3", name: "t2.nano", tags: ["16 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"],
-      vCpu: 0,
-      memory: 0,
-      network: "",
-      benchmarks: []
+      vcpu: 0, memory: 0, network: "", benchmarks: []
     }
   ];
 

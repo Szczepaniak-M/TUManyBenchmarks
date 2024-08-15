@@ -1,8 +1,8 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
-import {Filter} from "./instance-list-filter.model";
+import {Filter} from "./list-filter.model";
 
 @Component({
-  selector: "app-instance-list-filter",
+  selector: "app-list-filter",
   template: `
     <div class="p-2 border border-gray-300 rounded flex">
       <mat-form-field class="border rounded m-1 w-1/8">
@@ -25,7 +25,7 @@ import {Filter} from "./instance-list-filter.model";
         <mat-label class="font-medium">Max vCPU:</mat-label>
         <input matInput type="text"
                class="border p-2 rounded w-full"
-               placeholder="Min vCPU"
+               placeholder="Max vCPU"
                [(ngModel)]="filter.maxCpu"
                (ngModelChange)="onFilterChange()">
       </mat-form-field>
@@ -63,6 +63,16 @@ import {Filter} from "./instance-list-filter.model";
           </mat-option>
         </mat-select>
       </mat-form-field>
+      <mat-form-field class="border rounded m-1 w-1/8">
+        <mat-label class="font-medium">Benchmark:</mat-label>
+        <mat-select [(ngModel)]="filter.benchmark" (ngModelChange)="onFilterChange()">
+          <mat-option [value]="">None</mat-option>
+          <mat-option
+            *ngFor="let benchmark of allBenchmarks.sort()"
+            [value]="benchmark.id">{{ benchmark.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
       <button class=" m-1 bg-gray-800 text-white w-1/8 p-2 rounded disabled:bg-slate-500"
               (click)="onRedirectToComparison()"
               [disabled]="selectedInstances < 2">
@@ -73,9 +83,10 @@ import {Filter} from "./instance-list-filter.model";
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class InstanceListFilterComponent {
+export class ListFilterComponent {
   @Input({required: true}) allNetworks!: string[];
   @Input({required: true}) allTags!: string[];
+  @Input({required: true}) allBenchmarks!: { name: string, id: string }[];
   @Input({required: true}) selectedInstances!: number;
   @Output() filterChange = new EventEmitter<Filter>();
   @Output() redirectToComparison = new EventEmitter<void>();

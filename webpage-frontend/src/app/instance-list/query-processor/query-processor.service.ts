@@ -10,7 +10,7 @@ export class QueryProcessorService {
   private db!: duckdb.AsyncDuckDB;
   private conn!: duckdb.AsyncDuckDBConnection;
 
-  public async initializeDuckDB() {
+  public async initializeDuckDB(): Promise<void> {
     const jsDelivrBundles = duckdb.getJsDelivrBundles();
     const bundle = await duckdb.selectBundle(jsDelivrBundles);
     const worker_url = URL.createObjectURL(
@@ -30,7 +30,7 @@ export class QueryProcessorService {
       this.loadTable('benchmarks'),
       this.loadTable('statistics')
     ]).subscribe(() => {
-      this.conn.query(`ALTER TABLE instances ALTER benchmarks TYPE JSON;`).then()
+      this.conn.query(`ALTER TABLE instances ALTER benchmarks TYPE JSON[];`).then()
     });
     // const x = this.conn.query(`SELECT * FROM statistics WHERE series = 'firstRoundTripClient'`);
   }

@@ -11,8 +11,8 @@ import {HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi} from "@ang
 import {AuthInterceptor} from "./auth/auth.interceptor";
 import {NavbarComponent} from "./navbar/navbar.component";
 import {AboutComponent} from "./about/about.component";
-import {InstanceListRowComponent} from "./instance-list/instance-list-row/instance-list-row.component";
-import {InstanceListFilterComponent} from "./instance-list/instance-list-filter/instance-list-filter.component";
+import {ListRowComponent} from "./instance-list/list-row/list-row.component";
+import {ListFilterComponent} from "./instance-list/list-filter/list-filter.component";
 import {CompareInstancesBenchmarkComponent} from "./compare-instances/compare-instances-benchmark/compare-instances-benchmark.component";
 // import {InstanceExplorerComponent} from "./instance-explorer/instance-explorer.component";
 // import {JsonViewerComponent} from "./instance-explorer/json-viewer/json-viewer.component";
@@ -24,11 +24,12 @@ import {provideAnimationsAsync} from "@angular/platform-browser/animations/async
 import {MatFormField, MatLabel} from "@angular/material/form-field";
 import {MatOption, MatSelect} from "@angular/material/select";
 import {MatInput} from "@angular/material/input";
-import {InstanceListSortComponent} from "./instance-list/instance-list-sort/instance-list-sort.component";
+import {ListSortComponent} from "./instance-list/list-sort/list-sort.component";
 import {MatSlideToggle} from "@angular/material/slide-toggle";
 import {BenchmarkScatterPlotComponent} from "./common/benchmark-scatter-plot/benchmark-scatter-plot.component";
 import {BenchmarkPlotComponent} from "./common/benchmark-plot/benchmark-plot.component";
 import {BenchmarkLinePlotComponent} from "./common/benchmark-line-plot/benchmark-line-plot.component";
+import {ListHeaderComponent} from "./instance-list/list-header/list-header.component";
 
 
 @NgModule({
@@ -36,9 +37,10 @@ import {BenchmarkLinePlotComponent} from "./common/benchmark-line-plot/benchmark
     AppComponent,
     NavbarComponent,
     InstanceListComponent,
-    InstanceListRowComponent,
-    InstanceListFilterComponent,
-    InstanceListSortComponent,
+    ListRowComponent,
+    ListFilterComponent,
+    ListSortComponent,
+    ListHeaderComponent,
     InstanceDetailsComponent,
     BenchmarkPlotComponent,
     BenchmarkScatterPlotComponent,

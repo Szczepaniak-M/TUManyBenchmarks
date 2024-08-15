@@ -1,9 +1,9 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output} from "@angular/core";
-import {SortDirection, SortEvent} from "./instance-list-sort.model";
+import {SortDirection, SortEvent} from "./list-sort.model";
 
 
 @Component({
-  selector: "app-instance-list-sort",
+  selector: "app-list-sort",
   template: `
     <div class="flex justify-between" (click)="rotate()">
       <div class="flex items-center">
@@ -23,7 +23,7 @@ import {SortDirection, SortEvent} from "./instance-list-sort.model";
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class InstanceListSortComponent {
+export class ListSortComponent {
   @Input({required: true}) column!: string;
   @Output() sort = new EventEmitter<SortEvent>();
   direction: SortDirection = "";

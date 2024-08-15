@@ -1,3 +1,18 @@
+export interface InstanceDefaultRow {
+  id: number;
+  Name: string,
+  vCPUs: number,
+  Memory: number,
+  Network: string,
+  Tags: string[],
+  Minimum?: number,
+  Average?: number,
+  Median?: number,
+  Maximum?: number,
+  benchmarks: BenchmarkStatistics[],
+  hidden: boolean
+}
+
 export interface Instance {
   id: string,
   name: string,

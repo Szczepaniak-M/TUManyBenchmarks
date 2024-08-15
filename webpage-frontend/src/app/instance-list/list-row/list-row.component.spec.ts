@@ -1,17 +1,17 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {By} from "@angular/platform-browser";
-import {InstanceListRowComponent} from "./instance-list-row.component";
+import {ListRowComponent} from "./list-row.component";
 import {Instance} from "../instance.model";
 import {RouterModule} from "@angular/router";
 
 describe("InstanceListRowComponent", () => {
-  let component: InstanceListRowComponent;
-  let fixture: ComponentFixture<InstanceListRowComponent>;
+  let component: ListRowComponent;
+  let fixture: ComponentFixture<ListRowComponent>;
 
   const testInstance: Instance = {
     id: "1",
     name: "test-instance",
-    vCpu: 4,
+    vcpu: 4,
     memory: 16,
     network: "test-network",
     tags: ["tag1", "tag2"],
@@ -23,12 +23,12 @@ describe("InstanceListRowComponent", () => {
       imports: [
         RouterModule.forRoot([]),
       ],
-      declarations: [InstanceListRowComponent]
+      declarations: [ListRowComponent]
     })
 
-    fixture = TestBed.createComponent(InstanceListRowComponent);
+    fixture = TestBed.createComponent(ListRowComponent);
     component = fixture.componentInstance;
-    component.instance = testInstance;
+    component.row = testInstance;
     component.isInComparison = false;
     component.onToggleComparison = jasmine.createSpy("onToggleComparison").and.returnValue(true);
     fixture.detectChanges();
