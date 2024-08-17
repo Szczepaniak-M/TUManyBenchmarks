@@ -1,13 +1,12 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, QueryList, ViewChildren} from "@angular/core";
-import {SortEvent} from "../list-sort/list-sort.model";
-import {ListSortComponent} from "../list-sort/list-sort.component";
+import {SortEvent} from "./list-sort/list-sort.model";
+import {ListSortComponent} from "./list-sort/list-sort.component";
 
 @Component({
   selector: "app-list-header",
   template: `
     <div class="flex flex-row items-center border bg-gray-100">
-      <div *ngFor="let column of columns" class="py-2 px-4 text-left font-bold min-w-40"
-           [ngClass]="column === 'Tags' ? 'w-1/3' : 'w-1/6'">
+      <div *ngFor="let column of columns" class="py-2 px-4 text-left font-bold min-w-40 w-1/4 max-w-lg">
         <app-list-sort
           *ngIf="column !== 'Tags'"
           [column]="column"

@@ -1,19 +1,19 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {By} from "@angular/platform-browser";
-import {InstanceListSortComponent} from "./list-sort.component";
+import {ListSortComponent} from "./list-sort.component";
 import {ChangeDetectorRef} from "@angular/core";
 
 describe("InstanceListSortComponent", () => {
-  let component: InstanceListSortComponent;
-  let fixture: ComponentFixture<InstanceListSortComponent>;
+  let component: ListSortComponent;
+  let fixture: ComponentFixture<ListSortComponent>;
 
   beforeEach(() => {
 
     TestBed.configureTestingModule({
-      declarations: [InstanceListSortComponent],
+      declarations: [ListSortComponent],
     })
 
-    fixture = TestBed.createComponent(InstanceListSortComponent);
+    fixture = TestBed.createComponent(ListSortComponent);
     component = fixture.componentInstance;
     component.column = "Name";
     fixture.detectChanges();

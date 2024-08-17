@@ -17,7 +17,7 @@ export type DataPoint = [number, any];
 export interface Series {
   name: string,
   data: DataPoint[],
-  type: string
+  type: string,
 }
 
 export interface ChartOptions {
@@ -33,5 +33,5 @@ export interface ChartOptions {
   markers?: ApexMarkers,
   fill?: ApexFill,
   legend?: ApexLegend,
-  tooltip?: ApexTooltip
+  tooltip?: ApexTooltip,
 }

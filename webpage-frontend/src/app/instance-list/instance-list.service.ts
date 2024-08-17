@@ -1,10 +1,11 @@
 import {Injectable} from "@angular/core";
 import {HttpClient} from "@angular/common/http";
-import {Observable} from "rxjs";
+import {map, Observable} from "rxjs";
 import {catchError, switchMap} from "rxjs/operators";
 import {environment} from "../../environemnts/environment";
 import {BenchmarkDetails, BenchmarkStatistics, Instance} from "./instance.model";
 import {AuthService} from "../auth/auth.service";
+import {removeUnnecessaryTags} from "../common/instance/instance.utils";
 
 
 @Injectable({
@@ -31,6 +32,9 @@ export class InstanceListService {
           }
         })
       )
+      .pipe(
+        map(instances => instances.map(instance => removeUnnecessaryTags(instance)))
+      );
   }
 
   public getBenchmarks(): Observable<BenchmarkDetails[]> {
@@ -64,6 +68,16 @@ export class InstanceListService {
             throw error;
           }
         })
+      )
+      .pipe(
+        map(statistics => statistics.map(stats => {
+            stats.min = Number(stats.min.toPrecision(5));
+            stats.avg = Number(stats.avg.toPrecision(5));
+            stats.median = Number(stats.median.toPrecision(5));
+            stats.max = Number(stats.max.toPrecision(5));
+            return stats;
+          }
+        ))
       )
   }
 }

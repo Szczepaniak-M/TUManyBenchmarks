@@ -1,31 +1,43 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild} from "@angular/core";
 import {Router} from "@angular/router";
 import {BenchmarkDetails, BenchmarkStatistics, Instance, InstanceDefaultRow} from "./instance.model";
 import {InstanceListService} from "./instance-list.service";
 import {Filter} from "./list-filter/list-filter.model";
-import {SortEvent} from "./list-sort/list-sort.model";
-import {QueryProcessorService} from "./query-processor/query-processor.service";
+import {SortEvent} from "./list-header/list-sort/list-sort.model";
 import {forkJoin} from "rxjs";
-import {groupByToMap, removeUnnecessaryTags} from "../common/instance/instance.utils";
+import {groupByToMap} from "../common/instance/instance.utils";
+import {ListQueryService} from "./list-query/list-query.service";
+import {ListQueryComponent} from "./list-query/list-query.component";
 
 @Component({
   selector: "app-instance-list",
   template: `
-    <div class="container mx-auto my-2 border-2 rounded">
-      <app-list-filter
-        [allTags]="allTags"
-        [allNetworks]="allNetworks"
-        [allBenchmarks]="allBenchmarks"
-        [selectedInstances]="selectedInstances.length"
-        (filterChange)="applyFilters($event)"
-        (redirectToComparison)="compareSelectedItems()">
-      </app-list-filter>
-
-      <div class="h-60">
-        <app-monaco-editor></app-monaco-editor>
+    <div class="container mx-auto my-2">
+      <div class="flex flex-col items-center mb-2"
+           [ngClass]="queryConsoleActive ? 'expanded' : ''">
+        <app-list-query [filter]="filter"
+                        [rows]="rows"
+                        [columns]="columns"
+                        [selectedInstances]="selectedInstances.size"
+                        (redirectToComparison)="compareSelectedItems()"
+                        (queryResult)="onQueryExecution($event)"
+                        class="w-full console"/>
+        <app-list-filter
+          [allTags]="allTags"
+          [allNetworks]="allNetworks"
+          [allBenchmarks]="allBenchmarks"
+          [selectedInstances]="selectedInstances.size"
+          (filterChange)="applyFilters($event)"
+          (redirectToComparison)="compareSelectedItems()"
+          class="w-full filter">
+        </app-list-filter>
+        <div class="half-circle" (click)="onShowConsoleClick()">
+          <div class="triangle">
+          </div>
+        </div>
       </div>
 
-      <div class="flex flex-col overflow-x-auto">
+      <div class="flex flex-col overflow-x-auto border rounded">
         <div class="w-auto min-w-max">
           <app-list-header
             [columns]="columns"
@@ -35,30 +47,35 @@ import {groupByToMap, removeUnnecessaryTags} from "../common/instance/instance.u
             [hidden]="row['hidden']"
             [row]="row"
             [columns]="columns"
-            [isInComparison]="isInComparison(row['name'])"
+            [isInComparison]="isInComparison(row)"
             [onToggleComparison]="toggleComparison.bind(this)"
           />
         </div>
       </div>
     </div>
   `,
+  styleUrls: ["./instance-list.component.css"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InstanceListComponent implements OnInit {
   defaultRows: InstanceDefaultRow[] = [];
   rows: { [index: string]: any }[] = [];
-  selectedInstances: string[] = [];
+  selectedInstances: Set<string> = new Set<string>();
   allTags: string[] = [];
   allNetworks: string[] = [];
   allBenchmarks: { name: string, id: string }[] = [];
+  filter: Filter = {}
+  queryConsoleActive: boolean = false
+  @ViewChild(ListQueryComponent) queryComponent!: ListQueryComponent
   private defaultColumnsWithoutBenchmark = ["Name", "vCPUs", "Memory", "Network", "Tags"]
   columns: string[] = this.defaultColumnsWithoutBenchmark
-  private defaultColumnsWithBenchmark = ["Name", "vCPUs", "Memory", "Network", "Minimum", "Average", "Median", "Maximum", "Tags"]
+  private defaultColumnsWithBenchmark = ["Name", "vCPUs", "Memory", "Network", "Minimum",
+    "Average", "Median", "Maximum", "Tags"]
 
   constructor(private instanceListService: InstanceListService,
               private router: Router,
               private changeDetectorRef: ChangeDetectorRef,
-              private queryProcessorService: QueryProcessorService) {
+              private listQueryService: ListQueryService) {
   }
 
   ngOnInit(): void {
@@ -75,13 +92,13 @@ export class InstanceListComponent implements OnInit {
       this.rows = this.defaultRows
       this.updateFilters(benchmarks);
       this.changeDetectorRef.markForCheck();
-
-      this.queryProcessorService.initializeDuckDB()
-        .then(() => this.queryProcessorService.loadDatabase())
+      this.listQueryService.initializeDuckDB()
+        .then(() => this.listQueryService.loadDatabase())
     })
   }
 
   applyFilters(filter: Filter): void {
+    this.filter = Object.assign({}, filter)
     const benchmarkSplit = filter.benchmark?.split("-")
     const benchmark = benchmarkSplit ? benchmarkSplit[0] : null;
     const series = benchmarkSplit ? benchmarkSplit[1] : null;
@@ -94,7 +111,8 @@ export class InstanceListComponent implements OnInit {
       const matchesNetwork = filter.network && filter.network.length ? filter.network.includes(instance.Network) : true;
       const matchesTags = filter.tags && filter.tags.length ? filter.tags.every(tag => instance.Tags.includes(tag)) : true;
       const matchesBenchmark = !!benchmark ? instance.benchmarks.map(stat => stat.benchmarkId).includes(benchmark) : true
-      instance.hidden = !(matchesName && matchesMinCpu && matchesMaxCpu && matchesMinMemory && matchesMaxMemory && matchesNetwork && matchesTags && matchesBenchmark);
+      instance.hidden = !(matchesName && matchesMinCpu && matchesMaxCpu && matchesMinMemory && matchesMaxMemory
+        && matchesNetwork && matchesTags && matchesBenchmark);
       return instance
     });
     if (filter.benchmark) {
@@ -102,27 +120,15 @@ export class InstanceListComponent implements OnInit {
         .filter(row => !row.hidden)
         .forEach(instance => {
           const stats = instance.benchmarks.find(stat => stat.benchmarkId === benchmark && stat.series === series)!
-          instance.Minimum = Number(stats.min.toPrecision(5))
-          instance.Average = Number(stats.avg.toPrecision(5))
-          instance.Median = Number(stats.median.toPrecision(5))
-          instance.Maximum = Number(stats.max.toPrecision(5))
+          instance.Minimum = stats.min
+          instance.Average = stats.avg
+          instance.Median = stats.median
+          instance.Maximum = stats.max
         })
       this.columns = this.defaultColumnsWithBenchmark
     } else {
       this.columns = this.defaultColumnsWithoutBenchmark
     }
-  }
-
-  toggleComparison(object: { [index: string]: any }): boolean {
-    const name = object["Name"] ?? object["name"]
-    if (name && this.isInComparison(name)) {
-      this.selectedInstances = this.selectedInstances.filter(item => item !== name);
-      return false;
-    } else if (this.selectedInstances.length < 3) {
-      this.selectedInstances.push(name);
-      return true;
-    }
-    return false;
   }
 
   goToDetails(instance: Instance): void {
@@ -131,11 +137,16 @@ export class InstanceListComponent implements OnInit {
 
   compareSelectedItems(): void {
     this.router.navigate(["/instance/compare"],
-      {queryParams: {instances: this.selectedInstances.join(",")}});
+      {queryParams: {instances: Array.from(this.selectedInstances).join(",")}});
   }
 
-  isInComparison(name: string): boolean {
-    return this.selectedInstances.includes(name);
+  onShowConsoleClick() {
+    this.queryConsoleActive = !this.queryConsoleActive;
+    if (!this.queryConsoleActive) {
+      this.rows = this.defaultRows;
+      this.applyFilters(this.filter)
+      this.queryComponent.error = undefined
+    }
   }
 
   onSort($event: SortEvent) {
@@ -150,6 +161,28 @@ export class InstanceListComponent implements OnInit {
     });
   }
 
+  onQueryExecution($event: { rows: { [p: string]: any }[]; columns: string[] }) {
+    this.columns = $event.columns
+    this.rows = $event.rows
+  }
+
+  toggleComparison(object: { [index: string]: any }): boolean {
+    const name = object["Name"] ?? object["name"]
+    if (name && this.isInComparison(object)) {
+      this.selectedInstances.delete(name);
+      return false;
+    } else if (this.selectedInstances.size < 3) {
+      this.selectedInstances.add(name);
+      return true;
+    }
+    return false;
+  }
+
+  isInComparison(row: { [index: string]: any }): boolean {
+    const name = row['name'] ?? row['Name'];
+    return this.selectedInstances.has(name);
+  }
+
   trackById(index: number, row: any): number {
     return row['id']
   }
@@ -157,19 +190,18 @@ export class InstanceListComponent implements OnInit {
   private getDefaultRows(instances: Instance[], statistics: BenchmarkStatistics[]) {
     const benchmarksMap = groupByToMap(statistics, x => x.instanceId)
     let counter = 0
-    return instances.map(instance => removeUnnecessaryTags(instance))
-      .map(instance => {
-        return {
-          id: counter++,
-          Name: instance.name,
-          vCPUs: instance.vcpu,
-          Memory: instance.memory,
-          Network: instance.network,
-          Tags: instance.tags,
-          benchmarks: benchmarksMap.get(instance.id) ?? [],
-          hidden: false
-        } as InstanceDefaultRow
-      })
+    return instances.map(instance => {
+      return {
+        id: counter++,
+        Name: instance.name,
+        vCPUs: instance.vcpu,
+        Memory: instance.memory,
+        Network: instance.network,
+        Tags: instance.tags,
+        benchmarks: benchmarksMap.get(instance.id) ?? [],
+        hidden: false
+      } as InstanceDefaultRow
+    })
       .sort((a, b) => a.Name.localeCompare(b.Name));
   }
 

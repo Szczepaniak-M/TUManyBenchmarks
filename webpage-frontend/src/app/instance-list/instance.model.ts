@@ -10,7 +10,7 @@ export interface InstanceDefaultRow {
   Median?: number,
   Maximum?: number,
   benchmarks: BenchmarkStatistics[],
-  hidden: boolean
+  hidden: boolean,
 }
 
 export interface Instance {
@@ -20,7 +20,7 @@ export interface Instance {
   memory: number,
   network: string,
   tags: string[],
-  benchmarks: Benchmark[]
+  benchmarks: Benchmark[],
 }
 
 export interface Benchmark {
@@ -28,26 +28,26 @@ export interface Benchmark {
   name: string,
   description: string,
   results: BenchmarkResult[],
-  plots: Plot[]
+  plots: Plot[],
 }
 
 export interface BenchmarkResult {
   timestamp: number,
-  values: any
+  values: any,
 }
 
 export interface Plot {
-  type: PlotType
+  type: PlotType,
   title: string,
   xaxis?: string,
   yaxis: string,
-  series: PlotSeries[]
+  series: PlotSeries[],
 }
 
 export interface PlotSeries {
   x?: string,
   y: string,
-  legend: string
+  legend: string,
 }
 
 export type PlotType = "scatter" | "line";
@@ -56,10 +56,10 @@ export interface BenchmarkDetails {
   id: string,
   name: string,
   description: string,
-  instanceTypes: string[]
-  instanceTags: string[][]
-  seriesX: string[]
-  seriesY: string[]
+  instanceTypes: string[],
+  instanceTags: string[][],
+  seriesX: string[],
+  seriesY: string[],
 }
 
 export interface BenchmarkStatistics{

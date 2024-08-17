@@ -6,12 +6,11 @@ import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
     <div class="flex flex-row overflow-visible border"
          (click)="toggleComparison()"
          [class.bg-gray-200]="isInComparison">
-      <div *ngFor="let field of columns" class="py-2 px-4 my-1 min-w-40"
-           [ngClass]="field === 'Tags' ? 'w-1/3' : 'w-1/6'">
+      <div *ngFor="let field of columns" class="py-2 px-4 my-1 min-w-40 w-1/4 max-w-lg break-all">
         <div *ngIf="field === 'Name'"
              class="text-blue-500 hover:underline"
              [routerLink]="['/instance', row[field]]">
-          {{ row[field] }}
+          <p>{{ row[field] }}</p>
         </div>
         <div *ngIf="field === 'Tags'">
           <span *ngFor="let tag of row[field]"

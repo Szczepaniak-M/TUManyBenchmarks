@@ -10,17 +10,12 @@ import {SortDirection, SortEvent} from "./list-sort.model";
         <p class="text-left font-bold">{{ column }}</p>
       </div>
       <div class="text-center center items-center">
-        <svg viewBox="6 8 12 1" width="12px" height="12px" focusable="false" aria-hidden="true">
-          <path fill="#212529" d="M7 10l5 5 5-5z" transform="rotate(180, 12, 12)"
-                [attr.opacity]="direction == 'asc' ? '0.6' : '0.125'"/>
-        </svg>
-        <svg viewBox="6 8 12 12" width="12px" height="12px" focusable="false" aria-hidden="true">
-          <path fill="#212529" d="M7 10l5 5 5-5z"
-                [attr.opacity]="direction == 'desc' ? '0.6' : '0.125'"/>
-        </svg>
+        <div class="triangle-up mb-1" [style.opacity]="direction == 'asc' ? '0.6' : '0.125'"></div>
+        <div class="triangle-down" [style.opacity]="direction == 'desc' ? '0.6' : '0.125'"></div>
       </div>
     </div>
   `,
+  styleUrls: ['./list-sort.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListSortComponent {

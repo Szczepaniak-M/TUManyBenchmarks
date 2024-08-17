@@ -5,9 +5,9 @@ import {Router} from "@angular/router";
 import {of} from "rxjs";
 import {Instance} from "./instance.model";
 import {Filter} from "./list-filter/list-filter.model";
-import {SortEvent} from "./list-sort/list-sort.model";
+import {SortEvent} from "./list-header/list-sort/list-sort.model";
 import {By} from "@angular/platform-browser";
-import {ListSortComponent} from "./list-sort/list-sort.component";
+import {ListSortComponent} from "./list-header/list-sort/list-sort.component";
 import {MockComponent} from "ng-mocks";
 import {ListFilterComponent} from "./list-filter/list-filter.component";
 import {ListRowComponent} from "./list-row/list-row.component";
@@ -56,8 +56,8 @@ describe("InstanceListComponent", () => {
 
   it("should initialize instances and filters on ngOnInit", () => {
     fixture.detectChanges()
-    expect(component.instances).toEqual(mockInstances);
-    expect(component.displayedInstances).toEqual(mockInstances);
+    expect(component.rows).toEqual(mockInstances);
+    expect(component.rows).toEqual(mockInstances);
     expect(component.allTags).toEqual(["tag1", "tag2", "tag3"]);
     expect(component.allNetworks).toEqual(["Network1", "Network2"]);
   });
@@ -66,7 +66,7 @@ describe("InstanceListComponent", () => {
     fixture.detectChanges()
     const filter: Filter = {name: "micro"};
     component.applyFilters(filter);
-    expect(component.displayedInstances).toEqual([mockInstances[0]]);
+    expect(component.rows).toEqual([mockInstances[0]]);
   });
 
   it("should add and remove instances from comparison", () => {
@@ -101,12 +101,12 @@ describe("InstanceListComponent", () => {
     const sortEvent: SortEvent = {column: "memory", direction: "desc"};
     component.onSort(sortEvent);
     fixture.detectChanges()
-    expect(component.displayedInstances[0].memory).toBeGreaterThanOrEqual(component.displayedInstances[1].memory);
+    expect(component.rows[0].memory).toBeGreaterThanOrEqual(component.rows[1].memory);
   });
 
   it("should track instances by name", () => {
     const instance = mockInstances[0];
-    expect(component.trackByName(0, instance)).toBe(instance.name);
+    expect(component.trackById(0, instance)).toBe(instance["id"]);
   });
 
   it("should reset sorting direction for other columns when sorting by a new column", () => {

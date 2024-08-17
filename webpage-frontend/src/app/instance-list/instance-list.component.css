@@ -1,0 +1,46 @@
+.half-circle {
+  width: 30px;
+  height: 15px;
+  background-color: #1F2937;
+  border-radius: 0 0 50px 50px;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.4s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.triangle {
+  width: 8px;
+  height: 8px;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 8px solid #FFFFFF;
+}
+
+.console {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-out;
+}
+
+.filter {
+  max-height: 500px;
+  overflow: hidden;
+  transition: max-height 0.4s ease-out;
+}
+
+.expanded .triangle {
+  transform: rotateX(180deg);
+}
+
+.expanded .console {
+  max-height: 500px;
+}
+
+.expanded .filter {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-out;
+}
