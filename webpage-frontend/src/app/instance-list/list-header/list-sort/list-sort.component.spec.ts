@@ -3,7 +3,7 @@ import {By} from "@angular/platform-browser";
 import {ListSortComponent} from "./list-sort.component";
 import {ChangeDetectorRef} from "@angular/core";
 
-describe("InstanceListSortComponent", () => {
+describe("ListSortComponent", () => {
   let component: ListSortComponent;
   let fixture: ComponentFixture<ListSortComponent>;
 
@@ -52,21 +52,21 @@ describe("InstanceListSortComponent", () => {
     expect(component.direction).toBe("");
   });
 
-  it("should update SVG opacity based on direction", () => {
-    const svgAsc = fixture.debugElement.queryAll(By.css("path"))[0].nativeElement;
-    const svgDesc = fixture.debugElement.queryAll(By.css("path"))[1].nativeElement;
+  it("should update triangle opacity based on direction", () => {
+    const divAsc = fixture.debugElement.query(By.css(".triangle-up")).nativeElement;
+    const divDesc = fixture.debugElement.query(By.css(".triangle-down")).nativeElement;
 
-    expect(svgAsc.getAttribute("opacity")).toBe("0.125");
-    expect(svgDesc.getAttribute("opacity")).toBe("0.125");
-
-    component.rotate()
-    fixture.componentRef.injector.get(ChangeDetectorRef).detectChanges();
-    expect(svgAsc.getAttribute("opacity")).toBe("0.6");
-    expect(svgDesc.getAttribute("opacity")).toBe("0.125");
+    expect(window.getComputedStyle(divAsc).opacity).toBe("0.125");
+    expect(window.getComputedStyle(divDesc).opacity).toBe("0.125");
 
     component.rotate()
     fixture.componentRef.injector.get(ChangeDetectorRef).detectChanges();
-    expect(svgAsc.getAttribute("opacity")).toBe("0.125");
-    expect(svgDesc.getAttribute("opacity")).toBe("0.6");
+    expect(window.getComputedStyle(divAsc).opacity).toBe("0.6");
+    expect(window.getComputedStyle(divDesc).opacity).toBe("0.125");
+
+    component.rotate()
+    fixture.componentRef.injector.get(ChangeDetectorRef).detectChanges();
+    expect(window.getComputedStyle(divAsc).opacity).toBe("0.125");
+    expect(window.getComputedStyle(divDesc).opacity).toBe("0.6");
   });
 });

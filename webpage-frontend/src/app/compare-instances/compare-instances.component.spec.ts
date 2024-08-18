@@ -22,7 +22,7 @@ describe("CompareInstancesComponent", () => {
           vcpu: 4,
           network: "10 Gbps",
           memory: 16,
-          otherTags: ["Tag1", "Tag2"],
+          tags: ["Tag1", "Tag2"],
           benchmarks: [
             {id: "benchmark1", name: "Benchmark 1", description: "Description 1", results: [], plots: []},
             {id: "benchmark2", name: "Benchmark 2", description: "Description 2", results: [], plots: []}

@@ -5,7 +5,6 @@ import {AuthService} from "../auth/auth.service";
 import {of} from "rxjs";
 import {environment} from "../../environemnts/environment";
 import {provideHttpClient} from "@angular/common/http";
-import {removeCpuMemoryNetworkTags} from "../common/instance/instance.utils";
 import {Instance} from "../instance-list/instance.model";
 
 describe("InstanceDetailsService", () => {
@@ -16,10 +15,10 @@ describe("InstanceDetailsService", () => {
   const mockInstance: Instance = {
     id: "instance1",
     name: "t2.micro",
-    vCpu: 8,
+    vcpu: 8,
     memory: 16,
     network: "10 Gbps Network",
-    tags: ["8 vCPUs", "10 Gbps Network", "16 GiB Memory"],
+    tags: ["8 vCPUs", "10 Gbps Network", "16 GiB Memory", "Other tag"],
     benchmarks: [
       {
         id: "benchmark1",
@@ -39,9 +38,28 @@ describe("InstanceDetailsService", () => {
   };
 
   const expectedInstanceDetails: Instance = {
-    ...mockInstance,
-    tags: removeCpuMemoryNetworkTags(mockInstance.tags),
-    benchmarks: mockInstance.benchmarks
+    id: "instance1",
+    name: "t2.micro",
+    vcpu: 8,
+    memory: 16,
+    network: "10 Gbps Network",
+    tags: ["Other tag"],
+    benchmarks: [
+      {
+        id: "benchmark1",
+        name: "Benchmark 1",
+        description: "Description 1",
+        results: [],
+        plots: [{title: "Plot 1", type: "scatter", yaxis: "", series: []}]
+      },
+      {
+        id: "benchmark2",
+        name: "Benchmark 2",
+        description: "Description 2",
+        results: [],
+        plots: [{title: "Plot 2", type: "scatter", yaxis: "", series: []}]
+      }
+    ]
   };
 
   beforeEach(() => {

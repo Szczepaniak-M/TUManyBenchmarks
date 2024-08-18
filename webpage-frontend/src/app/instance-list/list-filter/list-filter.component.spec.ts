@@ -8,7 +8,7 @@ import {MatInput} from "@angular/material/input";
 import {MatOption, MatSelect} from "@angular/material/select";
 import {MockComponent, MockDirective, MockModule} from "ng-mocks";
 
-describe("InstanceListFilterComponent", () => {
+describe("ListFilterComponent", () => {
   let component: ListFilterComponent;
   let fixture: ComponentFixture<ListFilterComponent>;
 
@@ -30,6 +30,7 @@ describe("InstanceListFilterComponent", () => {
     component = fixture.componentInstance;
     component.allNetworks = ["Network1", "Network2"];
     component.allTags = ["Tag1", "Tag2"];
+    component.allBenchmarks = [{name: "Benchmark1", id: "id1"}, {name: "Benchmark2", id: "id2"}]
     component.selectedInstances = 1;
     fixture.detectChanges();
   });
@@ -41,6 +42,7 @@ describe("InstanceListFilterComponent", () => {
   it("should bind input properties", () => {
     expect(component.allNetworks).toEqual(["Network1", "Network2"]);
     expect(component.allTags).toEqual(["Tag1", "Tag2"]);
+    expect(component.allBenchmarks).toEqual([{name: "Benchmark1", id: "id1"}, {name: "Benchmark2", id: "id2"}]);
     expect(component.selectedInstances).toBe(1);
   });
 

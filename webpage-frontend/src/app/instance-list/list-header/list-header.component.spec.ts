@@ -1,36 +1,25 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {By} from "@angular/platform-browser";
 import {ListHeaderComponent} from "./list-header.component";
-import {Instance} from "../instance.model";
-import {RouterModule} from "@angular/router";
+import {By} from "@angular/platform-browser";
+import {SortEvent} from "./list-sort/list-sort.model";
+import {MockComponent} from "ng-mocks";
+import {ListSortComponent} from "./list-sort/list-sort.component";
 
-describe("InstanceListRowComponent", () => {
+describe("ListHeaderComponent", () => {
   let component: ListHeaderComponent;
   let fixture: ComponentFixture<ListHeaderComponent>;
 
-  const testInstance: Instance = {
-    id: "1",
-    name: "test-instance",
-    vcpu: 4,
-    memory: 16,
-    network: "test-network",
-    tags: ["tag1", "tag2"],
-    benchmarks: []
-  };
-
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [
-        RouterModule.forRoot([]),
+      declarations: [
+        ListHeaderComponent,
+        MockComponent(ListSortComponent)
       ],
-      declarations: [ListHeaderComponent]
     })
 
     fixture = TestBed.createComponent(ListHeaderComponent);
     component = fixture.componentInstance;
-    component.row = testInstance;
-    component.isInComparison = false;
-    component.onToggleComparison = jasmine.createSpy("onToggleComparison").and.returnValue(true);
+    component.columns = ["Name", "Memory", "Tags"];
     fixture.detectChanges();
   });
 
@@ -38,42 +27,40 @@ describe("InstanceListRowComponent", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should display instance details", () => {
-    const compiled = fixture.nativeElement as HTMLElement;
-
-    const basicInformationDivs = compiled.querySelectorAll(".w-1\\/6");
-    expect(basicInformationDivs[0].textContent).toContain("test-instance");
-    expect(basicInformationDivs[1].textContent).toContain("4 vCPUs");
-    expect(basicInformationDivs[2].textContent).toContain("16 GiB");
-    expect(basicInformationDivs[3].textContent).toContain("test-network");
-
-    const tagsSpans = compiled.querySelectorAll("span");
-    expect(tagsSpans[0].textContent).toContain("tag1");
-    expect(tagsSpans[1].textContent).toContain("tag2");
+  it("should render correct number of columns", () => {
+    const columnElements = fixture.debugElement.queryAll(By.css(".min-w-40"));
+    expect(columnElements.length).toBe(3);
   });
 
-  it("should call onToggleComparison and update isInComparison on row click", () => {
-    const rowElement = fixture.debugElement.query(By.css(".flex.flex-row.border")).nativeElement;
-    rowElement.click();
-    fixture.detectChanges();
-
-    expect(component.onToggleComparison).toHaveBeenCalledWith(testInstance);
-    expect(component.isInComparison).toBe(true);
+  it("should render the Tags column without a sort component", () => {
+    const tagsColumn = fixture.debugElement.query(By.css(".min-w-40:last-child"));
+    expect(tagsColumn.nativeElement.textContent.trim()).toContain("Tags");
+    const sortComponent = tagsColumn.query(By.directive(ListSortComponent));
+    expect(sortComponent).toBeNull();
   });
 
-  it("should have bg-gray-200 class if isInComparison is true", () => {
-    fixture.componentRef.setInput("isInComparison", true)
-    fixture.detectChanges();
+  it("should emit sort event when a column is sorted", () => {
+    spyOn(component.sort, "emit");
 
-    const rowElement = fixture.debugElement.query(By.css(".flex.flex-row.border")).nativeElement;
-    expect(rowElement.classList).toContain("bg-gray-200");
+    const sortComponent = fixture.debugElement.query(By.directive(ListSortComponent));
+    const sortEvent: SortEvent = {column: "Name", direction: "asc"};
+    sortComponent.triggerEventHandler("sort", sortEvent);
+
+    expect(component.sort.emit).toHaveBeenCalledWith(sortEvent);
   });
 
-  it("should not have bg-gray-200 class if isInComparison is false", () => {
-    fixture.componentRef.setInput("isInComparison", false)
-    fixture.detectChanges();
+  it("should reset direction on other columns when a column is sorted", () => {
+    const sortComponents = fixture.debugElement.queryAll(By.directive(ListSortComponent));
+    const nameSortComponent = sortComponents[0].componentInstance as ListSortComponent;
+    const memorySortComponent = sortComponents[1].componentInstance as ListSortComponent;
 
-    const rowElement = fixture.debugElement.query(By.css(".flex.flex-row.border")).nativeElement;
-    expect(rowElement.classList).not.toContain("bg-gray-200");
+    spyOn(nameSortComponent, "resetDirection");
+    spyOn(memorySortComponent, "resetDirection");
+
+    const sortEvent: SortEvent = {column: "Name", direction: "asc"};
+    nameSortComponent.sort.emit(sortEvent);
+
+    expect(nameSortComponent.resetDirection).not.toHaveBeenCalled();
+    expect(memorySortComponent.resetDirection).toHaveBeenCalled();
   });
 });

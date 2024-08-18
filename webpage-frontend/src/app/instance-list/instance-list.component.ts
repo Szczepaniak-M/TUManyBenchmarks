@@ -131,10 +131,6 @@ export class InstanceListComponent implements OnInit {
     }
   }
 
-  goToDetails(instance: Instance): void {
-    this.router.navigate(["/instance", instance.name]);
-  }
-
   compareSelectedItems(): void {
     this.router.navigate(["/instance/compare"],
       {queryParams: {instances: Array.from(this.selectedInstances).join(",")}});

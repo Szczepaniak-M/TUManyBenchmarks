@@ -107,7 +107,7 @@ export class ListQueryComponent implements OnChanges {
   }
 
   isRowHidden(row: { [index: string]: any }, columns: string[]) {
-    return 'hidden' in row && !('hidden' in columns) && row["hidden"] == true;
+    return 'hidden' in row && !columns.includes("hidden") && row["hidden"] == true;
   }
 
   private jsonToCsv(jsonData: { [index: string]: any }[], columns: string[]) {

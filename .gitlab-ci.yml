@@ -33,3 +33,12 @@ test_webpage_backend:
   tags:
     - gradle
 
+test_webpage_frontend:
+  stage: test
+
+  script:
+    - cd webpage-frontend
+    - ng test --no-watch --no-progress --browsers=ChromeHeadless
+
+  tags:
+    - npm

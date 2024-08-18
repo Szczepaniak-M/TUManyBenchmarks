@@ -1,25 +1,60 @@
-import {Instance, InstanceDto} from "../../instance-list/instance.model";
-import {convertInstanceDtoToInstance} from "./instance.utils";
+import {Instance} from "../../instance-list/instance.model";
+import {groupByToMap, removeUnnecessaryTags} from "./instance.utils";
 
-
-describe("convertInstanceDtoToInstance", () => {
-
-  it("should correctly convert InstanceDto with all tags present", () => {
-    const instanceDto: InstanceDto = {
-      id: "1",
-      name: "Test Instance",
-      tags: ["4 vCPUs", "16 GiB Memory", "1 Network", "Additional Tag 1", "Additional Tag 2"]
+describe('removeUnnecessaryTags', () => {
+  it('should remove matching patterns', () => {
+    const instance: Instance = {
+      benchmarks: [], id: "", memory: 0, name: "", network: "", vcpu: 0,
+      tags: ['4 vCPUs', '16 GB Memory', 'High Network', 'Other Tag']
     };
 
-    const expectedInstance: Instance = {
-      id: "1",
-      name: "Test Instance",
-      vcpu: 4,
-      memory: 16,
-      network: "1 Network",
-      otherTags: ["Additional Tag 1", "Additional Tag 2"]
+    const result = removeUnnecessaryTags(instance);
+
+    expect(result.tags).not.toContain('4 vCPUs');
+    expect(result.tags).not.toContain('16 GB Memory');
+    expect(result.tags).not.toContain('High Network');
+    expect(result.tags).toEqual(['Other Tag']);
+
+  });
+
+  it('should return an empty array if all tags are removed', () => {
+    const instance: Instance = {
+      benchmarks: [], id: "", memory: 0, name: "", network: "", vcpu: 0,
+      tags: ['4 vCPUs', '16 GB Memory', 'High Network']
     };
 
-    expect(convertInstanceDtoToInstance(instanceDto)).toEqual(expectedInstance);
+    const result = removeUnnecessaryTags(instance);
+
+    expect(result.tags).toEqual([]);
+  });
+});
+
+describe('groupByToMap', () => {
+  it('should group elements by a specified key', () => {
+    const array = [
+      {id: 1, type: 'A'},
+      {id: 2, type: 'B'},
+      {id: 3, type: 'A'},
+      {id: 4, type: 'B'}
+    ];
+
+    const result = groupByToMap(array, item => item.type);
+
+    expect(result.get('A')).toEqual([
+      {id: 1, type: 'A'},
+      {id: 3, type: 'A'}
+    ]);
+    expect(result.get('B')).toEqual([
+      {id: 2, type: 'B'},
+      {id: 4, type: 'B'}
+    ]);
+  });
+
+  it('should handle an empty array', () => {
+    const array: any[] = [];
+
+    const result = groupByToMap(array, item => item.type);
+
+    expect(result.size).toBe(0);
   });
 });

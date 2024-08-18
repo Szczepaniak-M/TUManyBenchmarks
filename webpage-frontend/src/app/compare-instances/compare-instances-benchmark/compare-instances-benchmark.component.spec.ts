@@ -1,20 +1,20 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {CompareInstancesBenchmarkComponent} from "./compare-instances-benchmark.component";
-import {InstanceDetails} from "../../instance-details/instance-details.model";
 import {MockComponent} from "ng-mocks";
 import {BenchmarkPlotComponent} from "../../common/benchmark-plot/benchmark-plot.component";
+import {Instance} from "../../instance-list/instance.model";
 
 describe("CompareInstancesBenchmarkComponent", () => {
   let component: CompareInstancesBenchmarkComponent;
   let fixture: ComponentFixture<CompareInstancesBenchmarkComponent>;
-  const mockInstances: InstanceDetails[] = [
+  const mockInstances: Instance[] = [
     {
       name: "Instance 1",
       id: "",
       vcpu: 0,
       memory: 0,
       network: "",
-      otherTags: [],
+      tags: [],
       benchmarks: [
         {
           id: "benchmark1",
@@ -38,7 +38,7 @@ describe("CompareInstancesBenchmarkComponent", () => {
       vcpu: 0,
       memory: 0,
       network: "",
-      otherTags: [],
+      tags: [],
       benchmarks: [{
         id: "benchmark1",
         name: "Benchmark 1",
