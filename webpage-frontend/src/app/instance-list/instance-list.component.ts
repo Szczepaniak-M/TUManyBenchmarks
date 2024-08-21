@@ -175,7 +175,7 @@ export class InstanceListComponent implements OnInit {
   }
 
   isInComparison(row: { [index: string]: any }): boolean {
-    const name = row['name'] ?? row['Name'];
+    const name = row['name'] ?? row['Name'] ?? row['NAME'];
     return this.selectedInstances.has(name);
   }
 

@@ -221,7 +221,7 @@ describe("InstanceListComponent", () => {
     expect(component.rows[0]["Memory"]).toBeGreaterThanOrEqual(component.rows[1]["Memory"]);
   });
 
-  it("should track instances by name", () => {
+  it("should track instances by id", () => {
     const instance = component.rows[0];
     expect(component.trackById(0, instance)).toBe(0);
   });
