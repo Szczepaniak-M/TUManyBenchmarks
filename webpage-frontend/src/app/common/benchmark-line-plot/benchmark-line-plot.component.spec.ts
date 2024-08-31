@@ -53,7 +53,72 @@ describe("BenchmarkLinePlotComponent", () => {
     expect(component.chartOptions.title!.text).toBe(plot.title);
     expect(component.chartOptions.xaxis!.title!.text).toBe(plot.xaxis);
     expect(component.chartOptions.yaxis!.title!.text).toBe(plot.yaxis);
+    expect(component.chartOptions.yaxis!.logarithmic!).toBe(false);
     expect(component.chartOptions.series!.length).toBeGreaterThan(0);
+  });
+
+  it("should initialize yaxis log scale correctly when scale is int", () => {
+    const plot: Plot = {
+      type: "line",
+      title: "Test Plot",
+      xaxis: "X-Axis",
+      yaxis: "Y-Axis",
+      yaxisLog: 10,
+      series: [
+        {legend: "Series 1", x: "x", y: "y"},
+        {legend: "Series 2", x: "x", y: "y"}
+      ]
+    };
+
+    const benchmarkResults: BenchmarkResult[][] = [
+      [{
+        timestamp: 1,
+        values: {
+          x: [1, 2, 3],
+          y: [4, 5, 6]
+        }
+      }]
+    ];
+
+    component.plot = plot;
+    component.benchmarkResults = benchmarkResults;
+    component.instances = [];
+    fixture.detectChanges();
+
+    expect(component.chartOptions.yaxis!.logarithmic).toBe(true);
+    expect(component.chartOptions.yaxis!.logBase).toBe(10);
+  });
+
+  it("should initialize yaxis log scale correctly when scale is e", () => {
+    const plot: Plot = {
+      type: "line",
+      title: "Test Plot",
+      xaxis: "X-Axis",
+      yaxis: "Y-Axis",
+      yaxisLog: "e",
+      series: [
+        {legend: "Series 1", x: "x", y: "y"},
+        {legend: "Series 2", x: "x", y: "y"}
+      ]
+    };
+
+    const benchmarkResults: BenchmarkResult[][] = [
+      [{
+        timestamp: 1,
+        values: {
+          x: [1, 2, 3],
+          y: [4, 5, 6]
+        }
+      }]
+    ];
+
+    component.plot = plot;
+    component.benchmarkResults = benchmarkResults;
+    component.instances = [];
+    fixture.detectChanges();
+
+    expect(component.chartOptions.yaxis!.logarithmic).toBe(true);
+    expect(component.chartOptions.yaxis!.logBase).toBe(Math.E);
   });
 
   it("should generate correct series data for single instance", () => {

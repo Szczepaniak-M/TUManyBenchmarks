@@ -285,6 +285,7 @@ def check_xaxis(plot, plot_type):
 
 def check_yaxis(plot):
     check_str('yaxis', plot, 'plots')
+    check_log_scale(plot)
 
 
 def check_series(plot, plot_type):
@@ -308,6 +309,11 @@ def check_str(key, dictionary, dictionary_name):
         raise ValueError(f"Missing '{key}' in '{dictionary_name}' section.")
     if not isinstance(dictionary[key], str):
         raise ValueError(f"'{key}' in '{dictionary_name}' should be of type str.")
+
+def check_log_scale(dictionary):
+    if 'yaxis-log' in dictionary:
+        if not isinstance(dictionary['yaxis-log'], int) and dictionary['yaxis-log'] != 'e':
+            raise ValueError(f"'yaxis-log' in 'plots' should be of type int or equals 'e'.")
 
 
 def print_stderr(*args, **kwargs):

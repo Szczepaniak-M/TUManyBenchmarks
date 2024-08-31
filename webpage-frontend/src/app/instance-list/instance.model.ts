@@ -41,6 +41,7 @@ export interface Plot {
   title: string,
   xaxis?: string,
   yaxis: string,
+  yaxisLog?: number | 'e',
   series: PlotSeries[],
 }
 

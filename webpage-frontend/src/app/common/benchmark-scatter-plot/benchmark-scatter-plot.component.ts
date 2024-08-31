@@ -91,6 +91,8 @@ export class BenchmarkScatterPlotComponent implements OnInit {
       },
       yaxis: {
         decimalsInFloat: 5,
+        logarithmic: !!this.plot.yaxisLog,
+        logBase: this.plot.yaxisLog === 'e' ? Math.E : this.plot.yaxisLog,
         title: {
           text: this.plot.yaxis,
           style: {

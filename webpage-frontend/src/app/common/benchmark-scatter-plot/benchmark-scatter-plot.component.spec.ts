@@ -51,7 +51,68 @@ describe("BenchmarkScatterPlotComponent", () => {
     expect(component.chartOptions.title!.text).toBe(plot.title);
     expect(component.chartOptions.xaxis!.title!.text).toBe("Execution time");
     expect(component.chartOptions.yaxis!.title!.text).toBe(plot.yaxis);
+    expect(component.chartOptions.yaxis!.logarithmic).toBe(false);
     expect(component.chartOptions.series!.length).toBeGreaterThan(0);
+  });
+
+  it("should initialize yaxis log scale correctly when scale is int", () => {
+    const plot: Plot = {
+      type: "scatter",
+      title: "Sample Plot",
+      yaxis: "Value",
+      yaxisLog: 10,
+      series: [
+        {legend: "Series 1", y: "y1"},
+        {legend: "Series 2", y: "y2"}
+      ]
+    };
+
+    const benchmarkResults: BenchmarkResult[][] = [
+      [{
+        timestamp: 1,
+        values: {
+          y: 1
+        }
+      }]
+    ];
+
+    component.plot = plot;
+    component.benchmarkResults = benchmarkResults;
+    component.instances = [];
+    fixture.detectChanges();
+
+    expect(component.chartOptions.yaxis!.logarithmic).toBe(true);
+    expect(component.chartOptions.yaxis!.logBase).toBe(10);
+  });
+
+  it("should initialize yaxis log scale correctly when scale is e", () => {
+    const plot: Plot = {
+      type: "scatter",
+      title: "Sample Plot",
+      yaxis: "Value",
+      yaxisLog: "e",
+      series: [
+        {legend: "Series 1", y: "y1"},
+        {legend: "Series 2", y: "y2"}
+      ]
+    };
+
+    const benchmarkResults: BenchmarkResult[][] = [
+      [{
+        timestamp: 1,
+        values: {
+          y: 1
+        }
+      }]
+    ];
+
+    component.plot = plot;
+    component.benchmarkResults = benchmarkResults;
+    component.instances = [];
+    fixture.detectChanges();
+
+    expect(component.chartOptions.yaxis!.logarithmic).toBe(true);
+    expect(component.chartOptions.yaxis!.logBase).toBe(Math.E);
   });
 
   it("should generate correct series data for single instance", () => {

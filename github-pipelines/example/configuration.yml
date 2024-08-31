@@ -41,6 +41,7 @@ plots:
     title: Example line plot
     xaxis: Execution number
     yaxis: Time [ms]
+    yaxis-log: 2
     series:
       - x: increasingNumbers
         y: node1InputScalar
