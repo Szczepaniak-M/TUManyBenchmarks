@@ -13,6 +13,8 @@ import io.mockk.verify
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -57,6 +59,33 @@ class BenchmarkServiceTest {
             instanceService,
             benchmarkRunnerService
         )
+    }
+
+    @Test
+    fun `should allow benchmark execution on initialization`() {
+        assertTrue(benchmarkService.isBenchmarkExecutionAllowed())
+    }
+
+    @Test
+    fun `should successfully forbidden benchmark execution and return true`() {
+        // when
+        val result = benchmarkService.stopFurtherBenchmarkExecutions()
+
+        // then
+        assertTrue(result)
+        assertFalse(benchmarkService.isBenchmarkExecutionAllowed())
+    }
+
+    @Test
+    fun `should successfully forbidden benchmark execution and return false if already forbidden`() {
+        // when
+        val result1 =benchmarkService.stopFurtherBenchmarkExecutions()
+        val result2 = benchmarkService.stopFurtherBenchmarkExecutions()
+
+        // then
+        assertTrue(result1)
+        assertFalse(result2)
+        assertFalse(benchmarkService.isBenchmarkExecutionAllowed())
     }
 
     @Test

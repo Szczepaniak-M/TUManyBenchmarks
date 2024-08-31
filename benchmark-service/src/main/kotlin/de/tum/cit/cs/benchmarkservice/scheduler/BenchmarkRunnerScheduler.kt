@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.stereotype.Component
+import java.time.ZonedDateTime
 
 @Component
 @Profile("!test")
@@ -21,8 +22,11 @@ class BenchmarkRunnerScheduler(
 //    @Scheduled(cron = "0 0 * * * *")
     @EventListener(ApplicationReadyEvent::class) // for test only
     fun runBenchmarks() {
-        logger.info { "Staring benchmarks" }
-        benchmarkService.runBenchmarks()
-        logger.info { "Finished benchmarks" }
+        if(benchmarkService.isBenchmarkExecutionAllowed()){
+            val time = ZonedDateTime.now().withSecond(0).withNano(0).toString()
+            logger.info { "Staring benchmarks scheduled on $time" }
+            benchmarkService.runBenchmarks()
+            logger.info { "Finished benchmarks scheduled on $time" }
+        }
     }
 }

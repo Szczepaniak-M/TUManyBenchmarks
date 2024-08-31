@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
+import java.util.concurrent.atomic.AtomicBoolean
 
 @Service
 class BenchmarkService(
@@ -26,6 +27,19 @@ class BenchmarkService(
 ) {
 
     private val logger = KotlinLogging.logger {}
+    private val isExecutionAllowed = AtomicBoolean(true)
+
+    fun isBenchmarkExecutionAllowed(): Boolean {
+        return isExecutionAllowed.get()
+    }
+
+    fun stopFurtherBenchmarkExecutions(): Boolean {
+        val success = isExecutionAllowed.compareAndSet(true, false)
+        if (success) {
+            logger.info { "Further benchmark scheduling has been stopped" }
+        }
+        return success
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun runBenchmarks(): Int = runBlocking {
