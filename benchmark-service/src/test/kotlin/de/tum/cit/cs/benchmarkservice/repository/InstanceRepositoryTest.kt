@@ -1,6 +1,5 @@
 package de.tum.cit.cs.benchmarkservice.repository
 
-import aws.smithy.kotlin.runtime.content.BigDecimal
 import de.tum.cit.cs.benchmarkservice.MongoTestContainerConfig
 import de.tum.cit.cs.benchmarkservice.model.Instance
 import kotlinx.coroutines.test.runTest
@@ -13,6 +12,7 @@ import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRep
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.testcontainers.junit.jupiter.Testcontainers
+import java.math.BigDecimal
 
 @ActiveProfiles("test")
 @DataMongoTest

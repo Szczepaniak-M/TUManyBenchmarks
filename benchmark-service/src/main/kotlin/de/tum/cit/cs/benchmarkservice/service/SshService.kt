@@ -59,7 +59,7 @@ class SshService(
                             setUpNode(ec2Configuration, node, session)
                         }
                     }.awaitAll()
-                        .fold(true) {prev, curr -> prev && curr}
+                        .fold(true) { prev, curr -> prev && curr }
 
                     if (!setupSucceeded) {
                         logger.error {
@@ -152,7 +152,7 @@ class SshService(
         commands.addAll(curls)
         commands.add("cd ${ec2Configuration.directory}")
         if (ansibleFile?.isNotEmpty() == true) {
-            commands.add("ansible-playbook --connection=local --inventory 127.0.0.1, $ansibleFile")
+            commands.add("ANSIBLE_GATHERING=explicit ansible-playbook --connection=local --inventory 127.0.0.1, $ansibleFile")
         }
         commands.addAll(createEtcHosts(ec2Configuration))
         val nodeIdCommand = """echo 'export NODE_ID="${node.nodeId}"' >> ~/.bashrc"""

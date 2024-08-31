@@ -1,9 +1,10 @@
 package de.tum.cit.cs.benchmarkservice.service
 
 import aws.sdk.kotlin.services.ec2.model.*
-import aws.smithy.kotlin.runtime.content.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
+import kotlin.collections.listOf
 
 class InstanceTypeInfoParserTest {
 
@@ -95,6 +96,29 @@ class InstanceTypeInfoParserTest {
         val result = parser.parse(instanceTypeInfo)
 
         // then
+        assertEquals(expectedTags, result.tags)
+    }
+
+    @Test
+    fun `do parse name when it is unknown type by SDK`() {
+        // given
+        val instanceName = "t12.micro"
+        val instanceTypeInfo = InstanceTypeInfo {
+            instanceType = InstanceType.fromValue(instanceName)
+            vCpuInfo = V_CPU_INFO
+            memoryInfo = MEMORY_INFO
+            processorInfo = PROCESSOR_INFO
+            instanceStorageSupported = false
+            instanceStorageInfo = INSTANCE_STORAGE_INFO
+            networkInfo = NETWORK_INFO
+        }
+        val expectedTags = listOf("Family t12", "8 vCPUs", "4 GiB Memory", "Up to 25 Gigabit Network", "x86-64", "i386")
+
+        // when
+        val result = parser.parse(instanceTypeInfo)
+
+        // then
+        assertEquals(instanceName, result.name)
         assertEquals(expectedTags, result.tags)
     }
 }
