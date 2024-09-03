@@ -1,6 +1,5 @@
 import {Injectable} from "@angular/core";
 import * as duckdb from '@duckdb/duckdb-wasm';
-import {forkJoin} from "rxjs";
 import {Filter} from "../list-filter/list-filter.model";
 
 @Injectable({
@@ -26,13 +25,12 @@ export class ListQueryService {
   }
 
   public loadDatabase() {
-    forkJoin([
-      this.loadTable('instances'),
-      this.loadTable('benchmarks'),
-      this.loadTable('statistics')
-    ]).subscribe(() => {
-      this.conn.query(`ALTER TABLE instances ALTER benchmarks TYPE JSON[];`);
-    });
+    this.createTables()
+      .then(() => {
+        this.loadTable('instances')
+        this.loadTable('benchmarks')
+        this.loadTable('statistics')
+      });
   }
 
   public executeQuery(query: string): Promise<any> {
@@ -98,6 +96,46 @@ export class ListQueryService {
     return query;
   }
 
+  private async createTables() {
+    // rows name must be in alphabetical order for correct import of JSON data
+    const creteInstance = `CREATE TABLE "instances" (
+      "benchmarks" JSON[],
+      "id" VARCHAR PRIMARY KEY NOT NULL,
+      "memory" DOUBLE NOT NULL,
+      "name" VARCHAR NOT NULL,
+      "network" VARCHAR NOT NULL,
+      "tags" VARCHAR[],
+      "vcpu" INTEGER NOT NULL,
+    );`
+
+    const createBenchmarks = `CREATE TABLE "benchmarks" (
+      "description" VARCHAR NOT NULL,
+      "id" VARCHAR PRIMARY KEY NOT NULL,
+      "instanceTags" VARCHAR[][],
+      "instanceTypes" VARCHAR[],
+      "name" VARCHAR NOT NULL,
+      "seriesX" VARCHAR[],
+      "seriesY" VARCHAR[] NOT NULL
+    );`
+
+    const createStatistics = `CREATE TABLE "statistics" (
+      "avg" DOUBLE,
+      "benchmarkId" VARCHAR NOT NULL,
+      "instanceId" VARCHAR NOT NULL,
+      "max" DOUBLE,
+      "median" DOUBLE,
+      "min" DOUBLE,
+      "series" VARCHAR NOT NULL,
+      PRIMARY KEY ("series", "benchmarkId", "instanceId"),
+      FOREIGN KEY ("instanceId") REFERENCES "instances" ("id"),
+      FOREIGN KEY ("benchmarkId") REFERENCES "benchmarks" ("id")
+    );`
+
+    return this.conn.query(creteInstance)
+      .then(() => this.conn.query(createBenchmarks))
+      .then(() => this.conn.query(createStatistics))
+  }
+
   private async loadTable(name: string) {
     const jsonData = localStorage.getItem(name);
     const jsonRowContent = jsonData ? JSON.parse(jsonData) : [];
@@ -105,7 +143,7 @@ export class ListQueryService {
       `${name}.json`,
       JSON.stringify(jsonRowContent),
     ).then(() =>
-      this.conn.insertJSONFromPath(`${name}.json`, {name: name})
+      this.conn.insertJSONFromPath(`${name}.json`, {name: name, create: false})
     )
   }
 }

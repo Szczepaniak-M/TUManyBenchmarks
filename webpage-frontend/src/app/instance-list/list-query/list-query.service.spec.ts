@@ -3,6 +3,7 @@ import {ListQueryService} from "./list-query.service";
 import * as duckdb from "@duckdb/duckdb-wasm";
 import {Filter} from "../list-filter/list-filter.model";
 import {MockService} from "ng-mocks";
+import {Table} from "apache-arrow";
 
 describe("ListQueryService", () => {
   let service: ListQueryService;
@@ -25,8 +26,8 @@ describe("ListQueryService", () => {
     service["conn"] = MockService(duckdb.AsyncDuckDBConnection)
     spyOn(localStorage, "getItem").and.returnValue(JSON.stringify(mockJSONData));
     spyOn(service["db"], "registerFileText").and.returnValue(Promise.resolve());
+    spyOn(service["conn"], "query").and.returnValue(Promise.resolve(new Table()));
     spyOn(service["conn"], "insertJSONFromPath").and.returnValue(Promise.resolve());
-    spyOn(service["conn"], "query");
 
     service.loadDatabase();
     tick();
@@ -41,11 +42,10 @@ describe("ListQueryService", () => {
     expect(service["db"].registerFileText).toHaveBeenCalledWith("benchmarks.json", JSON.stringify(mockJSONData));
     expect(service["db"].registerFileText).toHaveBeenCalledWith("statistics.json", JSON.stringify(mockJSONData));
 
-    expect(service["conn"].insertJSONFromPath).toHaveBeenCalledWith("instances.json", {name: "instances"});
-    expect(service["conn"].insertJSONFromPath).toHaveBeenCalledWith("benchmarks.json", {name: "benchmarks"});
-    expect(service["conn"].insertJSONFromPath).toHaveBeenCalledWith("statistics.json", {name: "statistics"});
-
-    expect(service["conn"].query).toHaveBeenCalledWith(`ALTER TABLE instances ALTER benchmarks TYPE JSON[];`);
+    expect(service["conn"].query).toHaveBeenCalledTimes(3);
+    expect(service["conn"].insertJSONFromPath).toHaveBeenCalledWith("instances.json", {name: "instances", create: false});
+    expect(service["conn"].insertJSONFromPath).toHaveBeenCalledWith("benchmarks.json", {name: "benchmarks", create: false});
+    expect(service["conn"].insertJSONFromPath).toHaveBeenCalledWith("statistics.json", {name: "statistics", create: false});
   }));
 
   it("should return formatted query results on successful query execution", async () => {
