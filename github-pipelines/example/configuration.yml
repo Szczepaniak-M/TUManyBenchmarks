@@ -49,3 +49,6 @@ plots:
       - x: someCustomXInput
         y: node2InputScalar
         legend: Some other name
+other-series:
+  - not plot series
+  - other not plot series
