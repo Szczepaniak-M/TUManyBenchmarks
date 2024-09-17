@@ -31,7 +31,7 @@ class AwsService(
         var nextTokenFromResponse: String? = ""
         var request = DescribeInstanceTypesRequest {}
         val instanceTypeInfos = mutableListOf<InstanceTypeInfo>()
-        while (nextTokenFromResponse != null) {
+        do {
             val response = retryIfException {
                 ec2Client.describeInstanceTypes(request)
             }
@@ -40,7 +40,7 @@ class AwsService(
             instanceTypeInfos.addAll(newInstances ?: emptyList())
             nextTokenFromResponse = response.nextToken
             request = DescribeInstanceTypesRequest { nextToken = nextTokenFromResponse }
-        }
+        } while (nextTokenFromResponse?.isNotEmpty() == true)
         logger.info {
             "Finished downloading data about instances from AWS. " +
                     "Downloaded information about ${instanceTypeInfos.size} instances."
@@ -142,7 +142,6 @@ class AwsService(
     }
 
     suspend fun createSecurityGroup(ec2Configuration: Ec2Configuration) {
-
         val createRequest = CreateSecurityGroupRequest {
             groupName = "benchmark-${ec2Configuration.benchmarkRunId}"
             description = "benchmark-${ec2Configuration.benchmarkRunId}"

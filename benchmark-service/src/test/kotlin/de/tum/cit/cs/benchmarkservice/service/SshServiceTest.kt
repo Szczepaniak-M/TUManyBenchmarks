@@ -92,7 +92,7 @@ class SshServiceTest {
         verify(exactly = 1) {
             mockSession.createExecChannel(
                 """sudo apt-get update ; curl link1 ; curl link2 ; cd test-dir ; """
-                        + """ansible-playbook --connection=local --inventory 127.0.0.1, ansible.yml ; """
+                        + """ANSIBLE_GATHERING=explicit ansible-playbook --connection=local --inventory 127.0.0.1, ansible.yml ; """
                         + """echo "127.0.0.1 node-1" | sudo tee -a /etc/hosts ; """
                         + """echo "10::1 node-1" | sudo tee -a /etc/hosts ; """
                         + """echo 'export NODE_ID="1"' >> ~/.bashrc ; source ~/.bashrc"""
