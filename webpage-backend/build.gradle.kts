@@ -25,6 +25,14 @@ dependencies {
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+	implementation("aws.sdk.kotlin:pricing:1.3.32") {
+		exclude("com.squareup.okhttp3:okhttp")
+	}
+	implementation("aws.sdk.kotlin:ec2-jvm:1.3.32") {
+		exclude("com.squareup.okhttp3:okhttp")
+	}
+	implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.14")
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.4")
 	implementation("io.github.oshai:kotlin-logging-jvm:6.0.9")
 	implementation("com.github.ben-manes.caffeine:caffeine")
 	implementation("com.bucket4j:bucket4j-core:8.10.1")

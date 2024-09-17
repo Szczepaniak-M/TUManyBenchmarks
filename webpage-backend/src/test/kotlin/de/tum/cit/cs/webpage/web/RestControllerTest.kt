@@ -23,10 +23,12 @@ import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.EntityExchangeResult
 import org.springframework.test.web.reactive.server.WebTestClient
 import java.math.BigDecimal
 
+@ActiveProfiles("test")
 @WebFluxTest(controllers = [Router::class, RestController::class])
 class RestControllerTest {
 
@@ -115,7 +117,7 @@ class RestControllerTest {
         val apiKey = "apiKey123"
         val instanceList = listOf(
             Instance(
-                "id1", "t3.micro", 1, BigDecimal(1), "Low", listOf("1 vCPU"),
+                "id1", "t3.micro", BigDecimal.ONE, BigDecimal.ONE, 1, BigDecimal.ONE, "Low", listOf("1 vCPU"),
                 listOf(
                     Benchmark(
                         "benchId1", "benchmark1", "benchmarkDescription1",
@@ -146,7 +148,7 @@ class RestControllerTest {
                 )
             ),
             Instance(
-                "id1", "t3.small", 2, BigDecimal(2), "Low", listOf("2 vCPU"),
+                "id1", "t3.small", BigDecimal.TWO, BigDecimal.TWO, 2, BigDecimal.TWO, "Low", listOf("2 vCPU"),
                 listOf(
                     Benchmark(
                         "benchId1", "benchmark1", "benchmarkDescription1",
@@ -308,7 +310,7 @@ class RestControllerTest {
         val apiKey = "apiKey123"
         val instanceType = "t3.micro"
         val instance = Instance(
-            "id1", "t3.small", 2, BigDecimal(2), "Low", listOf("2 vCPU"), listOf(
+            "id1", "t3.small", BigDecimal.TWO, BigDecimal.TWO, 2, BigDecimal.TWO, "Low", listOf("2 vCPU"), listOf(
                 Benchmark(
                     "benchId1", "benchmark1", "benchmarkDescription1",
                     listOf(BenchmarkResult(1000, mapOf(Pair("key1", 1)))),

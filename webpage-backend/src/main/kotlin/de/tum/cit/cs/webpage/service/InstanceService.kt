@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit
 @Service
 class InstanceService(
     private val instanceRepository: InstanceRepository,
+    private val ec2PriceService: Ec2PriceService
 ) {
 
     private val logger = KotlinLogging.logger {}
@@ -23,14 +24,18 @@ class InstanceService(
         .maximumSize(1000)
         .build<String, Instance>()
 
-    suspend fun findAll(requestId: String?, apiKey: String?): Flow<Instance> {
+    fun findAll(requestId: String?, apiKey: String?): Flow<Instance> {
         val instances = cache.asMap().values
         if (instances.isEmpty()) {
             logger.debug {
                 buildDebugLogMessage("Instance list not found in the cache. Calling database.", requestId, apiKey)
             }
             val instancesFromDb = instanceRepository.findAll()
-                .onEach { cache.put(it.name, it) }
+                .onEach {
+                    it.onDemandPrice = ec2PriceService.getOnDemandPrice(it.name)
+                    it.spotPrice = ec2PriceService.getSpotPrice(it.name)
+                    cache.put(it.name, it)
+                }
 
             logger.debug {
                 buildDebugLogMessage("Instance list added to the cache.", requestId, apiKey)
@@ -56,6 +61,8 @@ class InstanceService(
             }
             instanceDetails = instanceRepository.findByName(instanceType)
             instanceDetails?.let {
+                it.onDemandPrice = ec2PriceService.getOnDemandPrice(instanceType)
+                it.spotPrice = ec2PriceService.getSpotPrice(instanceType)
                 cache.put(instanceType, it)
                 logger.debug {
                     buildDebugLogMessage(

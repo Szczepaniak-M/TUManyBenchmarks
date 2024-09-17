@@ -9,6 +9,10 @@ data class Instance(
     @Id
     val id: String?,
     val name: String,
+    @Transient
+    var onDemandPrice: BigDecimal = BigDecimal.ZERO,
+    @Transient
+    var spotPrice: BigDecimal = BigDecimal.ZERO,
     val vCpu: Int,
     val memory: BigDecimal,
     val network: String,

@@ -2,6 +2,8 @@
   {
     "id": "id1",
     "name": "t3.micro",
+    "onDemandPrice": 1.0,
+    "spotPrice": 1.0,
     "memory": 1.0,
     "network": "Low",
     "tags": [
@@ -99,6 +101,8 @@
   {
     "id": "id1",
     "name": "t3.small",
+    "onDemandPrice": 2.0,
+    "spotPrice": 2.0,
     "memory": 2.0,
     "network": "Low",
     "tags": [

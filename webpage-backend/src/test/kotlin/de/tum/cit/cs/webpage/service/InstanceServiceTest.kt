@@ -5,6 +5,7 @@ import de.tum.cit.cs.webpage.model.Instance
 import de.tum.cit.cs.webpage.repository.InstanceRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
@@ -26,21 +27,29 @@ class InstanceServiceTest {
     @MockkBean
     private lateinit var instanceRepository: InstanceRepository
 
-    companion object {
-        private val INSTANCE_1 = Instance("id1", "t2.micro", 1, BigDecimal(1), "Low", emptyList(), emptyList())
-        private val INSTANCE_2 = Instance("id2", "t3.micro", 2, BigDecimal(2), "Low", emptyList(), emptyList())
-    }
+    @MockkBean
+    private lateinit var ec2PriceService: Ec2PriceService
 
+    companion object {
+        private val INSTANCE_1 = Instance("id1", "t2.micro", BigDecimal.ZERO, BigDecimal.ZERO, 1, BigDecimal.ONE, "Low", emptyList(), emptyList())
+        private val INSTANCE_2 = Instance("id2", "t3.micro", BigDecimal.ZERO, BigDecimal.ZERO, 2, BigDecimal.TWO, "Low", emptyList(), emptyList())
+        private val INSTANCE_1_RESULT = INSTANCE_1.copy(onDemandPrice = BigDecimal.ONE, spotPrice = BigDecimal.TWO)
+        private val INSTANCE_2_RESULT = INSTANCE_2.copy(onDemandPrice = BigDecimal.TWO, spotPrice = BigDecimal.TEN)
+    }
 
     @BeforeEach
     fun setUp() {
-        service = InstanceService(instanceRepository)
+        service = InstanceService(instanceRepository, ec2PriceService)
     }
 
     @Test
     fun `find all instances and cache them`() = runTest {
         // given
         coEvery { instanceRepository.findAll() } returns flowOf(INSTANCE_1, INSTANCE_2)
+        every { ec2PriceService.getOnDemandPrice("t2.micro") } returns BigDecimal.ONE
+        every { ec2PriceService.getOnDemandPrice("t3.micro") } returns BigDecimal.TWO
+        every { ec2PriceService.getSpotPrice("t2.micro") } returns BigDecimal.TWO
+        every { ec2PriceService.getSpotPrice("t3.micro") } returns BigDecimal.TEN
 
         // when
         val databaseResult = service.findAll(null, null).toList()
@@ -48,15 +57,21 @@ class InstanceServiceTest {
 
         // then
         coVerify(exactly = 1) { instanceRepository.findAll() }
-        assertThat(databaseResult).hasSameElementsAs(listOf(INSTANCE_1, INSTANCE_2))
-        assertThat(cachedResult).hasSameElementsAs(listOf(INSTANCE_1, INSTANCE_2))
+        coVerify(exactly = 1) { ec2PriceService.getOnDemandPrice("t2.micro") }
+        coVerify(exactly = 1) { ec2PriceService.getOnDemandPrice("t3.micro") }
+        coVerify(exactly = 1) { ec2PriceService.getSpotPrice("t2.micro") }
+        coVerify(exactly = 1) { ec2PriceService.getSpotPrice("t3.micro") }
+        assertThat(databaseResult).hasSameElementsAs(listOf(INSTANCE_1_RESULT, INSTANCE_2_RESULT))
+        assertThat(cachedResult).hasSameElementsAs(listOf(INSTANCE_1_RESULT, INSTANCE_2_RESULT))
     }
 
     @Test
     fun `find instance details by instance type and cache result`() = runTest {
         // given
-        val instanceType = "t3.micro"
+        val instanceType = "t2.micro"
         coEvery { instanceRepository.findByName(instanceType) } returns INSTANCE_1
+        every { ec2PriceService.getOnDemandPrice("t2.micro") } returns BigDecimal.ONE
+        every { ec2PriceService.getSpotPrice("t2.micro") } returns BigDecimal.TWO
 
         // when
         val databaseResult = service.findByInstanceType(instanceType, null, null)
@@ -65,9 +80,9 @@ class InstanceServiceTest {
         // then
         coVerify(exactly = 1) { instanceRepository.findByName(instanceType) }
         assertNotNull(databaseResult)
-        assertEquals(INSTANCE_1, databaseResult)
+        assertEquals(INSTANCE_1_RESULT, databaseResult)
         assertNotNull(cachedResult)
-        assertEquals(INSTANCE_1, databaseResult)
+        assertEquals(INSTANCE_1_RESULT, databaseResult)
     }
 
     @Test
