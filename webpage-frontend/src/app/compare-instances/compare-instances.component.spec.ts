@@ -19,6 +19,8 @@ describe("CompareInstancesComponent", () => {
         (name: string) => of({
           id: "id",
           name: name,
+          onDemandPrice: 0.1,
+          spotPrice: 0.01,
           vcpu: 4,
           network: "10 Gbps",
           memory: 16,

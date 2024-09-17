@@ -4,7 +4,7 @@ import {groupByToMap, removeUnnecessaryTags} from "./instance.utils";
 describe('removeUnnecessaryTags', () => {
   it('should remove matching patterns', () => {
     const instance: Instance = {
-      benchmarks: [], id: "", memory: 0, name: "", network: "", vcpu: 0,
+      benchmarks: [], id: "", onDemandPrice: 0, spotPrice: 0, memory: 0, name: "", network: "", vcpu: 0,
       tags: ['4 vCPUs', '16 GB Memory', 'High Network', 'Other Tag']
     };
 
@@ -19,7 +19,7 @@ describe('removeUnnecessaryTags', () => {
 
   it('should return an empty array if all tags are removed', () => {
     const instance: Instance = {
-      benchmarks: [], id: "", memory: 0, name: "", network: "", vcpu: 0,
+      benchmarks: [], id: "", onDemandPrice: 0, spotPrice: 0, memory: 0, name: "", network: "", vcpu: 0,
       tags: ['4 vCPUs', '16 GB Memory', 'High Network']
     };
 

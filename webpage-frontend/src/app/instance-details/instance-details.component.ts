@@ -11,6 +11,8 @@ import {Instance} from "../instance-list/instance.model";
       <div class="mb-2">
         <h2 class="text-2xl font-semibold">Instance Details</h2>
         <div class="text-gray-700">
+          <p><strong class="text-black">On-Demand Price: </strong>\${{ instance.onDemandPrice }} hourly</p>
+          <p><strong class="text-black">Spot Price: </strong>\${{ instance.spotPrice }} hourly</p>
           <p><strong class="text-black">vCPU: </strong>{{ instance.vcpu }}</p>
           <p><strong class="text-black">Network: </strong>{{ instance.network }}</p>
           <p><strong class="text-black">Memory: </strong>{{ instance.memory }} GiB</p>
@@ -45,6 +47,8 @@ export class InstanceDetailsComponent implements OnInit {
   instance: Instance = {
     id: "",
     name: "",
+    onDemandPrice: 0,
+    spotPrice: 0,
     vcpu: 0,
     memory: 0,
     network: "",

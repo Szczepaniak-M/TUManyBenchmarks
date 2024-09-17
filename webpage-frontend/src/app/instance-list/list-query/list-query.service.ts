@@ -47,7 +47,8 @@ export class ListQueryService {
   }
 
   public transformFilterToQuery(filter: Filter): string {
-    let query = "SELECT i.name as Name, i.vcpu as vCPUs, i.memory as Memory, i.network as Network,";
+    let query = "SELECT i.name as Name, i.on_demand_price as \"On-Demand Price\", i.spot_price as \"Spot Price\", " +
+      "i.vcpu as vCPUs, i.memory as Memory, i.network as Network,";
     if (filter.benchmark) {
       query += " s.min as Minimum, s.avg as Average, s.median as Median, s.max as Maximum,";
     }
@@ -63,6 +64,18 @@ export class ListQueryService {
       const conditions = [];
       if (filter.name) {
         conditions.push(`i.name LIKE '%${filter.name.toLowerCase()}%'`);
+      }
+      if (filter.minOnDemandPrice) {
+        conditions.push(`i.on_demand_price >= ${filter.minOnDemandPrice}`);
+      }
+      if (filter.maxOnDemandPrice) {
+        conditions.push(`i.on_demand_price <= ${filter.maxOnDemandPrice}`);
+      }
+      if (filter.minSpotPrice) {
+        conditions.push(`i.spot_price >= ${filter.minSpotPrice}`);
+      }
+      if (filter.maxSpotPrice) {
+        conditions.push(`i.spot_price <= ${filter.maxSpotPrice}`);
       }
       if (filter.minCpu) {
         conditions.push(`i.vcpu >= ${filter.minCpu}`);
@@ -84,7 +97,7 @@ export class ListQueryService {
         const benchmarkSplit = filter.benchmark.split("-");
         const benchmark = benchmarkSplit[0];
         const series = benchmarkSplit[1];
-        conditions.push(`i.id = s.instanceId AND s.benchmarkId = '${benchmark}' AND s.series = '${series}'`);
+        conditions.push(`i.id = s.instance_id AND s.benchmark_id = '${benchmark}' AND s.series = '${series}'`);
       }
       if (filter.tags) {
         for (const tag of filter.tags) {
@@ -104,6 +117,8 @@ export class ListQueryService {
       "memory" DOUBLE NOT NULL,
       "name" VARCHAR NOT NULL,
       "network" VARCHAR NOT NULL,
+      "on_demand_price" DOUBLE NOT NULL,
+      "spot_price" DOUBLE NOT NULL,
       "tags" VARCHAR[],
       "vcpu" INTEGER NOT NULL,
     );`
@@ -114,21 +129,21 @@ export class ListQueryService {
       "instanceTags" VARCHAR[][],
       "instanceTypes" VARCHAR[],
       "name" VARCHAR NOT NULL,
-      "seriesX" VARCHAR[],
-      "seriesY" VARCHAR[] NOT NULL
+      "series_x" VARCHAR[],
+      "series_y" VARCHAR[] NOT NULL
     );`
 
     const createStatistics = `CREATE TABLE "statistics" (
       "avg" DOUBLE,
-      "benchmarkId" VARCHAR NOT NULL,
-      "instanceId" VARCHAR NOT NULL,
+      "benchmark_id" VARCHAR NOT NULL,
+      "instance_id" VARCHAR NOT NULL,
       "max" DOUBLE,
       "median" DOUBLE,
       "min" DOUBLE,
       "series" VARCHAR NOT NULL,
-      PRIMARY KEY ("series", "benchmarkId", "instanceId"),
-      FOREIGN KEY ("instanceId") REFERENCES "instances" ("id"),
-      FOREIGN KEY ("benchmarkId") REFERENCES "benchmarks" ("id")
+      PRIMARY KEY ("series", "benchmark_id", "instance_id"),
+      FOREIGN KEY ("instance_id") REFERENCES "instances" ("id"),
+      FOREIGN KEY ("benchmark_id") REFERENCES "benchmarks" ("id")
     );`
 
     return this.conn.query(creteInstance)

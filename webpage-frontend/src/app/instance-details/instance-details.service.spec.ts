@@ -15,6 +15,8 @@ describe("InstanceDetailsService", () => {
   const mockInstance: Instance = {
     id: "instance1",
     name: "t2.micro",
+    onDemandPrice: 0.1,
+    spotPrice: 0.01,
     vcpu: 8,
     memory: 16,
     network: "10 Gbps Network",
@@ -40,6 +42,8 @@ describe("InstanceDetailsService", () => {
   const expectedInstanceDetails: Instance = {
     id: "instance1",
     name: "t2.micro",
+    onDemandPrice: 0.1,
+    spotPrice: 0.01,
     vcpu: 8,
     memory: 16,
     network: "10 Gbps Network",

@@ -24,6 +24,8 @@ import {forkJoin} from "rxjs";
           <div class="mb-4">
             <h2 class="text-xl font-semibold mb-2">Instance Details</h2>
             <div class="text-gray-700">
+              <p><strong class="text-black">On-Demand Price: </strong>\${{ instance.onDemandPrice }} hourly</p>
+              <p><strong class="text-black">Spot Price: </strong>\${{ instance.spotPrice }} hourly</p>
               <p><strong class="text-black">vCPU: </strong>{{ instance.vcpu }}</p>
               <p><strong class="text-black">Network: </strong>{{ instance.network }}</p>
               <p><strong class="text-black">Memory: </strong>{{ instance.memory }} GiB</p>

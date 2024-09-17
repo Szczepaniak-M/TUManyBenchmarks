@@ -11,6 +11,8 @@ describe("CompareInstancesBenchmarkComponent", () => {
     {
       name: "Instance 1",
       id: "",
+      onDemandPrice: 0,
+      spotPrice: 0,
       vcpu: 0,
       memory: 0,
       network: "",
@@ -35,6 +37,8 @@ describe("CompareInstancesBenchmarkComponent", () => {
     {
       name: "Instance 2",
       id: "",
+      onDemandPrice: 0,
+      spotPrice: 0,
       vcpu: 0,
       memory: 0,
       network: "",

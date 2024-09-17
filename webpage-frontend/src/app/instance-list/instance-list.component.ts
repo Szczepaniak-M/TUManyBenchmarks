@@ -67,9 +67,9 @@ export class InstanceListComponent implements OnInit {
   filter: Filter = {}
   queryConsoleActive: boolean = false
   @ViewChild(ListQueryComponent) queryComponent!: ListQueryComponent
-  private defaultColumnsWithoutBenchmark = ["Name", "vCPUs", "Memory", "Network", "Tags"]
+  private defaultColumnsWithoutBenchmark = ["Name", "On-Demand Price", "Spot Price", "vCPUs", "Memory", "Network", "Tags"]
   columns: string[] = this.defaultColumnsWithoutBenchmark
-  private defaultColumnsWithBenchmark = ["Name", "vCPUs", "Memory", "Network", "Minimum",
+  private defaultColumnsWithBenchmark = ["Name", "On-Demand Price", "Spot Price", "vCPUs", "Memory", "Network", "Minimum",
     "Average", "Median", "Maximum", "Tags"]
 
   constructor(private instanceListService: InstanceListService,
@@ -104,6 +104,10 @@ export class InstanceListComponent implements OnInit {
     const series = benchmarkSplit ? benchmarkSplit[1] : null;
     const rowsToDisplay = this.defaultRows.map(instance => {
       const matchesName = filter.name ? instance.Name.toLowerCase().includes(filter.name.toLowerCase()) : true;
+      const matchesMinOnDemandPrice = filter.minOnDemandPrice ? instance["On-Demand Price"] >= filter.minOnDemandPrice : true;
+      const matchesMaxOnDemandPrice = filter.maxOnDemandPrice ? instance["On-Demand Price"] <= filter.maxOnDemandPrice : true;
+      const matchesMinSpotPrice = filter.minSpotPrice ? instance["Spot Price"] >= filter.minSpotPrice : true;
+      const matchesMaxSpotPrice = filter.maxSpotPrice ? instance["Spot Price"] <= filter.maxSpotPrice : true;
       const matchesMinCpu = filter.minCpu ? instance.vCPUs >= filter.minCpu : true;
       const matchesMaxCpu = filter.maxCpu ? instance.vCPUs <= filter.maxCpu : true;
       const matchesMinMemory = filter.minMemory ? instance.Memory >= filter.minMemory : true;
@@ -111,8 +115,9 @@ export class InstanceListComponent implements OnInit {
       const matchesNetwork = filter.network && filter.network.length ? filter.network.includes(instance.Network) : true;
       const matchesTags = filter.tags && filter.tags.length ? filter.tags.every(tag => instance.Tags.includes(tag)) : true;
       const matchesBenchmark = !!benchmark ? instance.benchmarks.map(stat => stat.benchmarkId).includes(benchmark) : true
-      instance.hidden = !(matchesName && matchesMinCpu && matchesMaxCpu && matchesMinMemory && matchesMaxMemory
-        && matchesNetwork && matchesTags && matchesBenchmark);
+      instance.hidden = !(matchesName && matchesMinOnDemandPrice && matchesMaxOnDemandPrice
+        && matchesMinSpotPrice && matchesMaxSpotPrice && matchesMinCpu && matchesMaxCpu
+        && matchesMinMemory && matchesMaxMemory && matchesNetwork && matchesTags && matchesBenchmark);
       return instance
     });
     if (filter.benchmark) {
@@ -190,6 +195,8 @@ export class InstanceListComponent implements OnInit {
       return {
         id: counter++,
         Name: instance.name,
+        "On-Demand Price": instance.onDemandPrice,
+        "Spot Price": instance.spotPrice,
         vCPUs: instance.vcpu,
         Memory: instance.memory,
         Network: instance.network,

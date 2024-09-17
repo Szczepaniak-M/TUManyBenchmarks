@@ -18,6 +18,8 @@ describe("InstanceDetailsComponent", () => {
         (name: string) => of({
           id: "id",
           name: name,
+          onDemandPrice: 0.01,
+          spotPrice: 0.001,
           vcpu: 4,
           network: "10 Gbps",
           memory: 16,
@@ -64,9 +66,11 @@ describe("InstanceDetailsComponent", () => {
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector(".text-3xl")?.textContent).toContain("t2.micro");
-    expect(compiled.querySelectorAll("p")[0].textContent).toContain("vCPU: 4");
-    expect(compiled.querySelectorAll("p")[1].textContent).toContain("Network: 10 Gbps");
-    expect(compiled.querySelectorAll("p")[2].textContent).toContain("Memory: 16 GiB");
+    expect(compiled.querySelectorAll("p")[0].textContent).toContain("On-Demand Price: $0.01 hourly");
+    expect(compiled.querySelectorAll("p")[1].textContent).toContain("Spot Price: $0.001 hourly");
+    expect(compiled.querySelectorAll("p")[2].textContent).toContain("vCPU: 4");
+    expect(compiled.querySelectorAll("p")[3].textContent).toContain("Network: 10 Gbps");
+    expect(compiled.querySelectorAll("p")[4].textContent).toContain("Memory: 16 GiB");
   });
 
   it("should display benchmarks correctly", () => {

@@ -1,6 +1,8 @@
 export interface InstanceDefaultRow {
   id: number;
   Name: string,
+  "On-Demand Price": number,
+  "Spot Price": number,
   vCPUs: number,
   Memory: number,
   Network: string,
@@ -16,6 +18,8 @@ export interface InstanceDefaultRow {
 export interface Instance {
   id: string,
   name: string,
+  onDemandPrice: number,
+  spotPrice: number,
   vcpu: number,
   memory: number,
   network: string,

@@ -81,6 +81,10 @@ describe("ListQueryService", () => {
       maxCpu: 8,
       minMemory: 16,
       maxMemory: 64,
+      minOnDemandPrice: 0.01,
+      maxOnDemandPrice: 0.1,
+      minSpotPrice: 0.01,
+      maxSpotPrice: 0.1,
       network: ["High", "Medium"],
       tags: ["tag1", "tag2"],
       benchmark: "benchmark-series",
@@ -88,14 +92,17 @@ describe("ListQueryService", () => {
 
     const query = service.transformFilterToQuery(filter);
 
-    const expectedQuery = "SELECT i.name as Name, i.vcpu as vCPUs, i.memory as Memory, i.network as Network, " +
+    const expectedQuery = "SELECT i.name as Name, i.on_demand_price as \"On-Demand Price\", i.spot_price as \"Spot Price\", " +
+      "i.vcpu as vCPUs, i.memory as Memory, i.network as Network, " +
       "s.min as Minimum, s.avg as Average, s.median as Median, s.max as Maximum, i.tags as Tags\n" +
       "FROM instances i, statistics s\n" +
       "WHERE i.name LIKE '%instance1%' " +
+      "AND i.on_demand_price >= 0.01 AND i.on_demand_price <= 0.1 " +
+      "AND i.spot_price >= 0.01 AND i.spot_price <= 0.1 " +
       "AND i.vcpu >= 2 AND i.vcpu <= 8 " +
       "AND i.memory >= 16 AND i.memory <= 64 " +
       "AND i.network IN ('High' ,'Medium') " +
-      "AND i.id = s.instanceId AND s.benchmarkId = 'benchmark' AND s.series = 'series' " +
+      "AND i.id = s.instance_id AND s.benchmark_id = 'benchmark' AND s.series = 'series' " +
       "AND array_contains(i.tags, 'tag1') AND array_contains(i.tags, 'tag2')"
     expect(query).toBe(expectedQuery);
   });
@@ -105,6 +112,6 @@ describe("ListQueryService", () => {
 
     const query = service.transformFilterToQuery(filter);
 
-    expect(query).toEqual(`SELECT i.name as Name, i.vcpu as vCPUs, i.memory as Memory, i.network as Network, i.tags as Tags\nFROM instances i\n`);
+    expect(query).toEqual(`SELECT i.name as Name, i.on_demand_price as "On-Demand Price", i.spot_price as "Spot Price", i.vcpu as vCPUs, i.memory as Memory, i.network as Network, i.tags as Tags\nFROM instances i\n`);
   });
 });
