@@ -126,8 +126,8 @@ export class ListQueryService {
     const createBenchmarks = `CREATE TABLE "benchmarks" (
       "description" VARCHAR NOT NULL,
       "id" VARCHAR PRIMARY KEY NOT NULL,
-      "instanceTags" VARCHAR[][],
-      "instanceTypes" VARCHAR[],
+      "instance_tags" VARCHAR[][],
+      "instance_types" VARCHAR[],
       "name" VARCHAR NOT NULL,
       "series_x" VARCHAR[],
       "series_y" VARCHAR[] NOT NULL
