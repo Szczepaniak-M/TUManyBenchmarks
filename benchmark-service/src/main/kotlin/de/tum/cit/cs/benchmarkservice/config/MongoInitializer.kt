@@ -199,7 +199,7 @@ class MongoInitializer {
                 first("description", "\$configuration.description"),
                 first("instanceTypes", "\$configuration.instanceTypes"),
                 first("instanceTags", "\$configuration.instanceTags"),
-                first("otherSeries", "\$otherSeries"),
+                first("seriesOther", "\$seriesOther"),
                 push("seriesX", "\$plots.series.x"),
                 push("seriesY", "\$plots.series.y")
             ),

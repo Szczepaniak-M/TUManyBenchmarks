@@ -129,8 +129,9 @@ export class ListQueryService {
       "instance_tags" VARCHAR[][],
       "instance_types" VARCHAR[],
       "name" VARCHAR NOT NULL,
+      "series_other" VARCHAR[],
       "series_x" VARCHAR[],
-      "series_y" VARCHAR[] NOT NULL
+      "series_y" VARCHAR[],
     );`
 
     const createStatistics = `CREATE TABLE "statistics" (

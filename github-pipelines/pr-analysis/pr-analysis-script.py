@@ -42,7 +42,7 @@ def analyze_configuration_file(yaml_file):
         check_plots_section(yaml_data)
         for plot in yaml_data['plots']:
             check_plot(plot)
-        check_other_series(yaml_data)
+        check_series_other(yaml_data)
     except ValueError as e:
         print_stderr(e)
         return 1
@@ -304,13 +304,13 @@ def check_series(plot, plot_type):
         elif plot_type == 'line':
             check_str('x', series, 'series')
 
-def check_other_series(yaml_data):
-    if 'other-series' in yaml_data:
-        if not isinstance(yaml_data['other-series'], list):
-            raise ValueError("'other-series' should be of type list.")
-        for series in yaml_data['other-series']:
+def check_series_other(yaml_data):
+    if 'series-other' in yaml_data:
+        if not isinstance(yaml_data['series-other'], list):
+            raise ValueError("'series-other' should be of type list.")
+        for series in yaml_data['series-other']:
             if not isinstance(series, str):
-                raise ValueError(f"'{series}' in 'other-series' should be of type str.")
+                raise ValueError(f"'{series}' in 'series-other' should be of type str.")
 
 def check_str(key, dictionary, dictionary_name):
     if key not in dictionary:

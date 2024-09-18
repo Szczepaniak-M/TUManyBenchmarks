@@ -507,18 +507,19 @@ class RestControllerTest {
         val apiKey = "apiKey123"
         val benchmarkDetailsList = listOf(
             BenchmarkDetails(
-                "id1", "name1", "description2",
+                "id1", "name1", "description1",
                 listOf("t2.micro", "t3.micro"),
                 emptyList(),
                 listOf("seriesX1"),
                 listOf("seriesY1", "seriesY2"),
             ),
             BenchmarkDetails(
-                "id1", "name1", "description2",
+                "id2", "name2", "description2",
                 emptyList(),
                 listOf(listOf("tag1", "tag2"), listOf("tag3", "tag4")),
                 listOf("seriesX2"),
                 listOf("seriesY3", "seriesY4"),
+                listOf("seriesOther"),
             )
         )
         coEvery { benchmarkService.findAllBenchmarkDetails(any<String>(), apiKey) } returns benchmarkDetailsList.asFlow()

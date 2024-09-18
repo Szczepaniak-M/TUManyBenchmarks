@@ -65,6 +65,7 @@ export interface BenchmarkDetails {
   instanceTags: string[][],
   seriesX: string[],
   seriesY: string[],
+  seriesOther: string[],
 }
 
 export interface BenchmarkStatistics{

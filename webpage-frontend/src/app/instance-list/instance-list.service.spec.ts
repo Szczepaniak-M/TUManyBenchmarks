@@ -115,12 +115,12 @@ describe("InstanceListService", () => {
       {
         id: "id1", name: "benchmark1", description: "benchmark1",
         instanceTypes: ["t2.micro", "t2.nano"], instanceTags: [],
-        seriesX: ["line1X"], seriesY: ["line1Y"]
+        seriesX: ["line1X"], seriesY: ["line1Y"], seriesOther: []
       },
       {
         id: "id2", name: "benchmark2", description: "benchmark2",
         instanceTypes: [], instanceTags: [["8 vCPUs", "16 GiB Memory"], ["4 vCPUs", "8 GiB Memory"]],
-        seriesX: [], seriesY: ["scatter2"]
+        seriesX: [], seriesY: ["scatter2"], seriesOther: []
       },
     ]
 

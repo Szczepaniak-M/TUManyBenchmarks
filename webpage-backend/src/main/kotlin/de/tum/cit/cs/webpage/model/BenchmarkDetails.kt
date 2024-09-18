@@ -13,4 +13,5 @@ data class BenchmarkDetails(
     val instanceTags: List<List<String>> = emptyList(),
     val seriesX: List<String> = emptyList(),
     val seriesY: List<String> = emptyList(),
+    val seriesOther: List<String> = emptyList(),
 )

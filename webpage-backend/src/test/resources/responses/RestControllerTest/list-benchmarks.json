@@ -2,7 +2,7 @@
   {
     "id": "id1",
     "name": "name1",
-    "description": "description2",
+    "description": "description1",
     "instanceTypes": [
       "t2.micro",
       "t3.micro"
@@ -14,11 +14,12 @@
     "seriesY": [
       "seriesY1",
       "seriesY2"
-    ]
+    ],
+    "seriesOther": []
   },
   {
-    "id": "id1",
-    "name": "name1",
+    "id": "id2",
+    "name": "name2",
     "description": "description2",
     "instanceTypes": [],
     "instanceTags": [
@@ -37,6 +38,9 @@
     "seriesY": [
       "seriesY3",
       "seriesY4"
+    ],
+    "seriesOther": [
+      "seriesOther"
     ]
   }
 ]
