@@ -10,14 +10,14 @@ class Ec2ConfigurationService(
     private val instanceRepository: InstanceRepository
 ) {
 
-    @Value("\${aws.ec2.default-ami.x86_64}")
-    lateinit var amiX86_64: String
+    @Value("\${aws.ec2.default-ami.x86}")
+    lateinit var amiX86: String
 
     @Value("\${aws.ec2.default-ami.arm}")
     lateinit var amiArm: String
 
     suspend fun generateEc2Configuration(instance: Instance, benchmark: Benchmark, benchmarkRunId: String): Ec2Configuration {
-        val defaultBenchmarkConfiguration = benchmark.nodes.filter { it.nodeId == 0 }.getOrNull(0)
+        val defaultNodeConfiguration = benchmark.nodes.filter { it.nodeId == 0 }.getOrNull(0)
         val nodesBenchmarkConfiguration = benchmark.nodes.filter { it.nodeId != 0 }
         val defaultInstanceType = instance.name
         val ec2NodeConfigurations = mutableListOf<NodeConfig>()
@@ -26,10 +26,10 @@ class Ec2ConfigurationService(
             val nodeConfig = NodeConfig(
                 nodeId = node.nodeId,
                 instanceType = node.instanceType ?: defaultInstanceType,
-                image = node.image ?: defaultBenchmarkConfiguration?.image ?: getDefaultImage(node, instance),
-                ansibleConfiguration = node.ansibleConfiguration ?: defaultBenchmarkConfiguration?.ansibleConfiguration,
-                benchmarkCommand = node.benchmarkCommand ?: defaultBenchmarkConfiguration?.benchmarkCommand,
-                outputCommand = node.outputCommand ?: defaultBenchmarkConfiguration?.outputCommand
+                image = getImage(node, instance, defaultNodeConfiguration),
+                ansibleConfiguration = node.ansibleConfiguration ?: defaultNodeConfiguration?.ansibleConfiguration,
+                benchmarkCommand = node.benchmarkCommand ?: defaultNodeConfiguration?.benchmarkCommand,
+                outputCommand = node.outputCommand ?: defaultNodeConfiguration?.outputCommand
             )
             ec2NodeConfigurations.add(nodeConfig)
         }
@@ -39,10 +39,10 @@ class Ec2ConfigurationService(
                 val nodeConfig = NodeConfig(
                     nodeId = i,
                     instanceType = defaultInstanceType,
-                    image = defaultBenchmarkConfiguration?.image ?: getDefaultImage(null, instance),
-                    ansibleConfiguration = defaultBenchmarkConfiguration?.ansibleConfiguration,
-                    benchmarkCommand = defaultBenchmarkConfiguration?.benchmarkCommand,
-                    outputCommand = defaultBenchmarkConfiguration?.outputCommand
+                    image = getImage(null, instance, defaultNodeConfiguration),
+                    ansibleConfiguration = defaultNodeConfiguration?.ansibleConfiguration,
+                    benchmarkCommand = defaultNodeConfiguration?.benchmarkCommand,
+                    outputCommand = defaultNodeConfiguration?.outputCommand
                 )
                 ec2NodeConfigurations.add(nodeConfig)
             }
@@ -50,18 +50,18 @@ class Ec2ConfigurationService(
         return Ec2Configuration(benchmarkRunId, benchmark.configuration.directory, ec2NodeConfigurations)
     }
 
-    private suspend fun getDefaultImage(node: Node?, instance: Instance): String {
-        return if (node?.instanceType != null && node.instanceType != instance.name && node.image == null) {
+    private suspend fun getImage(node: Node?, instance: Instance, defaultNodeConfiguration: Node?): String {
+        val isArm = if (node?.instanceType != null && node.instanceType != instance.name) {
             val tempInstance = instanceRepository.findInstanceByName(node.instanceType)
-            if (tempInstance.tags.contains("ARM64")) {
-                amiArm
-            } else {
-                amiX86_64
-            }
-        } else if (instance.tags.contains("ARM64")) {
-            amiArm
+            tempInstance.tags.contains("ARM64")
         } else {
-            amiX86_64
+            instance.tags.contains("ARM64")
+        }
+
+        return if (isArm) {
+            return node?.imageArm ?: defaultNodeConfiguration?.imageArm ?: amiArm
+        } else {
+            return node?.imageX86 ?: defaultNodeConfiguration?.imageX86 ?: amiX86
         }
     }
 }

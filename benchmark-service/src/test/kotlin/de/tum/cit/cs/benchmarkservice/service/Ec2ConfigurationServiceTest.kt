@@ -28,7 +28,7 @@ class Ec2ConfigurationServiceTest {
     @BeforeEach
     fun setUp() {
         ec2ConfigurationService = Ec2ConfigurationService(instanceRepository)
-        ReflectionTestUtils.setField(ec2ConfigurationService, "amiX86_64", "ami-x86_64")
+        ReflectionTestUtils.setField(ec2ConfigurationService, "amiX86", "ami-x86")
         ReflectionTestUtils.setField(ec2ConfigurationService, "amiArm", "ami-arm")
     }
 
@@ -41,9 +41,9 @@ class Ec2ConfigurationServiceTest {
             2, emptyList(), listOf("t2.micro")
         )
         val nodes = listOf(
-            Node(0, null, "image", "ansible.yml", "./run", "cat text.txt"),
-            Node(1, null, null, null, null, null),
-            Node(2, null, null, null, null, null)
+            Node(0, null, "image86", "imageArm", "ansible.yml", "./run", "cat text.txt"),
+            Node(1, null, null, null, null, null, null),
+            Node(2, null, null, null, null, null, null)
         )
         val benchmark = Benchmark("benchId", configuration, nodes)
         val benchmarkRunId = "test-run-id"
@@ -56,14 +56,14 @@ class Ec2ConfigurationServiceTest {
 
         assertEquals(1, ec2Configuration.nodes[0].nodeId)
         assertEquals("t2.micro", ec2Configuration.nodes[0].instanceType)
-        assertEquals("image", ec2Configuration.nodes[0].image)
+        assertEquals("imageArm", ec2Configuration.nodes[0].image)
         assertEquals("ansible.yml", ec2Configuration.nodes[0].ansibleConfiguration)
         assertEquals("./run", ec2Configuration.nodes[0].benchmarkCommand)
         assertEquals("cat text.txt", ec2Configuration.nodes[0].outputCommand)
 
         assertEquals(2, ec2Configuration.nodes[1].nodeId)
         assertEquals("t2.micro", ec2Configuration.nodes[1].instanceType)
-        assertEquals("image", ec2Configuration.nodes[1].image)
+        assertEquals("imageArm", ec2Configuration.nodes[1].image)
         assertEquals("ansible.yml", ec2Configuration.nodes[1].ansibleConfiguration)
         assertEquals("./run", ec2Configuration.nodes[1].benchmarkCommand)
         assertEquals("cat text.txt", ec2Configuration.nodes[1].outputCommand)
@@ -80,12 +80,16 @@ class Ec2ConfigurationServiceTest {
             2, emptyList(), listOf("t2.micro")
         )
         val nodes = listOf(
-            Node(0, "t2.micro", "image", "ansible.yml", "./run", "cat text.txt"),
-            Node(1, null, null, null, null, null),
-            Node(2, "t3.micro", "customImage", "custom.yml", "./runCustom", "python run.py")
+            Node(0, "t2.micro", "image86", "imageArm", "ansible.yml", "./run", "cat text.txt"),
+            Node(1, null, null, null, null, null, null),
+            Node(2, "t3.micro", "customImage86", "customImageArm", "custom.yml", "./runCustom", "python run.py")
         )
         val benchmark = Benchmark("benchId", configuration, nodes)
         val benchmarkRunId = "test-run-id"
+        coEvery { instanceRepository.findInstanceByName("t3.micro") } returns instance.copy(
+            name = "t3.micro",
+            tags = listOf("X86-64")
+        )
 
         // when
         val ec2Configuration = ec2ConfigurationService.generateEc2Configuration(instance, benchmark, benchmarkRunId)
@@ -95,19 +99,19 @@ class Ec2ConfigurationServiceTest {
 
         assertEquals(1, ec2Configuration.nodes[0].nodeId)
         assertEquals("t2.micro", ec2Configuration.nodes[0].instanceType)
-        assertEquals("image", ec2Configuration.nodes[0].image)
+        assertEquals("imageArm", ec2Configuration.nodes[0].image)
         assertEquals("ansible.yml", ec2Configuration.nodes[0].ansibleConfiguration)
         assertEquals("./run", ec2Configuration.nodes[0].benchmarkCommand)
         assertEquals("cat text.txt", ec2Configuration.nodes[0].outputCommand)
 
         assertEquals(2, ec2Configuration.nodes[1].nodeId)
         assertEquals("t3.micro", ec2Configuration.nodes[1].instanceType)
-        assertEquals("customImage", ec2Configuration.nodes[1].image)
+        assertEquals("customImage86", ec2Configuration.nodes[1].image)
         assertEquals("custom.yml", ec2Configuration.nodes[1].ansibleConfiguration)
         assertEquals("./runCustom", ec2Configuration.nodes[1].benchmarkCommand)
         assertEquals("python run.py", ec2Configuration.nodes[1].outputCommand)
 
-        coVerify(exactly = 0) { instanceRepository.findInstanceByName(any<String>()) }
+        coVerify(exactly = 1) { instanceRepository.findInstanceByName(any<String>()) }
     }
 
     @Test
@@ -119,7 +123,7 @@ class Ec2ConfigurationServiceTest {
             2, emptyList(), listOf("t2.micro")
         )
         val nodes = listOf(
-            Node(0, null, null, "ansible.yml", "./run", "cat text.txt"),
+            Node(0, null, null, null, "ansible.yml", "./run", "cat text.txt"),
         )
         val benchmark = Benchmark("benchId", configuration, nodes)
         val benchmarkRunId = "test-run-id"
@@ -156,9 +160,9 @@ class Ec2ConfigurationServiceTest {
             2, emptyList(), listOf("t2.micro")
         )
         val nodes = listOf(
-            Node(0, "t2.micro", null, "ansible.yml", "./run", "cat text.txt"),
-            Node(1, null, null, null, null, null),
-            Node(2, null, null, null, null, null)
+            Node(0, "t2.micro", null, null, "ansible.yml", "./run", "cat text.txt"),
+            Node(1, null, null, null, null, null, null),
+            Node(2, null, null, null, null, null, null)
         )
         val benchmark = Benchmark("benchId", configuration, nodes)
         val benchmarkRunId = "test-run-id"
@@ -168,8 +172,8 @@ class Ec2ConfigurationServiceTest {
 
         // then
         assertEquals(2, ec2Configuration.nodes.size)
-        assertEquals("ami-x86_64", ec2Configuration.nodes[0].image)
-        assertEquals("ami-x86_64", ec2Configuration.nodes[1].image)
+        assertEquals("ami-x86", ec2Configuration.nodes[0].image)
+        assertEquals("ami-x86", ec2Configuration.nodes[1].image)
 
         coVerify(exactly = 0) { instanceRepository.findInstanceByName(any<String>()) }
     }
@@ -183,9 +187,9 @@ class Ec2ConfigurationServiceTest {
             2, emptyList(), listOf("t2.micro")
         )
         val nodes = listOf(
-            Node(0, "t2.micro", null, "ansible.yml", "./run", "cat text.txt"),
-            Node(1, "t3.micro", null, null, null, null),
-            Node(2, null, null, null, null, null)
+            Node(0, "t2.micro", null, null, "ansible.yml", "./run", "cat text.txt"),
+            Node(1, "t3.micro", null, null, null, null, null),
+            Node(2, null, null, null, null, null, null)
         )
         val benchmark = Benchmark("benchId", configuration, nodes)
         val benchmarkRunId = "test-run-id"
@@ -207,7 +211,7 @@ class Ec2ConfigurationServiceTest {
         assertEquals("./run", ec2Configuration.nodes[0].benchmarkCommand)
         assertEquals("cat text.txt", ec2Configuration.nodes[0].outputCommand)
 
-        assertEquals("ami-x86_64", ec2Configuration.nodes[1].image)
+        assertEquals("ami-x86", ec2Configuration.nodes[1].image)
 
         coVerify(exactly = 1) { instanceRepository.findInstanceByName("t3.micro") }
     }

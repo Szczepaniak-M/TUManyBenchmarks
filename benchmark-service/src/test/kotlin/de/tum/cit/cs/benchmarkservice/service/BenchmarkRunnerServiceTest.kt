@@ -38,8 +38,8 @@ class BenchmarkRunnerServiceTest {
             2, emptyList(), listOf("t2.micro")
         )
         private val NODES = listOf(
-            Node(1, "t2.micro", "image", "ansible.yml", "./run", "cat text.txt"),
-            Node(2, "t2.micro", "image", "ansible.yml", "./run", "cat text.txt")
+            Node(1, "t2.micro", "imageX86", "imageArm", "ansible.yml", "./run", "cat text.txt"),
+            Node(2, "t2.micro", "imageX86", "imageArm", "ansible.yml", "./run", "cat text.txt")
         )
         private val BENCHMARK = Benchmark(BENCHMARK_ID, CONFIGURATION, NODES)
         private val INSTANCE_WITH_BENCHMARKS = InstanceWithBenchmarks(INSTANCE, listOf(BENCHMARK))

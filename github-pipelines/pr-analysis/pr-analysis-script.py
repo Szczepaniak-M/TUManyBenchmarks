@@ -183,9 +183,7 @@ def get_default_node_configuration(nodes):
             raise ValueError("'output-command' in 'node' should be of type str.")
 
         # Check image
-        if 'image' in default_node \
-                and not isinstance(default_node['image'], str):
-            raise ValueError("'image' in 'node' should be of type str.")
+        check_image(default_node)
 
         # Check instance type
         if 'instance-type' in default_node:
@@ -228,8 +226,17 @@ def check_output_command(default_node, node):
 
 
 def check_image(node):
-    if 'image' in node and not isinstance(node['image'], str):
-        raise ValueError("'image' in 'node' should be of type str.")
+    if 'image-x86' in node \
+            and not isinstance(node['image-x86'], str):
+        raise ValueError("'image-x86' in 'node' should be of type str.")
+
+    if 'image-arm' in node \
+            and not isinstance(node['image-arm'], str):
+        raise ValueError("'image-arm' in 'node' should be of type str.")
+
+    if ('image-x86' in node and not 'image-arm' in node) \
+            or ('image-arm' in node and not 'image-x86' in node):
+        raise ValueError("'image-x86' and 'image-arm' in 'node' should be defined together.")
 
 
 def check_instance_type(node):

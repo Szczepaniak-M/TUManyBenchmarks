@@ -12,7 +12,7 @@ aws:
       name: aws-benchmark-private-key
       file: aws-benchmark-private-key.pem
     default-ami:
-      x86_64: ami-0bc16b510fa2622db
+      x86: ami-0bc16b510fa2622db
       arm: ami-0bc16b510fa2622db-arm
     network:
       availability-zone: use1-az1

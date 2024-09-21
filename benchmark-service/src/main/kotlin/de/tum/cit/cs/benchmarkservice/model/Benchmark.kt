@@ -24,7 +24,8 @@ data class Configuration(
 data class Node(
     val nodeId: Int,
     val instanceType: String?,
-    val image: String?,
+    val imageX86: String?,
+    val imageArm: String?,
     val ansibleConfiguration: String?,
     val benchmarkCommand: String?,
     val outputCommand: String?
