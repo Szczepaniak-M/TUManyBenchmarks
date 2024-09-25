@@ -180,6 +180,9 @@ class MongoInitializer {
                     computed("series", "\$_id.key"),
                     include("min", "max", "avg", "median")
                 )
+            ),
+            match(
+                Document("avg", Document("\$ne", null))
             )
         )
 
