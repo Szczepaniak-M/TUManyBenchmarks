@@ -28,7 +28,7 @@ class SshService(
 
     suspend fun executeBenchmark(ec2Configuration: Ec2Configuration): List<String> {
         val directory = ec2Configuration.directory
-        var output = emptyList<String>()
+        var output = emptyList<String?>()
         val privateKeyPath = Paths.get(ClassPathResource(filePath).uri)
         val loader = SecurityUtils.getKeyPairResourceParser()
         val keyPairs = withContext(Dispatchers.IO) {
@@ -91,7 +91,7 @@ class SshService(
         } finally {
             sshClient.stop()
         }
-        return output
+        return output.filterNotNull()
     }
 
     private suspend fun setUpNode(
@@ -130,15 +130,18 @@ class SshService(
         node: NodeConfig,
         session: ClientSession,
         directory: String
-    ): String {
-        val execChannel = session.createExecChannel("cd ${directory}; ${node.outputCommand}")
-        val outputStream = ByteArrayOutputStream()
-        execChannel.out = outputStream
-        execChannel.open().verify()
-        execChannel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), 0)
-        val output = outputStream.toString()
-        execChannel.close()
-        return output
+    ): String? {
+        node.outputCommand?.let { command ->
+            val execChannel = session.createExecChannel("cd ${directory}; ${node.outputCommand}")
+            val outputStream = ByteArrayOutputStream()
+            execChannel.out = outputStream
+            execChannel.open().verify()
+            execChannel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), 0)
+            val output = outputStream.toString()
+            execChannel.close()
+            return output
+        }
+        return null
     }
 
     private suspend fun prepareSetUpCommands(
