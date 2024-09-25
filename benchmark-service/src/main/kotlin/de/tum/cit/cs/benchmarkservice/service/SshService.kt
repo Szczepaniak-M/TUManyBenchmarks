@@ -8,11 +8,13 @@ import org.apache.sshd.client.SshClient
 import org.apache.sshd.client.channel.ClientChannelEvent
 import org.apache.sshd.client.session.ClientSession
 import org.apache.sshd.common.util.security.SecurityUtils
+import org.apache.sshd.core.CoreModuleProperties
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
 import java.nio.file.Paths
+import java.time.Duration
 import java.util.*
 
 
@@ -35,6 +37,7 @@ class SshService(
             loader.loadKeyPairs(null, privateKeyPath, null)
         }
         val sshClient = SshClient.setUpDefaultClient()
+        CoreModuleProperties.HEARTBEAT_INTERVAL.set(sshClient, Duration.ofSeconds(2L));
         sshClient.start()
         try {
             sshClient.use { client ->
