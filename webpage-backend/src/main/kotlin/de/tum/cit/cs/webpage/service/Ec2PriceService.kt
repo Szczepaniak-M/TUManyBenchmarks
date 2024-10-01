@@ -96,6 +96,7 @@ class Ec2PriceService(
 
             val response = pricingClient.getProducts(request)
             logger.debug { "Downloaded information about ${response.priceList?.size ?: 0} prices" }
+            counter += response.priceList?.size ?: 0
             response.priceList?.forEach { priceJson ->
                 val priceObject = objectMapper.readTree(priceJson)
                 cacheOnDemandPrice(priceObject)

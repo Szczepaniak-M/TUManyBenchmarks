@@ -40,6 +40,6 @@ class RateLimiterFilter(private val apiKeyService: ApiKeyService) : WebFilter {
 
     private fun shouldFilter(exchange: ServerWebExchange): Boolean {
         val path = exchange.request.uri.path
-        return !path.startsWith("/api/key")
+        return !path.startsWith("/api/key") && !path.startsWith("/actuator")
     }
 }
