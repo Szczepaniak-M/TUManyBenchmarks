@@ -5,26 +5,55 @@ import aws.sdk.kotlin.services.ec2.model.*
 import de.tum.cit.cs.benchmarkservice.model.Ec2Configuration
 import de.tum.cit.cs.benchmarkservice.model.NodeConfig
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.annotation.PostConstruct
+import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 
 @Service
 class AwsService(
-    private val ec2Client: Ec2Client
-) {
-
+    private val ec2Client: Ec2Client,
     @Value("\${aws.ec2.private-key.name}")
-    lateinit var keyPairName: String
-
+    private val keyPairName: String,
+    @Value("\${aws.ec2.network.vpcId:#{null}}")
+    private var vpc: String?,
+    @Value("\${aws.ec2.network.ipv4Cidr}")
+    private val ipv4Cidr: String,
+    @Value("\${aws.ec2.network.ipv6Cidr:#{null}}")
+    private var ipv6Cidr: String?,
     @Value("\${aws.ec2.network.availability-zone}")
-    lateinit var networkAvailabilityZone: String
-
-    @Value("\${aws.ec2.network.cidr}")
-    lateinit var ipv4Cidr: String
-
+    private val networkAvailabilityZone: String,
+) {
     private val logger = KotlinLogging.logger {}
+    private lateinit var subnetworkService: SubnetworkService
+    private var internetGateway: String? = null
+
+    @PostConstruct
+    fun init() = runBlocking {
+        if (vpc == null && ipv6Cidr == null) {
+            logger.info { "Starting creating resources for local execution " }
+            createVpc()
+            createInternetGateway()
+            configureRouteTable()
+            logger.info { "Created resources for local execution " }
+        } else if (vpc == null || ipv6Cidr == null) {
+            throw IllegalStateException("VPC ID and IPv6 must both be specified or nulls")
+        }
+        subnetworkService = SubnetworkService(ipv4Cidr, ipv6Cidr!!)
+    }
+
+    @PreDestroy
+    fun destroy() = runBlocking {
+        if (internetGateway != null) {
+            logger.info { "Starting deleting resources for local execution " }
+            deleteInternetGateway()
+            deleteVpc()
+            logger.info { "Deleted resources for local execution " }
+        }
+    }
 
     suspend fun getInstancesFromAws(): List<InstanceTypeInfo> {
         logger.info { "Starting downloading data about instances from AWS" }
@@ -48,45 +77,44 @@ class AwsService(
         return instanceTypeInfos
     }
 
-    suspend fun createVpc(ec2Configuration: Ec2Configuration) {
-        ec2Configuration.ipv4Cidr = ipv4Cidr
-        val createVpcRequest = CreateVpcRequest { cidrBlock = ec2Configuration.ipv4Cidr }
+    suspend fun createVpc() {
+        val createVpcRequest = CreateVpcRequest { cidrBlock = ipv4Cidr }
         val createVpcResponse = retryIfException { ec2Client.createVpc(createVpcRequest) }
-        ec2Configuration.vpcId = createVpcResponse.vpc?.vpcId
+        this.vpc = createVpcResponse.vpc?.vpcId
         val dnsSupportRequest = ModifyVpcAttributeRequest {
-            vpcId = ec2Configuration.vpcId
+            vpcId = vpc
             enableDnsSupport = AttributeBooleanValue { value = true }
         }
         retryIfException { ec2Client.modifyVpcAttribute(dnsSupportRequest) }
         val enableDnsHostnamesRequest = ModifyVpcAttributeRequest {
-            vpcId = ec2Configuration.vpcId
+            vpcId = vpc
             enableDnsHostnames = AttributeBooleanValue { value = true }
         }
         retryIfException { ec2Client.modifyVpcAttribute(enableDnsHostnamesRequest) }
         val ipv6CidrRequest = AssociateVpcCidrBlockRequest {
-            vpcId = ec2Configuration.vpcId
+            vpcId = vpc
             amazonProvidedIpv6CidrBlock = true
         }
         val ipv6CidrResponse = retryIfException { ec2Client.associateVpcCidrBlock(ipv6CidrRequest) }
-        ec2Configuration.ipv6Cidr = ipv6CidrResponse.ipv6CidrBlockAssociation?.ipv6CidrBlock
-        awaitForIpv6IfNotAssigned(ec2Configuration)
-        logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Created VPC ${ec2Configuration.vpcId}" }
+        this.ipv6Cidr = ipv6CidrResponse.ipv6CidrBlockAssociation?.ipv6CidrBlock
+        awaitForIpv6IfNotAssigned()
+        logger.info { "Created VPC ${this.vpc}" }
     }
 
-    private suspend fun awaitForIpv6IfNotAssigned(ec2Configuration: Ec2Configuration) {
-        while (ec2Configuration.ipv6Cidr == null) {
+    private suspend fun awaitForIpv6IfNotAssigned() {
+        while (this.ipv6Cidr == null) {
             delay(3000)
             val describeVpcRequest = DescribeVpcsRequest {
-                vpcIds = listOf(ec2Configuration.vpcId!!)
+                vpcIds = listOf(vpc!!)
                 filters = listOf(
                     Filter {
                         name = "vpc-id"
-                        values = listOf(ec2Configuration.vpcId!!)
+                        values = listOf(vpc!!)
                     }
                 )
             }
             val describeVpcResponse = ec2Client.describeVpcs(describeVpcRequest)
-            ec2Configuration.ipv6Cidr = describeVpcResponse.vpcs
+            this.ipv6Cidr = describeVpcResponse.vpcs
                 ?.firstOrNull()
                 ?.ipv6CidrBlockAssociationSet
                 ?.firstOrNull()
@@ -94,39 +122,40 @@ class AwsService(
         }
     }
 
-    suspend fun createInternetGateway(ec2Configuration: Ec2Configuration) {
+    suspend fun createInternetGateway() {
         val createIgwRequest = CreateInternetGatewayRequest {}
         val createIgwResponse = retryIfException { ec2Client.createInternetGateway(createIgwRequest) }
-        ec2Configuration.internetGatewayId = createIgwResponse.internetGateway?.internetGatewayId
+        this.internetGateway = createIgwResponse.internetGateway?.internetGatewayId
         val attachIgwRequest = AttachInternetGatewayRequest {
-            vpcId = ec2Configuration.vpcId
-            internetGatewayId = ec2Configuration.internetGatewayId
+            vpcId = vpc
+            internetGatewayId = internetGateway
         }
         retryIfException { ec2Client.attachInternetGateway(attachIgwRequest) }
-        logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Created Internet Gateway ${ec2Configuration.internetGatewayId}" }
+        logger.info { "Created Internet Gateway $internetGateway" }
     }
 
-    suspend fun configureRouteTable(ec2Configuration: Ec2Configuration) {
+    suspend fun configureRouteTable() {
         val describeRouteTablesRequest = DescribeRouteTablesRequest {
             filters = listOf(Filter {
                 name = "vpc-id"
-                values = listOf(ec2Configuration.vpcId!!)
+                values = listOf(vpc!!)
             })
         }
         val describeRouteTablesResponse = retryIfException { ec2Client.describeRouteTables(describeRouteTablesRequest) }
-        ec2Configuration.routeTableId = describeRouteTablesResponse.routeTables?.firstOrNull()?.routeTableId
+        val routeTable = describeRouteTablesResponse.routeTables?.firstOrNull()?.routeTableId
         val createIpv6RouteRequest = CreateRouteRequest {
-            routeTableId = ec2Configuration.routeTableId
+            routeTableId = routeTable
             destinationIpv6CidrBlock = "::/0"
-            gatewayId = ec2Configuration.internetGatewayId
+            gatewayId = internetGateway
         }
         retryIfException { ec2Client.createRoute(createIpv6RouteRequest) }
-        logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Configured RouteTable ${ec2Configuration.routeTableId}" }
+        logger.info { "Configured RouteTable $routeTable" }
     }
 
     suspend fun createSubnet(ec2Configuration: Ec2Configuration) {
+        subnetworkService.assignAvailableSubnetwork(ec2Configuration)
         val createSubnetRequest = CreateSubnetRequest {
-            vpcId = ec2Configuration.vpcId
+            vpcId = vpc
             cidrBlock = ec2Configuration.ipv4Cidr
             ipv6CidrBlock = ec2Configuration.ipv6Cidr
             availabilityZoneId = networkAvailabilityZone
@@ -145,7 +174,7 @@ class AwsService(
         val createRequest = CreateSecurityGroupRequest {
             groupName = "benchmark-${ec2Configuration.benchmarkRunId}"
             description = "benchmark-${ec2Configuration.benchmarkRunId}"
-            vpcId = ec2Configuration.vpcId
+            vpcId = vpc
         }
         val createSecurityGroupResponse = retryIfException { ec2Client.createSecurityGroup(createRequest) }
         ec2Configuration.securityGroupId = createSecurityGroupResponse.groupId
@@ -210,7 +239,8 @@ class AwsService(
             val describeSpotRequestsRequest = DescribeSpotInstanceRequestsRequest {
                 spotInstanceRequestIds = spotRequestIds
             }
-            val describeRequestResponse = retryIfException { ec2Client.describeSpotInstanceRequests(describeSpotRequestsRequest) }
+            val describeRequestResponse =
+                retryIfException { ec2Client.describeSpotInstanceRequests(describeSpotRequestsRequest) }
             instanceIds = describeRequestResponse.spotInstanceRequests
                 ?.filter { it.state == SpotInstanceState.Active }
                 ?.mapNotNull { it.instanceId }
@@ -277,7 +307,8 @@ class AwsService(
                 var terminatedInstances = emptyList<Instance>()
                 while (terminatedInstances.size != instances.size) {
                     delay(15_000)
-                    val describeInstancesResponse = retryIfException { ec2Client.describeInstances(describeInstancesRequest) }
+                    val describeInstancesResponse =
+                        retryIfException { ec2Client.describeInstances(describeInstancesRequest) }
                     val reservations = describeInstancesResponse.reservations ?: emptyList()
                     terminatedInstances = reservations.flatMap { it.instances ?: emptyList() }
                         .filter { it.state?.name == InstanceStateName.Terminated }
@@ -297,32 +328,33 @@ class AwsService(
                 subnetId = ec2Configuration.subnetId
             }
             retryIfException { ec2Client.deleteSubnet(deleteRequest) }
+            subnetworkService.releaseSubnetwork(ec2Configuration)
             logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Deleted Subnet ${ec2Configuration.subnetId}" }
         }
     }
 
-    suspend fun deleteInternetGateway(ec2Configuration: Ec2Configuration) {
-        if (ec2Configuration.internetGatewayId != null) {
+    suspend fun deleteInternetGateway() {
+        if (internetGateway != null) {
             val detachRequest = DetachInternetGatewayRequest {
-                internetGatewayId = ec2Configuration.internetGatewayId
-                vpcId = ec2Configuration.vpcId
+                internetGatewayId = internetGateway
+                vpcId = vpc
             }
             retryIfException { ec2Client.detachInternetGateway(detachRequest) }
             val deleteRequest = DeleteInternetGatewayRequest {
-                internetGatewayId = ec2Configuration.internetGatewayId
+                internetGatewayId = internetGateway
             }
             retryIfException { ec2Client.deleteInternetGateway(deleteRequest) }
-            logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Deleted Internet Gateway ${ec2Configuration.internetGatewayId}" }
+            logger.info { "Deleted Internet Gateway $internetGateway" }
         }
     }
 
-    suspend fun deleteVpc(ec2Configuration: Ec2Configuration) {
-        if (ec2Configuration.vpcId != null) {
+    suspend fun deleteVpc() {
+        if (vpc != null) {
             val deleteRequest = DeleteVpcRequest {
-                vpcId = ec2Configuration.vpcId
+                vpcId = vpc
             }
             retryIfException { ec2Client.deleteVpc(deleteRequest) }
-            logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Deleted VPC ${ec2Configuration.vpcId}" }
+            logger.info { "Deleted VPC $vpc" }
         }
     }
 

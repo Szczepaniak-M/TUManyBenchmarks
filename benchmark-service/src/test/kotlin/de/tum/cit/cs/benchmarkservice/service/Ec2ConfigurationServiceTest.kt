@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.test.util.ReflectionTestUtils
 import java.math.BigDecimal
 
 @ExtendWith(SpringExtension::class)
@@ -27,9 +26,7 @@ class Ec2ConfigurationServiceTest {
 
     @BeforeEach
     fun setUp() {
-        ec2ConfigurationService = Ec2ConfigurationService(instanceRepository)
-        ReflectionTestUtils.setField(ec2ConfigurationService, "amiX86", "ami-x86")
-        ReflectionTestUtils.setField(ec2ConfigurationService, "amiArm", "ami-arm")
+        ec2ConfigurationService = Ec2ConfigurationService(instanceRepository, "ami-x86", "ami-arm")
     }
 
     @Test

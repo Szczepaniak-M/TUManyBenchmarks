@@ -7,10 +7,10 @@ import org.springframework.web.reactive.function.client.WebClient
 
 
 @Configuration
-class GitHubClientConfiguration {
-
+class GitHubClientConfiguration(
     @Value("\${github.repository.url}")
-    lateinit var url: String
+    private val url: String
+) {
 
     @Bean
     fun gitHubClient(): WebClient {

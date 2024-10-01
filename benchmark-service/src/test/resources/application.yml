@@ -17,7 +17,9 @@ aws:
       arm: ami-0eac975a54dfee8cb
     network:
       availability-zone: use1-az1
-      cidr: 10.0.0.0/28
+      vpcId: vpcId
+      ipv4Cidr: 10.0.0.0/16
+      ipv6Cidr: d044:05ab:f827:6800::/56
 github:
   repository:
     url: http://localhost/repos/userName/repositoryName/contents

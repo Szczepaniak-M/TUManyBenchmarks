@@ -68,9 +68,6 @@ class BenchmarkRunnerServiceTest {
                 any<String>()
             )
         } returns EC2_CONFIGURATION
-        coEvery { awsService.createVpc(EC2_CONFIGURATION) } just Runs
-        coEvery { awsService.createInternetGateway(EC2_CONFIGURATION) } just Runs
-        coEvery { awsService.configureRouteTable(EC2_CONFIGURATION) } just Runs
         coEvery { awsService.createSubnet(EC2_CONFIGURATION) } just Runs
         coEvery { awsService.createSecurityGroup(EC2_CONFIGURATION) } just Runs
         coEvery { awsService.startEc2Instance(EC2_CONFIGURATION) } just Runs
@@ -80,8 +77,6 @@ class BenchmarkRunnerServiceTest {
         coEvery { awsService.terminateEc2Instance(EC2_CONFIGURATION) } returns TERMINATED_INSTANCES
         coEvery { awsService.deleteSecurityGroup(EC2_CONFIGURATION, TERMINATED_INSTANCES) } just Runs
         coEvery { awsService.deleteSubnet(EC2_CONFIGURATION) } just Runs
-        coEvery { awsService.deleteInternetGateway(EC2_CONFIGURATION) } just Runs
-        coEvery { awsService.deleteVpc(EC2_CONFIGURATION) } just Runs
 
         // when
         val results = benchmarkRunnerService.runBenchmarksForInstance(INSTANCE_WITH_BENCHMARKS)
@@ -91,9 +86,6 @@ class BenchmarkRunnerServiceTest {
         assert(results[0] == BENCHMARK_RESULT)
 
         coVerify(exactly = 1) { ec2ConfigurationService.generateEc2Configuration(INSTANCE, BENCHMARK, any<String>()) }
-        coVerify(exactly = 1) { awsService.createVpc(EC2_CONFIGURATION) }
-        coVerify(exactly = 1) { awsService.createInternetGateway(EC2_CONFIGURATION) }
-        coVerify(exactly = 1) { awsService.configureRouteTable(EC2_CONFIGURATION) }
         coVerify(exactly = 1) { awsService.createSubnet(EC2_CONFIGURATION) }
         coVerify(exactly = 1) { awsService.createSecurityGroup(EC2_CONFIGURATION) }
         coVerify(exactly = 1) { awsService.startEc2Instance(EC2_CONFIGURATION) }
@@ -103,8 +95,6 @@ class BenchmarkRunnerServiceTest {
         coVerify(exactly = 1) { awsService.terminateEc2Instance(EC2_CONFIGURATION) }
         coVerify(exactly = 1) { awsService.deleteSecurityGroup(EC2_CONFIGURATION, TERMINATED_INSTANCES) }
         coVerify(exactly = 1) { awsService.deleteSubnet(EC2_CONFIGURATION) }
-        coVerify(exactly = 1) { awsService.deleteInternetGateway(EC2_CONFIGURATION) }
-        coVerify(exactly = 1) { awsService.deleteVpc(EC2_CONFIGURATION) }
     }
 
     @Test
@@ -119,9 +109,6 @@ class BenchmarkRunnerServiceTest {
                 any<String>()
             )
         } returns EC2_CONFIGURATION
-        coEvery { awsService.createVpc(EC2_CONFIGURATION) } just Runs
-        coEvery { awsService.createInternetGateway(EC2_CONFIGURATION) } just Runs
-        coEvery { awsService.configureRouteTable(EC2_CONFIGURATION) } just Runs
         coEvery { awsService.createSubnet(EC2_CONFIGURATION) } just Runs
         coEvery { awsService.createSecurityGroup(EC2_CONFIGURATION) } just Runs
         coEvery { awsService.startEc2Instance(EC2_CONFIGURATION) } just Runs
@@ -130,8 +117,6 @@ class BenchmarkRunnerServiceTest {
         coEvery { awsService.terminateEc2Instance(EC2_CONFIGURATION) } returns terminatedInstances
         coEvery { awsService.deleteSecurityGroup(EC2_CONFIGURATION, terminatedInstances) } just Runs
         coEvery { awsService.deleteSubnet(EC2_CONFIGURATION) } just Runs
-        coEvery { awsService.deleteInternetGateway(EC2_CONFIGURATION) } just Runs
-        coEvery { awsService.deleteVpc(EC2_CONFIGURATION) } just Runs
 
         // when
         val results = benchmarkRunnerService.runBenchmarksForInstance(INSTANCE_WITH_BENCHMARKS)
@@ -140,9 +125,6 @@ class BenchmarkRunnerServiceTest {
         assert(results.isEmpty())
 
         coVerify(exactly = 1) { ec2ConfigurationService.generateEc2Configuration(INSTANCE, BENCHMARK, any<String>()) }
-        coVerify(exactly = 1) { awsService.createVpc(EC2_CONFIGURATION) }
-        coVerify(exactly = 1) { awsService.createInternetGateway(EC2_CONFIGURATION) }
-        coVerify(exactly = 1) { awsService.configureRouteTable(EC2_CONFIGURATION) }
         coVerify(exactly = 1) { awsService.createSubnet(EC2_CONFIGURATION) }
         coVerify(exactly = 1) { awsService.createSecurityGroup(EC2_CONFIGURATION) }
         coVerify(exactly = 1) { awsService.startEc2Instance(EC2_CONFIGURATION) }
@@ -152,7 +134,5 @@ class BenchmarkRunnerServiceTest {
         coVerify(exactly = 1) { awsService.terminateEc2Instance(EC2_CONFIGURATION) }
         coVerify(exactly = 1) { awsService.deleteSecurityGroup(EC2_CONFIGURATION, terminatedInstances) }
         coVerify(exactly = 1) { awsService.deleteSubnet(EC2_CONFIGURATION) }
-        coVerify(exactly = 1) { awsService.deleteInternetGateway(EC2_CONFIGURATION) }
-        coVerify(exactly = 1) { awsService.deleteVpc(EC2_CONFIGURATION) }
     }
 }

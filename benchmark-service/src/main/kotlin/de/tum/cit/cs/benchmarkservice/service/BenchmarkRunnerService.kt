@@ -7,6 +7,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -18,6 +20,7 @@ class BenchmarkRunnerService(
     private val outputParserService: OutputParserService
 ) {
     private val logger = KotlinLogging.logger {}
+    private val semaphore = Semaphore(200) // max number of subnets per VPC
 
     suspend fun runBenchmarksForInstance(instanceWithBenchmarks: InstanceWithBenchmarks): List<BenchmarkResult> {
         val instance = instanceWithBenchmarks.instance
@@ -27,22 +30,24 @@ class BenchmarkRunnerService(
                 val benchmarkRunId = UUID.randomUUID().toString()
                 logger.info { "Benchmark ${benchmarkRunId}: Starting benchmark '${benchmark.configuration.name}' for instance '${instance.name}'" }
                 async {
-                    val ec2Configuration =
-                        ec2ConfigurationService.generateEc2Configuration(instance, benchmark, benchmarkRunId)
-                    var benchmarkResult: BenchmarkResult? = null
-                    try {
-                        createAwsResources(ec2Configuration)
-                        val results = sshService.executeBenchmark(ec2Configuration)
-                        benchmarkResult = outputParserService.parseOutput(instance, benchmark, results)
-                    } catch (e: Exception) {
-                        logger.error {
-                            "Benchmark ${benchmarkRunId}: Stopping benchmark '${benchmark.configuration.name}'" +
-                                    " for instance '${instance.name}' due to error: ${e.message}"
+                    semaphore.withPermit {
+                        val ec2Configuration =
+                            ec2ConfigurationService.generateEc2Configuration(instance, benchmark, benchmarkRunId)
+                        var benchmarkResult: BenchmarkResult? = null
+                        try {
+                            createAwsResources(ec2Configuration)
+                            val results = sshService.executeBenchmark(ec2Configuration)
+                            benchmarkResult = outputParserService.parseOutput(instance, benchmark, results)
+                        } catch (e: Exception) {
+                            logger.error {
+                                "Benchmark ${benchmarkRunId}: Stopping benchmark '${benchmark.configuration.name}'" +
+                                        " for instance '${instance.name}' due to error: ${e.message}"
+                            }
+                        } finally {
+                            deleteAwsResources(ec2Configuration)
                         }
-                    } finally {
-                        deleteAwsResources(ec2Configuration)
+                        benchmarkResult
                     }
-                    benchmarkResult
                 }
             }
                 .awaitAll()
@@ -52,9 +57,6 @@ class BenchmarkRunnerService(
     }
 
     private suspend fun createAwsResources(ec2Configuration: Ec2Configuration) {
-        awsService.createVpc(ec2Configuration)
-        awsService.createInternetGateway(ec2Configuration)
-        awsService.configureRouteTable(ec2Configuration)
         awsService.createSubnet(ec2Configuration)
         awsService.createSecurityGroup(ec2Configuration)
         awsService.startEc2Instance(ec2Configuration)
@@ -65,7 +67,5 @@ class BenchmarkRunnerService(
         val instances = awsService.terminateEc2Instance(ec2Configuration)
         awsService.deleteSecurityGroup(ec2Configuration, instances)
         awsService.deleteSubnet(ec2Configuration)
-        awsService.deleteInternetGateway(ec2Configuration)
-        awsService.deleteVpc(ec2Configuration)
     }
 }

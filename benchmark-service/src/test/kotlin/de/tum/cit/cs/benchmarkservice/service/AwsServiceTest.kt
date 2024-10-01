@@ -32,16 +32,13 @@ class AwsServiceTest {
         private const val SECURITY_GROUP = "SecurityGroup"
         private const val KEY_PAIR_NAME = "aws-benchmark-private-key"
         private const val AVAILABILITY_ZONE = "us-east-1a"
-        private const val CIDR_IPV4 = "10.0.0.0/28"
-        private const val CIDR_IPV6 = "10::1"
+        private const val CIDR_IPV4 = "10.1.0.0/16"
+        private const val CIDR_IPV6 = "d044:05ab:f827:6800::/56"
     }
 
     @BeforeEach
     fun setUp() {
-        awsService = AwsService(ec2Client)
-        awsService.keyPairName = KEY_PAIR_NAME
-        awsService.networkAvailabilityZone = AVAILABILITY_ZONE
-        awsService.ipv4Cidr = CIDR_IPV4
+        awsService = AwsService(ec2Client, KEY_PAIR_NAME, VPC, CIDR_IPV4, CIDR_IPV6, AVAILABILITY_ZONE)
     }
 
     @Test
@@ -91,16 +88,11 @@ class AwsServiceTest {
             ipv6CidrBlockAssociation = VpcIpv6CidrBlockAssociation { ipv6CidrBlock = CIDR_IPV6 }
         }
 
-        val ec2Configuration = Ec2Configuration("id", "testDirectory", emptyList())
-
         // when
-        awsService.createVpc(ec2Configuration)
+        awsService = AwsService(ec2Client, KEY_PAIR_NAME, null, CIDR_IPV4, null, AVAILABILITY_ZONE)
+        awsService.createVpc()
 
         // then
-        assertEquals(VPC, ec2Configuration.vpcId)
-        assertEquals(CIDR_IPV4, ec2Configuration.ipv4Cidr)
-        assertEquals(CIDR_IPV6, ec2Configuration.ipv6Cidr)
-
         val capturedCreateRequest = createRequestSlot.captured
         assertEquals(CIDR_IPV4, capturedCreateRequest.cidrBlock)
 
@@ -151,16 +143,11 @@ class AwsServiceTest {
             })
         }
 
-        val ec2Configuration = Ec2Configuration("id", "testDirectory", emptyList())
-
         // when
-        awsService.createVpc(ec2Configuration)
+        awsService = AwsService(ec2Client, KEY_PAIR_NAME, null, CIDR_IPV4, null, AVAILABILITY_ZONE)
+        awsService.createVpc()
 
         // then
-        assertEquals(VPC, ec2Configuration.vpcId)
-        assertEquals(CIDR_IPV4, ec2Configuration.ipv4Cidr)
-        assertEquals(CIDR_IPV6, ec2Configuration.ipv6Cidr)
-
         val capturedDescribeRequest = describeRequestSlot.captured
         assertEquals(1, capturedDescribeRequest.vpcIds!!.size)
         assertEquals(VPC, capturedDescribeRequest.vpcIds!![0])
@@ -188,14 +175,10 @@ class AwsServiceTest {
             ec2Client.attachInternetGateway(capture(attachRequestSlot))
         } throws Ec2Exception() andThen AttachInternetGatewayResponse {}
 
-        val ec2Configuration = Ec2Configuration("id", "testDirectory", emptyList(), vpcId = VPC)
-
         // when
-        awsService.createInternetGateway(ec2Configuration)
+        awsService.createInternetGateway()
 
         // then
-        assertEquals(INTERNET_GATEWAY, ec2Configuration.internetGatewayId)
-
         val capturedAttachRequest = attachRequestSlot.captured
         assertEquals(VPC, capturedAttachRequest.vpcId)
         assertEquals(INTERNET_GATEWAY, capturedAttachRequest.internetGatewayId)
@@ -207,6 +190,16 @@ class AwsServiceTest {
     @Test
     fun `configure route table after error`() = runTest {
         // given
+        coEvery {
+            ec2Client.createInternetGateway(any<CreateInternetGatewayRequest>())
+        } returns CreateInternetGatewayResponse {
+            internetGateway = InternetGateway { internetGatewayId = INTERNET_GATEWAY }
+        }
+
+        coEvery {
+            ec2Client.attachInternetGateway(any<AttachInternetGatewayRequest>())
+        } returns AttachInternetGatewayResponse {}
+
         val describeRequestSlot = slot<DescribeRouteTablesRequest>()
         val createRouteRequestSlot = slot<CreateRouteRequest>()
         coEvery {
@@ -219,17 +212,12 @@ class AwsServiceTest {
             ec2Client.createRoute(capture(createRouteRequestSlot))
         } throws Ec2Exception() andThen CreateRouteResponse {}
 
-        val ec2Configuration = Ec2Configuration(
-            "id", "testDirectory", emptyList(),
-            vpcId = VPC, internetGatewayId = INTERNET_GATEWAY
-        )
 
         // when
-        awsService.configureRouteTable(ec2Configuration)
+        awsService.createInternetGateway()
+        awsService.configureRouteTable()
 
         // then
-        assertEquals(ROUTE_TABLE, ec2Configuration.routeTableId)
-
         val capturedDescribeRequest = describeRequestSlot.captured
         assertEquals(1, capturedDescribeRequest.filters!!.size)
         assertEquals("vpc-id", capturedDescribeRequest.filters!![0].name)
@@ -260,10 +248,11 @@ class AwsServiceTest {
 
         val ec2Configuration = Ec2Configuration(
             "id", "testDirectory", emptyList(),
-            vpcId = VPC, ipv4Cidr = CIDR_IPV4, ipv6Cidr = CIDR_IPV6
+            ipv4Cidr = CIDR_IPV4, ipv6Cidr = CIDR_IPV6
         )
 
         // when
+        awsService.init()
         awsService.createSubnet(ec2Configuration)
 
         // then
@@ -271,8 +260,8 @@ class AwsServiceTest {
 
         val capturedCreateRequest = createRequestSlot.captured
         assertEquals(VPC, capturedCreateRequest.vpcId)
-        assertEquals(CIDR_IPV4, capturedCreateRequest.cidrBlock)
-        assertEquals(CIDR_IPV6, capturedCreateRequest.ipv6CidrBlock)
+        assertEquals("10.1.1.0/24", capturedCreateRequest.cidrBlock)
+        assertEquals("d044:05ab:f827:6801::/64", capturedCreateRequest.ipv6CidrBlock)
         assertEquals(AVAILABILITY_ZONE, capturedCreateRequest.availabilityZoneId)
 
         val capturedModifyRequest = modifyRequestSlot.captured
@@ -298,7 +287,7 @@ class AwsServiceTest {
 
         val ec2Configuration = Ec2Configuration(
             "id", "testDirectory", emptyList(),
-            vpcId = VPC, ipv4Cidr = CIDR_IPV4, ipv6Cidr = CIDR_IPV6
+            ipv4Cidr = CIDR_IPV4, ipv6Cidr = CIDR_IPV6
         )
 
         // when
@@ -785,9 +774,13 @@ class AwsServiceTest {
         coEvery {
             ec2Client.deleteSubnet(capture(deleteSubnetRequestSlot))
         } throws Ec2Exception() andThen DeleteSubnetResponse { }
-        val ec2Configuration = Ec2Configuration("id", "testDirectory", emptyList(), subnetId = SUBNET)
+        val ec2Configuration = Ec2Configuration(
+            "id", "testDirectory", emptyList(),
+            subnetId = SUBNET, ipv4Cidr = "10.0.1.0/24"
+        )
 
         // when
+        awsService.init()
         awsService.deleteSubnet(ec2Configuration)
 
         // then
@@ -811,6 +804,16 @@ class AwsServiceTest {
     @Test
     fun `delete internet gateway after error`() = runTest {
         // given
+        coEvery {
+            ec2Client.createInternetGateway(any<CreateInternetGatewayRequest>())
+        } returns CreateInternetGatewayResponse {
+            internetGateway = InternetGateway { internetGatewayId = INTERNET_GATEWAY }
+        }
+
+        coEvery {
+            ec2Client.attachInternetGateway(any<AttachInternetGatewayRequest>())
+        } returns AttachInternetGatewayResponse {}
+
         val detachRequestSlot = slot<DetachInternetGatewayRequest>()
         val deleteRequestSlot = slot<DeleteInternetGatewayRequest>()
         coEvery {
@@ -821,13 +824,9 @@ class AwsServiceTest {
             ec2Client.deleteInternetGateway(capture(deleteRequestSlot))
         } throws Ec2Exception() andThen DeleteInternetGatewayResponse { }
 
-        val ec2Configuration = Ec2Configuration(
-            "id", "testDirectory", emptyList(),
-            vpcId = VPC, internetGatewayId = INTERNET_GATEWAY
-        )
-
         // when
-        awsService.deleteInternetGateway(ec2Configuration)
+        awsService.createInternetGateway()
+        awsService.deleteInternetGateway()
 
         // then
         val capturedDetachRequest = detachRequestSlot.captured
@@ -841,11 +840,8 @@ class AwsServiceTest {
 
     @Test
     fun `do not delete internet gateway when it is null`() = runTest {
-        // given
-        val ec2Configuration = Ec2Configuration("id", "testDirectory", emptyList())
-
         // when
-        awsService.deleteInternetGateway(ec2Configuration)
+        awsService.deleteInternetGateway()
 
         // then
         coVerify(exactly = 0) { ec2Client.deleteInternetGateway(any<DeleteInternetGatewayRequest>()) }
@@ -858,10 +854,9 @@ class AwsServiceTest {
         coEvery {
             ec2Client.deleteVpc(capture(deleteVpcRequestSlot))
         } throws Ec2Exception() andThen DeleteVpcResponse { }
-        val ec2Configuration = Ec2Configuration("id", "testDirectory", emptyList(), vpcId = VPC)
 
         // when
-        awsService.deleteVpc(ec2Configuration)
+        awsService.deleteVpc()
 
         // then
         val capturedRequest = deleteVpcRequestSlot.captured
@@ -872,10 +867,10 @@ class AwsServiceTest {
     @Test
     fun `do not vpc when it is null`() = runTest {
         // given
-        val ec2Configuration = Ec2Configuration("id", "testDirectory", emptyList())
+        awsService = AwsService(ec2Client, KEY_PAIR_NAME, null, CIDR_IPV4, null, AVAILABILITY_ZONE)
 
         // when
-        awsService.deleteVpc(ec2Configuration)
+        awsService.deleteVpc()
 
         // then
         coVerify(exactly = 0) { ec2Client.deleteVpc(any<DeleteVpcRequest>()) }
@@ -887,11 +882,10 @@ class AwsServiceTest {
         coEvery {
             ec2Client.deleteVpc(any<DeleteVpcRequest>())
         } throwsMany listOf(Ec2Exception(), Ec2Exception(), Ec2Exception())
-        val ec2Configuration = Ec2Configuration("id", "testDirectory", emptyList(), vpcId = VPC)
 
         // when
         runCatching {
-            awsService.deleteVpc(ec2Configuration)
+            awsService.deleteVpc()
         }.onFailure {
             assertThat(it).isInstanceOf(Ec2Exception::class.java)
         }
@@ -906,11 +900,10 @@ class AwsServiceTest {
         coEvery {
             ec2Client.deleteVpc(any<DeleteVpcRequest>())
         } throws RuntimeException()
-        val ec2Configuration = Ec2Configuration("id", "testDirectory", emptyList(), vpcId = VPC)
 
         // when
         runCatching {
-            awsService.deleteVpc(ec2Configuration)
+            awsService.deleteVpc()
         }.onFailure {
             assertThat(it).isInstanceOf(RuntimeException::class.java)
         }

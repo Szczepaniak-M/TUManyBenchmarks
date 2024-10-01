@@ -4,11 +4,8 @@ data class Ec2Configuration(
     val benchmarkRunId: String,
     val directory: String,
     val nodes: List<NodeConfig>,
-    var vpcId: String? = null,
     var ipv4Cidr: String? = null,
     var ipv6Cidr: String? = null,
-    var internetGatewayId: String? = null,
-    var routeTableId: String? = null,
     var subnetId: String? = null,
     var securityGroupId: String? = null,
 )

@@ -20,11 +20,10 @@ import java.util.*
 
 @Service
 class SshService(
-    private val gitHubService: GitHubService
-) {
-
+    private val gitHubService: GitHubService,
     @Value("\${aws.ec2.private-key.file}")
-    lateinit var filePath: String
+    private val filePath: String
+) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -37,7 +36,7 @@ class SshService(
             loader.loadKeyPairs(null, privateKeyPath, null)
         }
         val sshClient = SshClient.setUpDefaultClient()
-        CoreModuleProperties.HEARTBEAT_INTERVAL.set(sshClient, Duration.ofSeconds(2L));
+        CoreModuleProperties.HEARTBEAT_INTERVAL.set(sshClient, Duration.ofSeconds(2L))
         sshClient.start()
         try {
             sshClient.use { client ->
@@ -121,7 +120,7 @@ class SshService(
         return true
     }
 
-    private suspend fun executeBenchmark(node: NodeConfig, session: ClientSession, directory: String) {
+    private fun executeBenchmark(node: NodeConfig, session: ClientSession, directory: String) {
         val command = "cd ${directory}; ${node.benchmarkCommand}"
         val execChannel = session.createExecChannel(command)
         execChannel.open().verify()
@@ -129,7 +128,7 @@ class SshService(
         execChannel.close()
     }
 
-    private suspend fun getBenchmarkOutput(
+    private fun getBenchmarkOutput(
         node: NodeConfig,
         session: ClientSession,
         directory: String

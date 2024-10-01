@@ -16,7 +16,9 @@ aws:
       arm: ami-0bc16b510fa2622db-arm
     network:
       availability-zone: use1-az1
-      cidr: 10.0.0.0/28
+      vpcId: ${VPC_ID:#{null}}
+      ipv4Cidr: ${IPV4_CIDR:10.0.0.0/16}
+      ipv6Cidr: ${IPV6_CIDR:#{null}}
 github:
   repository:
     url: https://api.github.com/repos/Szczepaniak-M/thesis-test-repo/contents

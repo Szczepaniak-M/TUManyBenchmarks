@@ -45,7 +45,6 @@ dependencies {
 	testImplementation("io.projectreactor:reactor-test")
 	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-	testImplementation("org.springframework.graphql:spring-graphql-test")
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:mongodb")
 	testImplementation("com.ninja-squad:springmockk:4.0.2")

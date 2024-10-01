@@ -35,8 +35,7 @@ class SshServiceTest {
 
     @BeforeEach
     fun setUp() {
-        sshService = SshService(gitHubService)
-        sshService.filePath = "aws-benchmark-private-key.pem"
+        sshService = SshService(gitHubService, "aws-benchmark-private-key.pem")
         mockkStatic(SshClient::setUpDefaultClient)
         every { SshClient.setUpDefaultClient() } returns sshClient
     }

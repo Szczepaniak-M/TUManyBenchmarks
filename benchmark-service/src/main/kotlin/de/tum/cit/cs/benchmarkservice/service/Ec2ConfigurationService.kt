@@ -7,14 +7,12 @@ import org.springframework.stereotype.Service
 
 @Service
 class Ec2ConfigurationService(
-    private val instanceRepository: InstanceRepository
-) {
-
+    private val instanceRepository: InstanceRepository,
     @Value("\${aws.ec2.default-ami.x86}")
-    lateinit var amiX86: String
-
+    private val amiX86: String,
     @Value("\${aws.ec2.default-ami.arm}")
-    lateinit var amiArm: String
+    private val amiArm: String
+) {
 
     suspend fun generateEc2Configuration(instance: Instance, benchmark: Benchmark, benchmarkRunId: String): Ec2Configuration {
         val defaultNodeConfiguration = benchmark.nodes.filter { it.nodeId == 0 }.getOrNull(0)

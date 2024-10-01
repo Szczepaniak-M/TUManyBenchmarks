@@ -13,7 +13,6 @@ import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.runBlocking
 import org.bson.Document
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
@@ -21,14 +20,11 @@ import org.springframework.stereotype.Component
 
 @Component
 @Profile("!test")
-class MongoInitializer {
-
+class MongoInitializer(
     @Value("\${spring.data.mongodb.uri}")
-    lateinit var mongoUri: String
-
-    @Autowired
-    lateinit var mongoClient: MongoClient
-
+    private val mongoUri: String,
+    private val mongoClient: MongoClient
+) {
     private val logger = KotlinLogging.logger {}
 
     @PostConstruct
