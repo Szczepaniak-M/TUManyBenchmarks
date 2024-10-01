@@ -31,7 +31,7 @@ def analyze_configuration_file(yaml_file):
         check_if_all_nodes_have_id(yaml_data)
         nodes = sorted(yaml_data['nodes'], key=lambda d: d['node-id'])
         default_node, nodes = get_default_node_configuration(nodes)
-        output_defined = False
+        output_defined = 'output-command' in default_node
         for node in nodes:
             check_ansible_configuration(default_node, node)
             check_benchmark_command(default_node, node)
@@ -250,8 +250,8 @@ def check_instance_type(node):
                 f"Incorrect value of EC2 instance in 'instance-type' for node with ID = {node['node-id']}.")
 
 
-def check_output_defined(output_names):
-    if not output_names:
+def check_output_defined(output_defined):
+    if not output_defined:
         raise ValueError('No output defined')
 
 
