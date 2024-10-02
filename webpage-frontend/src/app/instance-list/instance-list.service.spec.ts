@@ -5,7 +5,7 @@ import {AuthService} from "../auth/auth.service";
 import {BenchmarkDetails, BenchmarkStatistics, Instance} from "./instance.model";
 import {of} from "rxjs";
 import {provideHttpClient} from "@angular/common/http";
-import {environment} from "../../environemnts/environment";
+import {environment} from "../../environments/environment";
 
 describe("InstanceListService", () => {
   let instanceListService: InstanceListService;

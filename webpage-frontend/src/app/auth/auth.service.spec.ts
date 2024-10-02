@@ -3,7 +3,7 @@ import {HttpTestingController, provideHttpClientTesting} from "@angular/common/h
 import {AuthService} from "./auth.service";
 import {BYPASS_INTERCEPTOR} from "./auth.interceptor";
 import {provideHttpClient} from "@angular/common/http";
-import {environment} from "../../environemnts/environment";
+import {environment} from "../../environments/environment";
 
 describe("AuthService", () => {
   let service: AuthService;

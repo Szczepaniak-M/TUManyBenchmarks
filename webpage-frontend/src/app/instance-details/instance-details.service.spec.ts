@@ -3,7 +3,7 @@ import {HttpTestingController, provideHttpClientTesting} from "@angular/common/h
 import {InstanceDetailsService} from "./instance-details.service";
 import {AuthService} from "../auth/auth.service";
 import {of} from "rxjs";
-import {environment} from "../../environemnts/environment";
+import {environment} from "../../environments/environment";
 import {provideHttpClient} from "@angular/common/http";
 import {Instance} from "../instance-list/instance.model";
 

@@ -2,7 +2,7 @@ import {Injectable} from "@angular/core";
 import {HttpClient} from "@angular/common/http";
 import {map, Observable} from "rxjs";
 import {catchError, switchMap} from "rxjs/operators";
-import {environment} from "../../environemnts/environment";
+import {environment} from "../../environments/environment";
 import {AuthService} from "../auth/auth.service";
 import {removeUnnecessaryTags} from "../common/instance/instance.utils";
 import {Instance} from "../instance-list/instance.model";
