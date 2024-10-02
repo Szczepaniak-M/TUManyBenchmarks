@@ -1,5 +1,6 @@
 package de.tum.cit.cs.webpage.web.filter
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -15,10 +16,12 @@ import reactor.core.publisher.Mono
 
 @Order(1)
 @Component
-class CorsFilter : WebFilter {
+class CorsFilter(
+    @Value("\${application.security.allowed-origin:http://localhost:4200}")
+    private val allowedOrigin: String,
+) : WebFilter {
 
-    private val allowedOrigin = "http://localhost:4200"
-    private val allowedMethods = "GET, POST, OPTIONS"
+    private val allowedMethods = "GET, OPTIONS"
     private val maxAge = "3600"
     private val allowedHeaders = "x-requested-with, Content-Type, X-XSRF-TOKEN, x-api-key"
 

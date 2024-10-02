@@ -47,7 +47,7 @@ class Ec2PriceService(
     }
 
     @PostConstruct
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 * * * *")
     fun updateAllEc2Prices() = runBlocking {
         logger.info { "Starting updating prices from AWS" }
         updateOnDemandEc2Prices()

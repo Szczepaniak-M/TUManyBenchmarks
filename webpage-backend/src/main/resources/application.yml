@@ -9,3 +9,8 @@ application:
     bucket:
       size: 40
       refill: 20
+    allowed-origin: "https://tumanybenchmarks.netlify.app"
+management:
+  endpoints:
+    web:
+      base-path: /
