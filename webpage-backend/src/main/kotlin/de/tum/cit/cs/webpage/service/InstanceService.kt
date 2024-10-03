@@ -63,7 +63,6 @@ class InstanceService(
             instanceDetails?.let {
                 it.onDemandPrice = ec2PriceService.getOnDemandPrice(instanceType)
                 it.spotPrice = ec2PriceService.getSpotPrice(instanceType)
-                cache.put(instanceType, it)
                 logger.debug {
                     buildDebugLogMessage(
                         "Instance details for $instanceType found in the database and added to the cache.",

@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -66,7 +65,7 @@ class InstanceServiceTest {
     }
 
     @Test
-    fun `find instance details by instance type and cache result`() = runTest {
+    fun `find instance details by instance type when no cache`() = runTest {
         // given
         val instanceType = "t2.micro"
         coEvery { instanceRepository.findByName(instanceType) } returns INSTANCE_1
@@ -74,15 +73,36 @@ class InstanceServiceTest {
         every { ec2PriceService.getSpotPrice("t2.micro") } returns BigDecimal.TWO
 
         // when
-        val databaseResult = service.findByInstanceType(instanceType, null, null)
         val cachedResult = service.findByInstanceType(instanceType, null, null)
 
         // then
         coVerify(exactly = 1) { instanceRepository.findByName(instanceType) }
-        assertNotNull(databaseResult)
-        assertEquals(INSTANCE_1_RESULT, databaseResult)
-        assertNotNull(cachedResult)
-        assertEquals(INSTANCE_1_RESULT, databaseResult)
+        coVerify(exactly = 1) { ec2PriceService.getOnDemandPrice("t2.micro") }
+        coVerify(exactly = 1) { ec2PriceService.getSpotPrice("t2.micro") }
+        assertEquals(INSTANCE_1_RESULT, cachedResult)
+    }
+
+    @Test
+    fun `find instance details by instance type using cache result`() = runTest {
+        // given
+        val instanceType = "t2.micro"
+        coEvery { instanceRepository.findAll() } returns flowOf(INSTANCE_1, INSTANCE_2)
+        every { ec2PriceService.getOnDemandPrice("t2.micro") } returns BigDecimal.ONE
+        every { ec2PriceService.getOnDemandPrice("t3.micro") } returns BigDecimal.TWO
+        every { ec2PriceService.getSpotPrice("t2.micro") } returns BigDecimal.TWO
+        every { ec2PriceService.getSpotPrice("t3.micro") } returns BigDecimal.TEN
+
+        // when
+        service.findAll(null, null).toList()
+        val cachedResult = service.findByInstanceType(instanceType, null, null)
+
+        // then
+        coVerify(exactly = 0) { instanceRepository.findByName(instanceType) }
+        coVerify(exactly = 1) { ec2PriceService.getOnDemandPrice("t2.micro") }
+        coVerify(exactly = 1) { ec2PriceService.getOnDemandPrice("t3.micro") }
+        coVerify(exactly = 1) { ec2PriceService.getSpotPrice("t2.micro") }
+        coVerify(exactly = 1) { ec2PriceService.getSpotPrice("t3.micro") }
+        assertEquals(INSTANCE_1_RESULT, cachedResult)
     }
 
     @Test
