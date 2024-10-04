@@ -24,6 +24,7 @@ data class Benchmark(
     val id: String,
     val name: String,
     val description: String,
+    val directory: String,
     val results: List<BenchmarkResult>,
     val plots: List<Plot>
 )

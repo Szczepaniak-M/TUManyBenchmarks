@@ -109,6 +109,7 @@ class MongoInitializer(
                                     "in", Document()
                                         .append("name", "\$\$b.benchmark.configuration.name")
                                         .append("description", "\$\$b.benchmark.configuration.description")
+                                        .append("directory", "\$\$b.benchmark.configuration.directory")
                                         .append("results", "\$\$b.results")
                                         .append("_id", "\$\$b.benchmark._id")
                                         .append("plots", "\$\$b.benchmark.plots")

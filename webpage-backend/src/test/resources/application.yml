@@ -12,3 +12,8 @@ application:
     bucket:
       size: 40
       refill: 20
+server:
+  compression:
+    enabled: true
+    mime-types: application/json
+    min-response-size: 2KB

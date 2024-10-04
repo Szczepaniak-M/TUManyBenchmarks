@@ -120,7 +120,7 @@ class RestControllerTest {
                 "id1", "t3.micro", BigDecimal.ONE, BigDecimal.ONE, 1, BigDecimal.ONE, "Low", listOf("1 vCPU"),
                 listOf(
                     Benchmark(
-                        "benchId1", "benchmark1", "benchmarkDescription1",
+                        "benchId1", "benchmark1", "benchmarkDescription1", "directory1",
                         listOf(BenchmarkResult(1000, mapOf(Pair("key1", 1)))),
                         listOf(
                             Plot(
@@ -130,7 +130,7 @@ class RestControllerTest {
                         )
                     ),
                     Benchmark(
-                        "benchId2", "benchmark2", "benchmarkDescription2",
+                        "benchId2", "benchmark2", "benchmarkDescription2", "directory2",
                         listOf(
                             BenchmarkResult(1000, mapOf(Pair("key2", listOf(1, 2, 3)), Pair("key3", listOf(4, 5, 6)))),
                             BenchmarkResult(1100, mapOf(Pair("key2", listOf(2, 3, 4)), Pair("key3", listOf(5, 6, 7))))
@@ -151,7 +151,7 @@ class RestControllerTest {
                 "id1", "t3.small", BigDecimal.TWO, BigDecimal.TWO, 2, BigDecimal.TWO, "Low", listOf("2 vCPU"),
                 listOf(
                     Benchmark(
-                        "benchId1", "benchmark1", "benchmarkDescription1",
+                        "benchId1", "benchmark1", "benchmarkDescription1", "directory1",
                         listOf(BenchmarkResult(1000, mapOf(Pair("key1", 0.5)))),
                         listOf(
                             Plot(
@@ -161,7 +161,7 @@ class RestControllerTest {
                         )
                     ),
                     Benchmark(
-                        "benchId2", "benchmark2", "benchmarkDescription2",
+                        "benchId2", "benchmark2", "benchmarkDescription2", "directory2",
                         listOf(
                             BenchmarkResult(
                                 1000,
@@ -312,7 +312,7 @@ class RestControllerTest {
         val instance = Instance(
             "id1", "t3.small", BigDecimal.TWO, BigDecimal.TWO, 2, BigDecimal.TWO, "Low", listOf("2 vCPU"), listOf(
                 Benchmark(
-                    "benchId1", "benchmark1", "benchmarkDescription1",
+                    "benchId1", "benchmark1", "benchmarkDescription1", "directory1",
                     listOf(BenchmarkResult(1000, mapOf(Pair("key1", 1)))),
                     listOf(
                         Plot(
@@ -322,7 +322,7 @@ class RestControllerTest {
                     )
                 ),
                 Benchmark(
-                    "benchId2", "benchmark2", "benchmarkDescription2",
+                    "benchId2", "benchmark2", "benchmarkDescription2", "directory2",
                     listOf(
                         BenchmarkResult(1000, mapOf(Pair("key2", listOf(1, 2, 3)), Pair("key3", listOf(4, 5, 6)))),
                         BenchmarkResult(1100, mapOf(Pair("key2", listOf(2, 3, 4)), Pair("key3", listOf(5, 6, 7))))

@@ -13,6 +13,7 @@
       {
         "id": "benchId1",
         "name": "benchmark1",
+        "directory": "directory1",
         "description": "benchmarkDescription1",
         "results": [
           {
@@ -42,6 +43,7 @@
         "id": "benchId2",
         "name": "benchmark2",
         "description": "benchmarkDescription2",
+        "directory": "directory2",
         "results": [
           {
             "timestamp": 1000,
@@ -112,6 +114,7 @@
       {
         "id": "benchId1",
         "name": "benchmark1",
+        "directory": "directory1",
         "description": "benchmarkDescription1",
         "results": [
           {
@@ -141,6 +144,7 @@
         "id": "benchId2",
         "name": "benchmark2",
         "description": "benchmarkDescription2",
+        "directory": "directory2",
         "results": [
           {
             "timestamp": 1000,
