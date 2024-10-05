@@ -47,8 +47,8 @@ export class ListQueryService {
   }
 
   public transformFilterToQuery(filter: Filter): string {
-    let query = "SELECT i.name as Name, i.on_demand_price as \"On-Demand Price\", i.spot_price as \"Spot Price\", " +
-      "i.vcpu as vCPUs, i.memory as Memory, i.network as Network,";
+    let query = "SELECT i.name as Name, i.on_demand_price as \"On-Demand Price [$/h]\", " +
+      "i.spot_price as \"Spot Price [$/h]\", i.vcpu as vCPUs, i.memory as Memory, i.network as Network,";
     if (filter.benchmark) {
       query += " s.min as Minimum, s.avg as Average, s.median as Median, s.max as Maximum,";
     }
@@ -59,7 +59,7 @@ export class ListQueryService {
     }
     query += "\n";
     if (filter.name || filter.minCpu || filter.maxCpu || filter.minMemory || filter.maxMemory
-      || filter.network || filter.tags || filter.benchmark) {
+      || filter.network || filter.tagsAll || filter.tagsAny || filter.benchmark) {
       query += "WHERE ";
       const conditions = [];
       if (filter.name) {
@@ -99,10 +99,13 @@ export class ListQueryService {
         const series = benchmarkSplit[1];
         conditions.push(`i.id = s.instance_id AND s.benchmark_id = '${benchmark}' AND s.series = '${series}'`);
       }
-      if (filter.tags) {
-        for (const tag of filter.tags) {
-          conditions.push(`array_contains(i.tags, '${tag}')`);
-        }
+      if (filter.tagsAll) {
+        const tags = filter.tagsAll.map(tag => `'${tag}'`).join(", ")
+        conditions.push(`array_has_all(i.tags, [${tags}])`);
+      }
+      if (filter.tagsAny) {
+        const tags = filter.tagsAny.map(tag => `'${tag}'`).join(", ")
+        conditions.push(`array_has_any(i.tags, [${tags}])`);
       }
       query += conditions.join(" AND ");
     }

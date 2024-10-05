@@ -26,6 +26,7 @@ describe("InstanceDetailsService", () => {
         id: "benchmark1",
         name: "Benchmark 1",
         description: "Description 1",
+        directory: "directory1",
         results: [],
         plots: [{title: "Plot 1", type: "scatter", yaxis: "", series: []}]
       },
@@ -33,6 +34,7 @@ describe("InstanceDetailsService", () => {
         id: "benchmark2",
         name: "Benchmark 2",
         description: "Description 2",
+        directory: "directory2",
         results: [],
         plots: [{title: "Plot 2", type: "scatter", yaxis: "", series: []}]
       }
@@ -53,6 +55,7 @@ describe("InstanceDetailsService", () => {
         id: "benchmark1",
         name: "Benchmark 1",
         description: "Description 1",
+        directory: "directory1",
         results: [],
         plots: [{title: "Plot 1", type: "scatter", yaxis: "", series: []}]
       },
@@ -60,6 +63,7 @@ describe("InstanceDetailsService", () => {
         id: "benchmark2",
         name: "Benchmark 2",
         description: "Description 2",
+        directory: "directory2",
         results: [],
         plots: [{title: "Plot 2", type: "scatter", yaxis: "", series: []}]
       }

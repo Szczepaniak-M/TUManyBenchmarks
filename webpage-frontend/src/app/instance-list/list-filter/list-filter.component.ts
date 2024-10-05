@@ -90,8 +90,17 @@ import {Filter} from "./list-filter.model";
           </mat-select>
         </mat-form-field>
         <mat-form-field class="border rounded m-1 w-1/5">
-          <mat-label class="font-medium">Tags:</mat-label>
-          <mat-select multiple [(ngModel)]="filter.tags" (ngModelChange)="onFilterChange()">
+          <mat-label class="font-medium">Tags (all of):</mat-label>
+          <mat-select multiple [(ngModel)]="filter.tagsAll" (ngModelChange)="onFilterChange()">
+            <mat-option
+              *ngFor="let tag of allTags.sort()"
+              [value]="tag">{{ tag }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="border rounded m-1 w-1/5">
+          <mat-label class="font-medium">Tags (any of):</mat-label>
+          <mat-select multiple [(ngModel)]="filter.tagsAny" (ngModelChange)="onFilterChange()">
             <mat-option
               *ngFor="let tag of allTags.sort()"
               [value]="tag">{{ tag }}

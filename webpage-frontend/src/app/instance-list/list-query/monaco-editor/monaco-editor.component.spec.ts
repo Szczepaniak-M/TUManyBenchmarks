@@ -1,6 +1,6 @@
 import {MonacoEditorComponent} from "./monaco-editor.component";
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {Component, Input} from "@angular/core";
+import {Component, EventEmitter, Input, Output} from "@angular/core";
 
 
 @Component({
@@ -10,6 +10,7 @@ import {Component, Input} from "@angular/core";
 class MockNgxMonacoEditorComponent {
   @Input() ngModel: any;
   @Input() options: any;
+  @Output() onInit = new EventEmitter();
 }
 
 

@@ -34,7 +34,7 @@ import {MonacoEditorComponent} from "./monaco-editor/monaco-editor.component";
         </button>
       </div>
       <div class="h-60">
-        <app-monaco-editor [query]="query"/>
+        <app-monaco-editor [query]="query" (executeQuery)="executeQuery()"/>
       </div>
       <div *ngIf="error" class="p-4 bg-red-100 border-2 rounded border-red-400 text-red-700">
         <pre *ngFor="let line of error">{{ line }}</pre>
@@ -69,6 +69,7 @@ export class ListQueryComponent implements OnChanges {
   onRedirectToComparison(): void {
     this.redirectToComparison.emit();
   }
+
 
   executeQuery() {
     this.query = this.editor.query;

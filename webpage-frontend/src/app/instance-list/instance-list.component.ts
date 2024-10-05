@@ -1,4 +1,10 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  ViewChild,
+} from "@angular/core";
 import {Router} from "@angular/router";
 import {BenchmarkDetails, BenchmarkStatistics, Instance, InstanceDefaultRow} from "./instance.model";
 import {InstanceListService} from "./instance-list.service";
@@ -8,6 +14,7 @@ import {forkJoin} from "rxjs";
 import {groupByToMap} from "../common/instance/instance.utils";
 import {ListQueryService} from "./list-query/list-query.service";
 import {ListQueryComponent} from "./list-query/list-query.component";
+import {ListHeaderComponent} from "./list-header/list-header.component";
 
 @Component({
   selector: "app-instance-list",
@@ -38,6 +45,9 @@ import {ListQueryComponent} from "./list-query/list-query.component";
       </div>
 
       <div class="flex flex-col overflow-x-auto border rounded">
+        <div class="m-1 text-xl text-center">
+          Found <b>{{ countRows() }}</b> instances meeting criteria
+        </div>
         <div class="w-auto min-w-max">
           <app-list-header
             [columns]="columns"
@@ -67,9 +77,10 @@ export class InstanceListComponent implements OnInit {
   filter: Filter = {}
   queryConsoleActive: boolean = false
   @ViewChild(ListQueryComponent) queryComponent!: ListQueryComponent
-  private defaultColumnsWithoutBenchmark = ["Name", "On-Demand Price", "Spot Price", "vCPUs", "Memory", "Network", "Tags"]
+  @ViewChild(ListHeaderComponent) header!: ListHeaderComponent;
+  private defaultColumnsWithoutBenchmark = ["Name", "On-Demand Price [$/h]", "Spot Price [$/h]", "vCPUs", "Memory", "Network", "Tags"]
   columns: string[] = this.defaultColumnsWithoutBenchmark
-  private defaultColumnsWithBenchmark = ["Name", "On-Demand Price", "Spot Price", "vCPUs", "Memory", "Network", "Minimum",
+  private defaultColumnsWithBenchmark = ["Name", "On-Demand Price [$/h]", "Spot Price [$/h]", "vCPUs", "Memory", "Network", "Minimum",
     "Average", "Median", "Maximum", "Tags"]
 
   constructor(private instanceListService: InstanceListService,
@@ -104,20 +115,21 @@ export class InstanceListComponent implements OnInit {
     const series = benchmarkSplit ? benchmarkSplit[1] : null;
     const rowsToDisplay = this.defaultRows.map(instance => {
       const matchesName = filter.name ? instance.Name.toLowerCase().includes(filter.name.toLowerCase()) : true;
-      const matchesMinOnDemandPrice = filter.minOnDemandPrice ? instance["On-Demand Price"] >= filter.minOnDemandPrice : true;
-      const matchesMaxOnDemandPrice = filter.maxOnDemandPrice ? instance["On-Demand Price"] <= filter.maxOnDemandPrice : true;
-      const matchesMinSpotPrice = filter.minSpotPrice ? instance["Spot Price"] >= filter.minSpotPrice : true;
-      const matchesMaxSpotPrice = filter.maxSpotPrice ? instance["Spot Price"] <= filter.maxSpotPrice : true;
+      const matchesMinOnDemandPrice = filter.minOnDemandPrice ? instance["On-Demand Price [$/h]"] >= filter.minOnDemandPrice : true;
+      const matchesMaxOnDemandPrice = filter.maxOnDemandPrice ? instance["On-Demand Price [$/h]"] <= filter.maxOnDemandPrice : true;
+      const matchesMinSpotPrice = filter.minSpotPrice ? instance["Spot Price [$/h]"] >= filter.minSpotPrice : true;
+      const matchesMaxSpotPrice = filter.maxSpotPrice ? instance["Spot Price [$/h]"] <= filter.maxSpotPrice : true;
       const matchesMinCpu = filter.minCpu ? instance.vCPUs >= filter.minCpu : true;
       const matchesMaxCpu = filter.maxCpu ? instance.vCPUs <= filter.maxCpu : true;
       const matchesMinMemory = filter.minMemory ? instance.Memory >= filter.minMemory : true;
       const matchesMaxMemory = filter.maxMemory ? instance.Memory <= filter.maxMemory : true;
       const matchesNetwork = filter.network && filter.network.length ? filter.network.includes(instance.Network) : true;
-      const matchesTags = filter.tags && filter.tags.length ? filter.tags.every(tag => instance.Tags.includes(tag)) : true;
+      const matchesTagsAnd = filter.tagsAll && filter.tagsAll.length ? filter.tagsAll.every(tag => instance.Tags.includes(tag)) : true;
+      const matchesTagsOr = filter.tagsAny && filter.tagsAny.length ? filter.tagsAny.some(tag => instance.Tags.includes(tag)) : true;
       const matchesBenchmark = !!benchmark ? instance.benchmarks.map(stat => stat.benchmarkId).includes(benchmark) : true
       instance.hidden = !(matchesName && matchesMinOnDemandPrice && matchesMaxOnDemandPrice
-        && matchesMinSpotPrice && matchesMaxSpotPrice && matchesMinCpu && matchesMaxCpu
-        && matchesMinMemory && matchesMaxMemory && matchesNetwork && matchesTags && matchesBenchmark);
+        && matchesMinSpotPrice && matchesMaxSpotPrice && matchesMinCpu && matchesMaxCpu && matchesMinMemory
+        && matchesMaxMemory && matchesNetwork && matchesTagsAnd && matchesTagsOr && matchesBenchmark);
       return instance
     });
     if (filter.benchmark) {
@@ -165,6 +177,7 @@ export class InstanceListComponent implements OnInit {
   onQueryExecution($event: { rows: { [p: string]: any }[]; columns: string[] }) {
     this.columns = $event.columns
     this.rows = $event.rows
+    this.header.resetSort()
   }
 
   toggleComparison(object: { [index: string]: any }): boolean {
@@ -188,6 +201,10 @@ export class InstanceListComponent implements OnInit {
     return row['id']
   }
 
+  countRows(): number {
+    return this.rows.filter(row => !row['hidden']).length;
+  }
+
   private getDefaultRows(instances: Instance[], statistics: BenchmarkStatistics[]) {
     const benchmarksMap = groupByToMap(statistics, x => x.instanceId)
     let counter = 0
@@ -195,8 +212,8 @@ export class InstanceListComponent implements OnInit {
       return {
         id: counter++,
         Name: instance.name,
-        "On-Demand Price": instance.onDemandPrice,
-        "Spot Price": instance.spotPrice,
+        "On-Demand Price [$/h]": instance.onDemandPrice,
+        "Spot Price [$/h]": instance.spotPrice,
         vCPUs: instance.vcpu,
         Memory: instance.memory,
         Network: instance.network,

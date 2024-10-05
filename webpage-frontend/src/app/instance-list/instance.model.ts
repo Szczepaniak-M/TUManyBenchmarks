@@ -1,8 +1,8 @@
 export interface InstanceDefaultRow {
   id: number;
   Name: string,
-  "On-Demand Price": number,
-  "Spot Price": number,
+  "On-Demand Price [$/h]": number,
+  "Spot Price [$/h]": number,
   vCPUs: number,
   Memory: number,
   Network: string,
@@ -31,6 +31,7 @@ export interface Benchmark {
   id: string,
   name: string,
   description: string,
+  directory: string,
   results: BenchmarkResult[],
   plots: Plot[],
 }

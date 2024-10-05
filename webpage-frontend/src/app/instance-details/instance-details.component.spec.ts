@@ -6,6 +6,7 @@ import {of} from "rxjs";
 import {By} from "@angular/platform-browser";
 import {MockComponent} from "ng-mocks";
 import {BenchmarkPlotComponent} from "../common/benchmark-plot/benchmark-plot.component";
+import {environment} from "../../environments/environment";
 
 describe("InstanceDetailsComponent", () => {
   let component: InstanceDetailsComponent;
@@ -26,11 +27,11 @@ describe("InstanceDetailsComponent", () => {
           tags: ["Tag1", "Tag2"],
           benchmarks: [
             {
-              id: "benchmark1", name: "Benchmark 1", description: "Description 1", results: [],
+              id: "benchmark1", name: "Benchmark 1", description: "Description 1", directory: "directory1",results: [],
               plots: [{type: "scatter", title: "X", yaxis: "Y", series: []}]
             },
             {
-              id: "benchmark2", name: "Benchmark 2", description: "Description 2", results: [],
+              id: "benchmark2", name: "Benchmark 2", description: "Description 2", directory: "directory2", results: [],
               plots: [{type: "scatter", title: "X", yaxis: "Y", series: []}]
             }
           ]
@@ -76,10 +77,14 @@ describe("InstanceDetailsComponent", () => {
   it("should display benchmarks correctly", () => {
     fixture.detectChanges();
 
-    const benchmarkTitles = fixture.debugElement.queryAll(By.css(".text-lg"));
+    const benchmarkTitles = fixture.debugElement.queryAll(By.css(".text-xl"));
     expect(benchmarkTitles.length).toBe(2);
     expect(benchmarkTitles[0].nativeElement.textContent).toContain("Benchmark 1");
     expect(benchmarkTitles[1].nativeElement.textContent).toContain("Benchmark 2");
+    const benchmarkLinks = fixture.debugElement.queryAll(By.css(".text-lg"));
+    expect(benchmarkLinks.length).toBe(2);
+    expect(benchmarkLinks[0].attributes["href"]).toContain(`${environment.repositoryUrl}/tree/main/directory1`);
+    expect(benchmarkLinks[1].attributes["href"]).toContain(`${environment.repositoryUrl}/tree/main/directory2`);
 
     const plotComponents = fixture.debugElement.queryAll(By.css("app-benchmark-plot"));
     expect(plotComponents.length).toBe(2);
@@ -92,5 +97,14 @@ describe("InstanceDetailsComponent", () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain("Instance details not found.");
+  });
+
+  it("should display a message if no instance details found", () => {
+    fixture.detectChanges();
+    component.instance.benchmarks = []
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain("Currently there is no benchmarks for this instance.");
   });
 });

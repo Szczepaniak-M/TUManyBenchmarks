@@ -4,8 +4,8 @@ import {Component} from "@angular/core";
   selector: "app-navbar",
   template: `
     <nav class="bg-gray-800 p-4">
-      <div class="container mx-auto flex justify-between items-center">
-        <a href="/" class="text-white text-lg font-bold">
+      <div class="mx-auto flex justify-between items-center">
+        <a href="/" class="text-white text-xl font-bold">
           TUManyBenchmarks
         </a>
         <div class="space-x-4">

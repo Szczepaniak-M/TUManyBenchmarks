@@ -30,24 +30,28 @@ describe("InstanceListComponent", () => {
       {
         id: "id1", name: "t2.micro", vcpu: 4, memory: 16, onDemandPrice: 0.01, spotPrice: 0.001, network: "Network1", tags: ["tag1", "tag2"], benchmarks: [
           {
-            id: "benchmark1", name: "Benchmark 1", description: "Description 1", results: [], plots: []
+            id: "benchmark1", name: "Benchmark 1", description: "Description 1",
+            directory: "directory1", results: [], plots: []
           },
           {
-            id: "benchmark2", name: "Benchmark 2", description: "Description 2", results: [], plots: []
+            id: "benchmark2", name: "Benchmark 2", description: "Description 2",
+            directory: "directory2", results: [], plots: []
           }
         ]
       },
       {
         id: "id2", name: "t2.nano", vcpu: 2, memory: 8, onDemandPrice: 0.005, spotPrice: 0.0005, network: "Network1", tags: ["tag1", "tag3"], benchmarks: [
           {
-            id: "benchmark1", name: "Benchmark 1", description: "Description 1", results: [], plots: []
+            id: "benchmark1", name: "Benchmark 1", description: "Description 1",
+            directory: "directory1", results: [], plots: []
           }
         ]
       },
       {
         id: "id3", name: "t2.small", vcpu: 8, memory: 32, onDemandPrice: 0.02, spotPrice: 0.002, network: "Network2", tags: ["tag1"], benchmarks: [
           {
-            id: "benchmark2", name: "Benchmark 2", description: "Description 2", results: [], plots: []
+            id: "benchmark2", name: "Benchmark 2", description: "Description 2",
+            directory: "directory2", results: [], plots: []
           }
         ]
       },
@@ -87,15 +91,15 @@ describe("InstanceListComponent", () => {
 
     mockDefaultRows = [
       {
-        id: 0, Name: "t2.micro", "On-Demand Price": 0.01, "Spot Price": 0.001, vCPUs: 4, Memory: 16, Network: "Network1", Tags: ["tag1", "tag2"],
+        id: 0, Name: "t2.micro", "On-Demand Price [$/h]": 0.01, "Spot Price [$/h]": 0.001, vCPUs: 4, Memory: 16, Network: "Network1", Tags: ["tag1", "tag2"],
         benchmarks: [mockStatistics[0], mockStatistics[1]], hidden: false
       },
       {
-        id: 1, Name: "t2.nano", "On-Demand Price": 0.005, "Spot Price": 0.0005,vCPUs: 2, Memory: 8, Network: "Network1", Tags: ["tag1", "tag3"],
+        id: 1, Name: "t2.nano", "On-Demand Price [$/h]": 0.005, "Spot Price [$/h]": 0.0005,vCPUs: 2, Memory: 8, Network: "Network1", Tags: ["tag1", "tag3"],
         benchmarks: [mockStatistics[2]], hidden: false
       },
       {
-        id: 2, Name: "t2.small", "On-Demand Price": 0.02, "Spot Price": 0.002,vCPUs: 8, Memory: 32, Network: "Network2", Tags: ["tag1"],
+        id: 2, Name: "t2.small", "On-Demand Price [$/h]": 0.02, "Spot Price [$/h]": 0.002,vCPUs: 8, Memory: 32, Network: "Network2", Tags: ["tag1"],
         benchmarks: [mockStatistics[3]], hidden: false
       },
     ];
@@ -152,7 +156,7 @@ describe("InstanceListComponent", () => {
       {name: "Benchmark 2 - Series2", id: "benchmark2-Series2"}
     ]);
     expect(component.queryConsoleActive).toBeFalse();
-    expect(component.columns).toEqual(["Name", "On-Demand Price", "Spot Price", "vCPUs", "Memory", "Network", "Tags"]);
+    expect(component.columns).toEqual(["Name", "On-Demand Price [$/h]", "Spot Price [$/h]", "vCPUs", "Memory", "Network", "Tags"]);
   });
 
   it("should filter instances based on filter criteria", () => {
@@ -167,7 +171,8 @@ describe("InstanceListComponent", () => {
       minMemory: 8,
       maxMemory: 32,
       network: ["Network1"],
-      tags: ["tag1"],
+      tagsAll: ["tag1"],
+      tagsAny: ["tag1"],
       benchmark: "benchmark1-Series1"
     };
     component.applyFilters(filter);
@@ -176,6 +181,7 @@ describe("InstanceListComponent", () => {
     expect(component.rows[0]["hidden"]).toBeFalse();
     expect(component.rows[1]["hidden"]).toBeTrue();
     expect(component.rows[2]["hidden"]).toBeTrue();
+    expect(component.countRows()).toEqual(1)
   });
 
   it("should add and remove instances from comparison", () => {

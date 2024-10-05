@@ -1,4 +1,5 @@
 import {Component} from "@angular/core";
+import {environment} from "../../environments/environment";
 
 @Component({
   selector: "app-about",
@@ -38,7 +39,7 @@ import {Component} from "@angular/core";
           <h2 class="text-xl font-bold">Contribute</h2>
           <p class="text-gray-700">
             If you want to add a new benchmark create a Pull Request to our repository:
-            <a href="https://github.com/Szczepaniak-M/TUManyBenchmarks-benchmarks">https://github.com/Szczepaniak-M/TUManyBenchmarks-benchmarks</a>
+            <a [href]="environment.repositoryUrl">{{ environment.repositoryUrl }}</a>
             <br/>
             To upload new benchmark, you have to provide:
           </p>
@@ -54,4 +55,5 @@ import {Component} from "@angular/core";
   `
 })
 export class AboutComponent {
+  protected readonly environment = environment;
 }

@@ -6,7 +6,7 @@ import {ListSortComponent} from "./list-sort/list-sort.component";
   selector: "app-list-header",
   template: `
     <div class="flex flex-row items-center border bg-gray-100">
-      <div *ngFor="let column of columns" class="py-2 px-4 text-left font-bold min-w-40 w-1/4 max-w-lg">
+      <div *ngFor="let column of columns" class="py-2 px-2 text-left font-bold min-w-40 w-1/4 max-w-lg">
         <app-list-sort
           *ngIf="column !== 'Tags'"
           [column]="column"
@@ -32,5 +32,11 @@ export class ListHeaderComponent {
       }
     );
     this.sort.emit($event);
+  }
+
+  resetSort() {
+    this.headers.forEach(header => {
+      header.resetDirection();
+    })
   }
 }

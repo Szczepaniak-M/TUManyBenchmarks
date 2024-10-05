@@ -23,6 +23,9 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
+            "loader": {
+              ".ttf": "binary"
+            },
             "outputPath": "dist/webpage-frontend",
             "index": "src/index.html",
             "browser": "src/main.ts",
@@ -60,7 +63,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "2MB",
-                  "maximumError": "4MB"
+                  "maximumError": "5MB"
                 },
                 {
                   "type": "anyComponentStyle",
