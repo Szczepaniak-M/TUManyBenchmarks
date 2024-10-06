@@ -62,7 +62,7 @@ class BenchmarkService(
                     val instanceId = benchmarkResultsList[0].instanceId
                     val instanceName = benchmarkResultsList[0].instanceName
                     customInstanceRepository.updateBenchmarksById(instanceId, benchmarkResultsList)
-                    logger.info { "Added ${benchmarkResultsList.size} benchmark results for instance' $instanceName'" }
+                    logger.info { "Added ${benchmarkResultsList.size} benchmark results for instance '$instanceName'" }
                     benchmarkResultsList.size
                 } else 0
             }

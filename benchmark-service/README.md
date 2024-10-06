@@ -25,3 +25,6 @@ Run `./gradlew build` to build the project. The build artifacts will be stored i
 
 ### Running unit tests
 Run `./gradlew test` to execute the unit tests.
+
+### Run
+Run command `java -jar benchmark-service-0.0.1-SNAPSHOT.jar` with set proper environmental variables to run service.

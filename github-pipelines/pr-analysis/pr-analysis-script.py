@@ -103,7 +103,7 @@ def check_specified_instances(yaml_data):
         aws_instances = client._service_model.shape_for('InstanceType').enum
         for instance_type in yaml_data['configuration']['instance-types']:
             if instance_type not in aws_instances:
-                raise ValueError("Incorrect value of EC2 instance in 'instance-types'.")
+                raise ValueError(f"Incorrect value of EC2 instance '{instance_type}' in 'instance-types'.")
         instance_specified = True
     return instance_specified
 
