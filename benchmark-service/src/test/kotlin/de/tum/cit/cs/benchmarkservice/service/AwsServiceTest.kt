@@ -247,7 +247,7 @@ class AwsServiceTest {
         } throws Ec2Exception() andThen ModifySubnetAttributeResponse { }
 
         val ec2Configuration = Ec2Configuration(
-            "id", "testDirectory", emptyList(),
+            "id", "testDirectory", 0, emptyList(),
             ipv4Cidr = CIDR_IPV4, ipv6Cidr = CIDR_IPV6
         )
 
@@ -286,7 +286,7 @@ class AwsServiceTest {
         } throws Ec2Exception() andThen AuthorizeSecurityGroupIngressResponse { }
 
         val ec2Configuration = Ec2Configuration(
-            "id", "testDirectory", emptyList(),
+            "id", "testDirectory", 0, emptyList(),
             ipv4Cidr = CIDR_IPV4, ipv6Cidr = CIDR_IPV6
         )
 
@@ -373,7 +373,7 @@ class AwsServiceTest {
         }
 
         val ec2Configuration = Ec2Configuration(
-            "id", "testDirectory",
+            "id", "testDirectory", 0,
             listOf(
                 NodeConfig(
                     1, null, "t2.micro", "image",
@@ -479,7 +479,7 @@ class AwsServiceTest {
         }
 
         val ec2Configuration = Ec2Configuration(
-            "id", "testDirectory",
+            "id", "testDirectory", 0,
             listOf(
                 NodeConfig(
                     1, null, "t2.micro", "image",
@@ -575,7 +575,7 @@ class AwsServiceTest {
             )
         }
         val ec2Configuration = Ec2Configuration(
-            "id", "testDirectory",
+            "id", "testDirectory", 0,
             listOf(
                 NodeConfig(
                     1, "id1", "t2.micro", "image",
@@ -616,7 +616,7 @@ class AwsServiceTest {
             ec2Client.terminateInstances(capture(terminateRequestSlot))
         } throws Ec2Exception() andThen TerminateInstancesResponse { }
         val ec2Configuration = Ec2Configuration(
-            "id", "testDirectory",
+            "id", "testDirectory", 0,
             listOf(
                 NodeConfig(
                     1, "id1", "t2.micro", "image",
@@ -647,7 +647,7 @@ class AwsServiceTest {
     fun `terminate instances when list is empty`() = runTest {
         // given
         val ec2Configuration = Ec2Configuration(
-            "id", "testDirectory",
+            "id", "testDirectory", 0,
             listOf(
                 NodeConfig(
                     1, null, "t2.micro", "image",
@@ -722,7 +722,7 @@ class AwsServiceTest {
         } throws Ec2Exception() andThen DeleteSecurityGroupResponse { }
 
         val ec2Configuration = Ec2Configuration(
-            "id", "testDirectory",
+            "id", "testDirectory", 0,
             listOf(
                 NodeConfig(
                     1, "id1", "t2.micro", "image",
@@ -758,7 +758,7 @@ class AwsServiceTest {
     @Test
     fun `do not delete security group when it is null`() = runTest {
         // given
-        val ec2Configuration = Ec2Configuration("id", "testDirectory", emptyList())
+        val ec2Configuration = Ec2Configuration("id", "testDirectory", 0, emptyList())
 
         // when
         awsService.deleteSecurityGroup(ec2Configuration, emptyList())
@@ -775,7 +775,7 @@ class AwsServiceTest {
             ec2Client.deleteSubnet(capture(deleteSubnetRequestSlot))
         } throws Ec2Exception() andThen DeleteSubnetResponse { }
         val ec2Configuration = Ec2Configuration(
-            "id", "testDirectory", emptyList(),
+            "id", "testDirectory", 0, emptyList(),
             subnetId = SUBNET, ipv4Cidr = "10.0.1.0/24"
         )
 
@@ -792,7 +792,7 @@ class AwsServiceTest {
     @Test
     fun `do not delete subnet when it is null`() = runTest {
         // given
-        val ec2Configuration = Ec2Configuration("id", "testDirectory", emptyList())
+        val ec2Configuration = Ec2Configuration("id", "testDirectory", 0, emptyList())
 
         // when
         awsService.deleteSubnet(ec2Configuration)

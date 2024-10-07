@@ -13,7 +13,7 @@ class SubnetworkServiceTest {
     @BeforeEach
     fun setUp() {
         subnetworkService = SubnetworkService("10.0.0.0/16", "d044:05ab:f827:6800::/56")
-        ec2Configuration = Ec2Configuration("", "", emptyList())
+        ec2Configuration = Ec2Configuration("", "", 0, emptyList())
     }
 
     @Test

@@ -47,7 +47,7 @@ class SshServiceTest {
             1, null, "t2.micro", "image", "ansible.yml",
             "./run", "cat test.json", "127.0.0.1", "10::1"
         )
-        val ec2Config = Ec2Configuration("benchmark-run-1", "test-dir", listOf(nodeConfig))
+        val ec2Config = Ec2Configuration("benchmark-run-1", "test-dir", 0, listOf(nodeConfig))
 
         every { sshClient.start() } just Runs
         every { sshClient.stop() } just Runs
@@ -115,7 +115,7 @@ class SshServiceTest {
             1, null, "t2.micro", "image", "ansible.yml",
             "./run", "cat test.json", "127.0.0.1", "10::1"
         )
-        val ec2Config = Ec2Configuration("benchmark-run-1", "test-dir", listOf(nodeConfig))
+        val ec2Config = Ec2Configuration("benchmark-run-1", "test-dir", 0, listOf(nodeConfig))
 
         every { sshClient.start() } just Runs
         every { sshClient.stop() } just Runs
@@ -176,7 +176,7 @@ class SshServiceTest {
             2, null, "t2.micro", "image", "ansible.yml",
             "./run", null, "127.0.0.2", "10::2"
         )
-        val ec2Config = Ec2Configuration("benchmark-run-1", "test-dir", listOf(nodeConfigClient, nodeConfigServer))
+        val ec2Config = Ec2Configuration("benchmark-run-1", "test-dir", 0, listOf(nodeConfigClient, nodeConfigServer))
 
         every { sshClient.start() } just Runs
         every { sshClient.stop() } just Runs

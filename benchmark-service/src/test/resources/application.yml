@@ -9,6 +9,7 @@ spring:
       auto-index-creation: true
 aws:
   ec2:
+    quota: 512
     private-key:
       name: aws-benchmark-private-key
       file: aws-benchmark-private-key.pem

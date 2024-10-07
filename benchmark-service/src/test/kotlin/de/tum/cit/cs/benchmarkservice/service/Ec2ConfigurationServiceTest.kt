@@ -85,6 +85,7 @@ class Ec2ConfigurationServiceTest {
         val benchmarkRunId = "test-run-id"
         coEvery { instanceRepository.findInstanceByName("t3.micro") } returns instance.copy(
             name = "t3.micro",
+            vCpu = 10,
             tags = listOf("X86-64")
         )
 
@@ -93,6 +94,7 @@ class Ec2ConfigurationServiceTest {
 
         // then
         assertEquals(2, ec2Configuration.nodes.size)
+        assertEquals(18, ec2Configuration.vcpuCost)
 
         assertEquals(1, ec2Configuration.nodes[0].nodeId)
         assertEquals("t2.micro", ec2Configuration.nodes[0].instanceType)
@@ -130,6 +132,7 @@ class Ec2ConfigurationServiceTest {
 
         // then
         assertEquals(2, ec2Configuration.nodes.size)
+        assertEquals(16, ec2Configuration.vcpuCost)
 
         assertEquals(1, ec2Configuration.nodes[0].nodeId)
         assertEquals("t2.micro", ec2Configuration.nodes[0].instanceType)
@@ -145,7 +148,7 @@ class Ec2ConfigurationServiceTest {
         assertEquals("./run", ec2Configuration.nodes[1].benchmarkCommand)
         assertEquals("cat text.txt", ec2Configuration.nodes[1].outputCommand)
 
-        coVerify(exactly = 0) { instanceRepository.findInstanceByName("t2.micro") }
+        coVerify(exactly = 0) { instanceRepository.findInstanceByName(any<String>()) }
     }
 
     @Test
@@ -169,6 +172,7 @@ class Ec2ConfigurationServiceTest {
 
         // then
         assertEquals(2, ec2Configuration.nodes.size)
+        assertEquals(16, ec2Configuration.vcpuCost)
         assertEquals("ami-x86", ec2Configuration.nodes[0].image)
         assertEquals("ami-x86", ec2Configuration.nodes[1].image)
 
@@ -193,6 +197,7 @@ class Ec2ConfigurationServiceTest {
 
         coEvery { instanceRepository.findInstanceByName("t3.micro") } returns instance.copy(
             name = "t3.micro",
+            vCpu = 10,
             tags = listOf("ARM64")
         )
 
@@ -201,6 +206,7 @@ class Ec2ConfigurationServiceTest {
 
         // then
         assertEquals(2, ec2Configuration.nodes.size)
+        assertEquals(18, ec2Configuration.vcpuCost)
         assertEquals(1, ec2Configuration.nodes[0].nodeId)
         assertEquals("t3.micro", ec2Configuration.nodes[0].instanceType)
         assertEquals("ami-arm", ec2Configuration.nodes[0].image)

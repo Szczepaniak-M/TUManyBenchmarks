@@ -19,6 +19,9 @@ class BenchmarkRunnerServiceTest {
     private lateinit var ec2ConfigurationService: Ec2ConfigurationService
 
     @MockkBean
+    private lateinit var ec2QuotaService: Ec2QuotaService
+
+    @MockkBean
     private lateinit var awsService: AwsService
 
     @MockkBean
@@ -29,6 +32,7 @@ class BenchmarkRunnerServiceTest {
 
     companion object {
         private val EC2_CONFIGURATION = mockk<Ec2Configuration>()
+        private const val VCPU_COST = 10
         private const val INSTANCE_ID = "ID"
         private const val INSTANCE_NAME = "t2.micro"
         private const val BENCHMARK_ID = "BenchmarkId"
@@ -52,6 +56,7 @@ class BenchmarkRunnerServiceTest {
     fun setUp() {
         benchmarkRunnerService = BenchmarkRunnerService(
             ec2ConfigurationService,
+            ec2QuotaService,
             awsService,
             sshService,
             outputParserService
@@ -68,6 +73,9 @@ class BenchmarkRunnerServiceTest {
                 any<String>()
             )
         } returns EC2_CONFIGURATION
+        every { EC2_CONFIGURATION.vcpuCost } returns VCPU_COST
+        coEvery { ec2QuotaService.acquireQuota(VCPU_COST) } returns 10
+        coEvery { ec2QuotaService.releaseQuota(VCPU_COST) } returns 20
         coEvery { awsService.createSubnet(EC2_CONFIGURATION) } just Runs
         coEvery { awsService.createSecurityGroup(EC2_CONFIGURATION) } just Runs
         coEvery { awsService.startEc2Instance(EC2_CONFIGURATION) } just Runs
@@ -86,6 +94,8 @@ class BenchmarkRunnerServiceTest {
         assert(results[0] == BENCHMARK_RESULT)
 
         coVerify(exactly = 1) { ec2ConfigurationService.generateEc2Configuration(INSTANCE, BENCHMARK, any<String>()) }
+        coVerify(exactly = 1) { ec2QuotaService.acquireQuota(VCPU_COST) }
+        coVerify(exactly = 1) { ec2QuotaService.releaseQuota(VCPU_COST) }
         coVerify(exactly = 1) { awsService.createSubnet(EC2_CONFIGURATION) }
         coVerify(exactly = 1) { awsService.createSecurityGroup(EC2_CONFIGURATION) }
         coVerify(exactly = 1) { awsService.startEc2Instance(EC2_CONFIGURATION) }
@@ -109,6 +119,9 @@ class BenchmarkRunnerServiceTest {
                 any<String>()
             )
         } returns EC2_CONFIGURATION
+        every { EC2_CONFIGURATION.vcpuCost } returns VCPU_COST
+        coEvery { ec2QuotaService.acquireQuota(VCPU_COST) } returns 10
+        coEvery { ec2QuotaService.releaseQuota(VCPU_COST) } returns 20
         coEvery { awsService.createSubnet(EC2_CONFIGURATION) } just Runs
         coEvery { awsService.createSecurityGroup(EC2_CONFIGURATION) } just Runs
         coEvery { awsService.startEc2Instance(EC2_CONFIGURATION) } just Runs
@@ -125,6 +138,8 @@ class BenchmarkRunnerServiceTest {
         assert(results.isEmpty())
 
         coVerify(exactly = 1) { ec2ConfigurationService.generateEc2Configuration(INSTANCE, BENCHMARK, any<String>()) }
+        coVerify(exactly = 1) { ec2QuotaService.acquireQuota(VCPU_COST) }
+        coVerify(exactly = 1) { ec2QuotaService.releaseQuota(VCPU_COST) }
         coVerify(exactly = 1) { awsService.createSubnet(EC2_CONFIGURATION) }
         coVerify(exactly = 1) { awsService.createSecurityGroup(EC2_CONFIGURATION) }
         coVerify(exactly = 1) { awsService.startEc2Instance(EC2_CONFIGURATION) }

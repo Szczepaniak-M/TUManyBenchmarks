@@ -33,7 +33,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     implementation("com.cronutils:cron-utils:9.2.1")
-    implementation("aws.sdk.kotlin:ec2-jvm:1.2.32") {
+    implementation("aws.sdk.kotlin:ec2-jvm:1.3.47") {
         exclude("com.squareup.okhttp3:okhttp")
     }
     implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.14")

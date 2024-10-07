@@ -15,6 +15,7 @@ import java.util.*
 @Service
 class BenchmarkRunnerService(
     private val ec2ConfigurationService: Ec2ConfigurationService,
+    private val ec2QuotaService: Ec2QuotaService,
     private val awsService: AwsService,
     private val sshService: SshService,
     private val outputParserService: OutputParserService
@@ -31,9 +32,9 @@ class BenchmarkRunnerService(
                 logger.info { "Benchmark ${benchmarkRunId}: Starting benchmark '${benchmark.configuration.name}' for instance '${instance.name}'" }
                 async {
                     semaphore.withPermit {
-                        val ec2Configuration =
-                            ec2ConfigurationService.generateEc2Configuration(instance, benchmark, benchmarkRunId)
+                        val ec2Configuration = ec2ConfigurationService.generateEc2Configuration(instance, benchmark, benchmarkRunId)
                         var benchmarkResult: BenchmarkResult? = null
+                        ec2QuotaService.acquireQuota(ec2Configuration.vcpuCost)
                         try {
                             createAwsResources(ec2Configuration)
                             val results = sshService.executeBenchmark(ec2Configuration)
@@ -45,6 +46,7 @@ class BenchmarkRunnerService(
                             }
                         } finally {
                             deleteAwsResources(ec2Configuration)
+                            ec2QuotaService.releaseQuota(ec2Configuration.vcpuCost)
                         }
                         benchmarkResult
                     }

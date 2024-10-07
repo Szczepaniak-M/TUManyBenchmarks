@@ -19,17 +19,23 @@ class Ec2ConfigurationService(
         val nodesBenchmarkConfiguration = benchmark.nodes.filter { it.nodeId != 0 }
         val defaultInstanceType = instance.name
         val ec2NodeConfigurations = mutableListOf<NodeConfig>()
+        var vcpuCost = 0
 
         for (node in nodesBenchmarkConfiguration) {
+            var otherInstance: Instance? = null
+            if (node.instanceType != null && node.instanceType != instance.name) {
+                otherInstance = instanceRepository.findInstanceByName(node.instanceType)
+            }
             val nodeConfig = NodeConfig(
                 nodeId = node.nodeId,
                 instanceType = node.instanceType ?: defaultInstanceType,
-                image = getImage(node, instance, defaultNodeConfiguration),
+                image = getImage(node, instance, otherInstance, defaultNodeConfiguration),
                 ansibleConfiguration = node.ansibleConfiguration ?: defaultNodeConfiguration?.ansibleConfiguration,
                 benchmarkCommand = node.benchmarkCommand ?: defaultNodeConfiguration?.benchmarkCommand,
                 outputCommand = node.outputCommand ?: defaultNodeConfiguration?.outputCommand
             )
             ec2NodeConfigurations.add(nodeConfig)
+            vcpuCost += getCpuCost(instance, otherInstance)
         }
 
         if (ec2NodeConfigurations.size < benchmark.configuration.instanceNumber) {
@@ -37,21 +43,21 @@ class Ec2ConfigurationService(
                 val nodeConfig = NodeConfig(
                     nodeId = i,
                     instanceType = defaultInstanceType,
-                    image = getImage(null, instance, defaultNodeConfiguration),
+                    image = getImage(null, instance, null, defaultNodeConfiguration),
                     ansibleConfiguration = defaultNodeConfiguration?.ansibleConfiguration,
                     benchmarkCommand = defaultNodeConfiguration?.benchmarkCommand,
                     outputCommand = defaultNodeConfiguration?.outputCommand
                 )
                 ec2NodeConfigurations.add(nodeConfig)
+                vcpuCost += getCpuCost(instance, null)
             }
         }
-        return Ec2Configuration(benchmarkRunId, benchmark.configuration.directory, ec2NodeConfigurations)
+        return Ec2Configuration(benchmarkRunId, benchmark.configuration.directory, vcpuCost, ec2NodeConfigurations)
     }
 
-    private suspend fun getImage(node: Node?, instance: Instance, defaultNodeConfiguration: Node?): String {
-        val isArm = if (node?.instanceType != null && node.instanceType != instance.name) {
-            val tempInstance = instanceRepository.findInstanceByName(node.instanceType)
-            tempInstance.tags.contains("ARM64")
+    private suspend fun getImage(node: Node?, instance: Instance, otherInstance: Instance?, defaultNodeConfiguration: Node?): String {
+        val isArm = if (otherInstance != null) {
+            otherInstance.tags.contains("ARM64")
         } else {
             instance.tags.contains("ARM64")
         }
@@ -60,6 +66,14 @@ class Ec2ConfigurationService(
             return node?.imageArm ?: defaultNodeConfiguration?.imageArm ?: amiArm
         } else {
             return node?.imageX86 ?: defaultNodeConfiguration?.imageX86 ?: amiX86
+        }
+    }
+
+    private suspend fun getCpuCost(instance: Instance, otherInstance: Instance?): Int {
+        return if (otherInstance != null) {
+            otherInstance.vCpu
+        } else {
+            instance.vCpu
         }
     }
 }

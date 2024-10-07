@@ -8,6 +8,7 @@ spring:
       uri: mongodb+srv://${DB_USER}:${DB_PASSWORD}@benchmark.7pst8ee.mongodb.net/benchmark-data?retryWrites=true&w=majority
 aws:
   ec2:
+    quota: 512
     private-key:
       name: aws-benchmark-private-key
       file: aws-benchmark-private-key.pem

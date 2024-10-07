@@ -3,6 +3,7 @@ package de.tum.cit.cs.benchmarkservice.model
 data class Ec2Configuration(
     val benchmarkRunId: String,
     val directory: String,
+    val vcpuCost: Int,
     val nodes: List<NodeConfig>,
     var ipv4Cidr: String? = null,
     var ipv6Cidr: String? = null,
