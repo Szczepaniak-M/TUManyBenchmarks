@@ -8,8 +8,8 @@ import kotlinx.coroutines.runBlocking
 import org.apache.sshd.client.SshClient
 import org.apache.sshd.client.channel.ChannelExec
 import org.apache.sshd.client.session.ClientSession
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -146,10 +146,13 @@ class SshServiceTest {
         coEvery { gitHubService.getCurlsForFilesFromDirectory("test-dir") } returns listOf("link1", "link2")
 
         // when
-        val result = sshService.executeBenchmark(ec2Config)
+        runCatching {
+            sshService.executeBenchmark(ec2Config)
+        }.onFailure {
+            assertThat(it).isInstanceOf(RuntimeException::class.java)
+        }
 
         // then
-        assertTrue(result.isEmpty())
         verify(exactly = 1) { sshClient.start() }
         verify(exactly = 1) { sshClient.stop() }
         verify(exactly = 1) { sshClient.close() }

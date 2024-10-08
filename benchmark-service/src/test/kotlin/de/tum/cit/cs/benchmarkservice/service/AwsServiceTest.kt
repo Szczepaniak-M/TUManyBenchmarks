@@ -895,6 +895,26 @@ class AwsServiceTest {
     }
 
     @Test
+    fun `test if exception 'Max spot instance count exceeded' occurs the request is retried until success`() = runTest {
+        // given
+        val spotQuotaException = Ec2Exception("Max spot instance count exceeded")
+        coEvery {
+            ec2Client.deleteVpc(any<DeleteVpcRequest>())
+        } throwsMany listOf(
+            spotQuotaException,
+            spotQuotaException,
+            spotQuotaException,
+            spotQuotaException
+        ) andThen DeleteVpcResponse {}
+
+        // when
+        awsService.deleteVpc()
+
+        // then
+        coVerify(exactly = 5) { ec2Client.deleteVpc(any<DeleteVpcRequest>()) }
+    }
+
+    @Test
     fun `test if exception rethrow if it is not Ec2Exception`() = runTest {
         // given
         coEvery {

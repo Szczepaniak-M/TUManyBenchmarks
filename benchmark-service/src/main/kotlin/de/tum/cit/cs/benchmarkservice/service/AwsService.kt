@@ -2,6 +2,7 @@ package de.tum.cit.cs.benchmarkservice.service
 
 import aws.sdk.kotlin.services.ec2.Ec2Client
 import aws.sdk.kotlin.services.ec2.model.*
+import aws.smithy.kotlin.runtime.time.Instant
 import de.tum.cit.cs.benchmarkservice.model.Ec2Configuration
 import de.tum.cit.cs.benchmarkservice.model.NodeConfig
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -11,6 +12,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 
 @Service
@@ -214,12 +217,15 @@ class AwsService(
                     securityGroupIds = listOf(ec2Configuration.securityGroupId!!)
                     subnetId = ec2Configuration.subnetId
                 }
-                val spotInstanceRequest = RequestSpotInstancesRequest {
-                    instanceCount = ec2NodeConfigs.size
-                    type = SpotInstanceType.OneTime
-                    launchSpecification = specification
+                val spotInstanceResponse = retryIfException {
+                    val spotInstanceRequest = RequestSpotInstancesRequest {
+                        instanceCount = ec2NodeConfigs.size
+                        type = SpotInstanceType.OneTime
+                        launchSpecification = specification
+                        validUntil = Instant.now().plus(1.toDuration(DurationUnit.MINUTES))
+                    }
+                    ec2Client.requestSpotInstances(spotInstanceRequest)
                 }
-                val spotInstanceResponse = retryIfException { ec2Client.requestSpotInstances(spotInstanceRequest) }
                 val spotRequestIds = spotInstanceResponse.spotInstanceRequests?.mapNotNull { it.spotInstanceRequestId }
                 val instanceIds = awaitForInstanceIds(ec2NodeConfigs, spotRequestIds, ec2Configuration.benchmarkRunId)
                 for ((ec2Config, instanceId) in ec2NodeConfigs zip instanceIds) {
@@ -246,7 +252,11 @@ class AwsService(
                 ?.mapNotNull { it.instanceId }
                 ?: emptyList()
             val failedSpotRequests = describeRequestResponse.spotInstanceRequests
-                ?.filter { it.state == SpotInstanceState.Failed }
+                ?.filter {
+                    it.state == SpotInstanceState.Failed ||
+                            it.state == SpotInstanceState.Closed ||
+                            it.state == SpotInstanceState.Cancelled
+                }
                 ?: emptyList()
             if (failedSpotRequests.isNotEmpty()) {
                 for ((ec2Config, instanceId) in ec2NodeConfigs zip instanceIds) {
@@ -364,14 +374,19 @@ class AwsService(
             try {
                 return action()
             } catch (e: Ec2Exception) {
-                attempts++
-                logger.warn { "Encountered Ec2Exception: ${e.message} Attempt $attempts of 3." }
+                if (e.message == "Max spot instance count exceeded") {
+                    logger.warn { "Encountered 'Max spot instance count exceeded' exception. Waiting before next try" }
+                    delay(30_000)
+                } else {
+                    attempts++
+                    logger.warn { "Encountered Ec2Exception: ${e.message} Attempt $attempts of 3." }
 
-                if (attempts >= 3) {
-                    logger.error { "Encountered 3 Ec2Exceptions. Stopping execution." }
-                    throw e
+                    if (attempts >= 3) {
+                        logger.error { "Encountered 3 Ec2Exceptions. Stopping execution." }
+                        throw e
+                    }
+                    delay(1000)
                 }
-                delay(1000)
             } catch (e: Exception) {
                 logger.error { "An unexpected error occurred: ${e.message} Stopping execution." }
                 throw e

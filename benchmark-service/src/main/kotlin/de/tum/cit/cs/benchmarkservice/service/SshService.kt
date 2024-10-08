@@ -65,9 +65,10 @@ class SshService(
 
                     if (!setupSucceeded) {
                         logger.error {
-                            "Benchmark ${ec2Configuration.benchmarkRunId}: Set up for at least on of the nodes failed. "
-                            "Stopping benchmark execution."
+                            "Benchmark ${ec2Configuration.benchmarkRunId}: Set up for at least on of the nodes failed. " +
+                                    "Stopping benchmark execution."
                         }
+                        throw RuntimeException("Benchmark ${ec2Configuration.benchmarkRunId}: Node configuration error")
                     } else {
                         // 3. Phase 2: Run benchmark
                         logger.info { "Benchmark ${ec2Configuration.benchmarkRunId}: Executing benchmark" }
@@ -112,8 +113,8 @@ class SshService(
         execChannel.close()
         if (output.contains("FAILED!")) {
             logger.error {
-                "Benchmark ${ec2Configuration.benchmarkRunId}: Benchmark failed during setting up nodes. "
-                "Error message: $output"
+                "Benchmark ${ec2Configuration.benchmarkRunId}: Benchmark failed during setting up nodes. " +
+                        "Error message: $output"
             }
             return false
         }
