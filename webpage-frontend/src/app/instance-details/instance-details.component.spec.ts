@@ -105,6 +105,6 @@ describe("InstanceDetailsComponent", () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain("Currently there is no benchmarks for this instance.");
+    expect(compiled.textContent).toContain("There are no benchmarks available for this instance.");
   });
 });
