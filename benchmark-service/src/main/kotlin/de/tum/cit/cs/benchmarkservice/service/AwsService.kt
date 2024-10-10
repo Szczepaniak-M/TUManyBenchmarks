@@ -209,36 +209,43 @@ class AwsService(
             .groupBy { it.instanceType to it.image }
             .values
             .forEach { ec2NodeConfigs ->
-                val node = ec2NodeConfigs[0]
-                val specification = RequestSpotLaunchSpecification {
-                    instanceType = InstanceType.fromValue(node.instanceType)
-                    imageId = node.image
-                    keyName = keyPairName
-                    securityGroupIds = listOf(ec2Configuration.securityGroupId!!)
-                    subnetId = ec2Configuration.subnetId
-                }
-                val spotInstanceResponse = retryIfException {
-                    val spotInstanceRequest = RequestSpotInstancesRequest {
-                        instanceCount = ec2NodeConfigs.size
-                        type = SpotInstanceType.OneTime
-                        launchSpecification = specification
-                        validUntil = Instant.now().plus(1.toDuration(DurationUnit.MINUTES))
-                    }
-                    ec2Client.requestSpotInstances(spotInstanceRequest)
-                }
-                val spotRequestIds = spotInstanceResponse.spotInstanceRequests?.mapNotNull { it.spotInstanceRequestId }
-                val instanceIds = awaitForInstanceIds(ec2NodeConfigs, spotRequestIds, ec2Configuration.benchmarkRunId)
-                for ((ec2Config, instanceId) in ec2NodeConfigs zip instanceIds) {
-                    ec2Config.instanceId = instanceId
+                try {
+                    val spotRequestIds = startSpotInstances(ec2Configuration, ec2NodeConfigs)
+                    awaitForInstanceIds(ec2NodeConfigs, spotRequestIds, ec2Configuration.benchmarkRunId)
+                } catch (_: SpotInstanceRequestFailure) {
+                    logger.warn { "Benchmark ${ec2Configuration.benchmarkRunId}: Switch to On-Demand Instances for ${ec2NodeConfigs[0].instanceType}" }
+                    startOnDemandInstances(ec2Configuration, ec2NodeConfigs)
                 }
             }
+    }
+
+    private suspend fun startSpotInstances(ec2Configuration: Ec2Configuration, ec2NodeConfigs: List<NodeConfig>): List<String>? {
+        val node = ec2NodeConfigs[0]
+        val specification = RequestSpotLaunchSpecification {
+            instanceType = InstanceType.fromValue(node.instanceType)
+            imageId = node.image
+            keyName = keyPairName
+            securityGroupIds = listOf(ec2Configuration.securityGroupId!!)
+            subnetId = ec2Configuration.subnetId
+        }
+        val spotInstanceResponse = retryIfException {
+            val spotInstanceRequest = RequestSpotInstancesRequest {
+                instanceCount = ec2NodeConfigs.size
+                type = SpotInstanceType.OneTime
+                launchSpecification = specification
+                validUntil = Instant.now().plus(1.toDuration(DurationUnit.MINUTES))
+            }
+            ec2Client.requestSpotInstances(spotInstanceRequest)
+        }
+        val spotRequestIds = spotInstanceResponse.spotInstanceRequests?.mapNotNull { it.spotInstanceRequestId }
+        return spotRequestIds
     }
 
     private suspend fun awaitForInstanceIds(
         ec2NodeConfigs: List<NodeConfig>,
         spotRequestIds: List<String>?,
         benchmarkRunId: String
-    ): List<String> {
+    ) {
         var instanceIds = emptyList<String>()
         while (instanceIds.size != ec2NodeConfigs.size) {
             delay(3000)
@@ -263,10 +270,31 @@ class AwsService(
                     ec2Config.instanceId = instanceId
                 }
                 logger.error { "Benchmark $benchmarkRunId: One of the Spot Instance requests failed. Stopping benchmark" }
-                throw RuntimeException("SpotRequest failed for benchmark $benchmarkRunId")
+                throw SpotInstanceRequestFailure(benchmarkRunId)
             }
         }
-        return instanceIds
+        for ((ec2Config, instanceId) in ec2NodeConfigs zip instanceIds) {
+            ec2Config.instanceId = instanceId
+        }
+    }
+
+    private suspend fun startOnDemandInstances(ec2Configuration: Ec2Configuration, ec2NodeConfigs: List<NodeConfig>) {
+        val node = ec2NodeConfigs[0]
+        val ce2ConfigWithoutInstanceId = ec2NodeConfigs.filter { it.instanceId == null }
+        val runInstancesRequest = RunInstancesRequest {
+            instanceType = InstanceType.fromValue(node.instanceType)
+            imageId = node.image
+            keyName = keyPairName
+            securityGroupIds = listOf(ec2Configuration.securityGroupId!!)
+            subnetId = ec2Configuration.subnetId
+            maxCount = ce2ConfigWithoutInstanceId.size
+            minCount = ce2ConfigWithoutInstanceId.size
+        }
+        val runResponse = retryIfException { ec2Client.runInstances(runInstancesRequest) }
+        val instanceIds = runResponse.instances?.mapNotNull { it.instanceId } ?: emptyList()
+        for ((ec2Config, instanceId) in ce2ConfigWithoutInstanceId zip instanceIds) {
+            ec2Config.instanceId = instanceId
+        }
     }
 
     suspend fun getEc2InstanceAddresses(ec2Configuration: Ec2Configuration) {
@@ -375,7 +403,7 @@ class AwsService(
                 return action()
             } catch (e: Ec2Exception) {
                 if (e.message == "Max spot instance count exceeded") {
-                    logger.warn { "Encountered 'Max spot instance count exceeded' exception. Waiting before next try" }
+                    logger.debug { "Encountered 'Max spot instance count exceeded' exception. Waiting before next try" }
                     delay(30_000)
                 } else {
                     attempts++
@@ -394,4 +422,7 @@ class AwsService(
         }
         throw IllegalStateException("This code should not be executed.")
     }
+
+    class SpotInstanceRequestFailure(benchmarkRunId: String) :
+        RuntimeException("SpotRequest failed for benchmark $benchmarkRunId")
 }

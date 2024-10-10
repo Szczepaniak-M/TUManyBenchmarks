@@ -2,6 +2,7 @@ package de.tum.cit.cs.benchmarkservice.service
 
 import aws.sdk.kotlin.services.ec2.Ec2Client
 import aws.sdk.kotlin.services.ec2.model.*
+import aws.sdk.kotlin.services.ec2.model.Ec2Exception
 import com.ninjasquad.springmockk.MockkBean
 import de.tum.cit.cs.benchmarkservice.model.Ec2Configuration
 import de.tum.cit.cs.benchmarkservice.model.NodeConfig
@@ -447,6 +448,7 @@ class AwsServiceTest {
     fun `return exception when starting EC2 instances fails`() = runTest {
         val capturedCreateRequests = mutableListOf<RequestSpotInstancesRequest>()
         val capturedDescribeRequests = mutableListOf<DescribeSpotInstanceRequestsRequest>()
+        val capturedRunInstanceRequests = mutableListOf<RunInstancesRequest>()
         coEvery {
             ec2Client.requestSpotInstances(capture(capturedCreateRequests))
         } returns RequestSpotInstancesResponse {
@@ -477,6 +479,13 @@ class AwsServiceTest {
                 },
             )
         }
+        coEvery {
+            ec2Client.runInstances(capture(capturedRunInstanceRequests))
+        } throws Ec2Exception() andThen RunInstancesResponse {
+            instances = listOf(Instance {
+                instanceId = "id1"
+            })
+        }
 
         val ec2Configuration = Ec2Configuration(
             "id", "testDirectory", 0,
@@ -494,15 +503,11 @@ class AwsServiceTest {
         )
 
         // when
-        runCatching {
-            awsService.startEc2Instance(ec2Configuration)
-        }.onFailure {
-            assertThat(it).isInstanceOf(RuntimeException::class.java)
-        }
+        awsService.startEc2Instance(ec2Configuration)
 
         // then
         assertEquals("id2", ec2Configuration.nodes[0].instanceId)
-        assertEquals(null, ec2Configuration.nodes[1].instanceId)
+        assertEquals("id1", ec2Configuration.nodes[1].instanceId)
 
         assertEquals(1, capturedCreateRequests.size)
 
@@ -510,8 +515,25 @@ class AwsServiceTest {
         assertEquals(listOf("requestId1", "requestId2"), capturedDescribeRequests[0].spotInstanceRequestIds)
         assertEquals(listOf("requestId1", "requestId2"), capturedDescribeRequests[1].spotInstanceRequestIds)
 
+        assertEquals(2, capturedRunInstanceRequests.size)
+        assertEquals(InstanceType.T2Micro, capturedRunInstanceRequests[0].instanceType)
+        assertEquals(InstanceType.T2Micro, capturedRunInstanceRequests[1].instanceType)
+        assertEquals("image", capturedRunInstanceRequests[0].imageId)
+        assertEquals("image", capturedRunInstanceRequests[1].imageId)
+        assertEquals(KEY_PAIR_NAME, capturedRunInstanceRequests[0].keyName)
+        assertEquals(KEY_PAIR_NAME, capturedRunInstanceRequests[1].keyName)
+        assertEquals(listOf(SECURITY_GROUP), capturedRunInstanceRequests[0].securityGroupIds)
+        assertEquals(listOf(SECURITY_GROUP), capturedRunInstanceRequests[1].securityGroupIds)
+        assertEquals(SUBNET, capturedRunInstanceRequests[0].subnetId)
+        assertEquals(SUBNET, capturedRunInstanceRequests[1].subnetId)
+        assertEquals(1, capturedRunInstanceRequests[0].maxCount)
+        assertEquals(1, capturedRunInstanceRequests[1].maxCount)
+        assertEquals(1, capturedRunInstanceRequests[0].minCount)
+        assertEquals(1, capturedRunInstanceRequests[1].minCount)
+
         coVerify(exactly = 1) { ec2Client.requestSpotInstances(any<RequestSpotInstancesRequest>()) }
         coVerify(exactly = 2) { ec2Client.describeSpotInstanceRequests(any<DescribeSpotInstanceRequestsRequest>()) }
+        coVerify(exactly = 2) { ec2Client.runInstances(any<RunInstancesRequest>()) }
     }
 
     @Test
