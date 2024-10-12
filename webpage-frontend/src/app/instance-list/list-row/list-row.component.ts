@@ -7,11 +7,11 @@ import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
          (click)="toggleComparison()"
          [class.bg-gray-200]="isInComparison">
       <div *ngFor="let field of columns" class="py-2 px-4 my-1 min-w-40 w-1/4 max-w-lg break-all">
-        <div *ngIf="field.toLowerCase() === 'name'"
+        <a *ngIf="field.toLowerCase() === 'name'"
              class="text-blue-500 hover:underline cursor-pointer"
              [routerLink]="['/instance', row[field]]">
           <p>{{ row[field] }}</p>
-        </div>
+        </a>
         <div *ngIf="field.toLowerCase() === 'tags'">
           <span *ngFor="let tag of row[field]"
                 class="inline-block bg-gray-400 rounded-full px-3 py-1 text-sm font-semibold text-gray-800 mr-2 my-1">

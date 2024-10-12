@@ -31,8 +31,9 @@ export class BenchmarkLinePlotComponent implements OnInit {
   ngOnInit(): void {
     const numberOfSeries = this.plot.series.length;
     const numberOfInstances = this.instances.length > 0 ? this.instances.length : 1
+    const series = this.getBenchmarkSeries(this.benchmarkResults, this.plot.series, this.instances)
     this.chartOptions = {
-      series: this.getBenchmarkSeries(this.benchmarkResults, this.plot.series, this.instances),
+      series: series,
       chart: {
         animations: {
           enabled: false,
@@ -113,6 +114,7 @@ export class BenchmarkLinePlotComponent implements OnInit {
         width: this.repeatArray([2, 0, 0], numberOfSeries * numberOfInstances)
       },
       markers: {
+        size: this.getMarkerSize(series),
         hover: {
           size: 5,
         }
@@ -268,5 +270,12 @@ export class BenchmarkLinePlotComponent implements OnInit {
       }
     }
     return result;
+  }
+
+  private getMarkerSize(series: Series[]) {
+    if (series[0].data.length < 30){
+      return 5
+    }
+    return 0;
   }
 }

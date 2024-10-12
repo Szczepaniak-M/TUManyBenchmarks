@@ -60,7 +60,7 @@ export class CompareInstancesComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const names = this.route.snapshot.queryParamMap.get("instances")!.split(",");
+    const names = this.route.snapshot.queryParamMap.get("instances")!.split(",").slice(0,3);
     const responses = names.map(name => this.instanceDetailsService.getInstanceDetails(name));
     forkJoin(responses).subscribe(responses => {
       responses.forEach(data => this.instances.push(data));

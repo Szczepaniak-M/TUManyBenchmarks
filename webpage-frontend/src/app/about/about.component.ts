@@ -5,7 +5,7 @@ import {environment} from "../../environments/environment";
   selector: "app-about",
   template: `
     <div class="container mx-auto my-2">
-      <div class="p-2 border rounded">
+      <div class="p-4 border rounded">
         <h1 class="text-2xl font-bold mb-4">About TUManyBenchmarks</h1>
         <div class="mb-2">
           <h2 class="text-xl font-bold">Goal</h2>
@@ -33,6 +33,24 @@ import {environment} from "../../environments/environment";
             Moreover, the second aspect of transparency is achieving transparency of instances' performance
             within and between vendors by publishing their low-level performance metrics.
           </p>
+        </div>
+
+        <div class="mb-2">
+          <h2 class="text-xl font-bold">Results</h2>
+          <p class="text-gray-700 text-justify">
+            Our service executes the benchmarks periodically.
+            You can access these results using our service by using simple filters or a query console.
+            Query console is implemented using <a class="underline" href="https://duckdb.org/docs/api/wasm/overview">DuckDB Wasm</a>.
+            DuckDB is an in-process OLAP database.
+            Thanks to DuckDB Wasm, the database operates entirely in your browser after downloading data.
+            For this reason, you can freely manipulate data, including adding new tables and columns.
+            The initial database contains 3 tables:
+          </p>
+          <ul class="pr-4 text-gray-700 list-disc list-inside">
+            <li>instances - containing all essential information about instances, their prices, and detailed benchmark results</li>
+            <li>benchmarks - containing all details about benchmarks, such as name and series</li>
+            <li>statistics - containing precomputed most commonly used benchmark statistics, such as median</li>
+          </ul>
         </div>
 
         <div>
