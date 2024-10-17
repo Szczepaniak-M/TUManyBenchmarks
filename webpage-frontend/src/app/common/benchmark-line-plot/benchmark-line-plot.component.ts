@@ -273,7 +273,7 @@ export class BenchmarkLinePlotComponent implements OnInit {
   }
 
   private getMarkerSize(series: Series[]) {
-    if (series[0].data.length < 30){
+    if (series[0].data.length < 50){
       return 5
     }
     return 0;
