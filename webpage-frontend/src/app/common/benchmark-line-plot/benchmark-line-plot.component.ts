@@ -213,7 +213,7 @@ export class BenchmarkLinePlotComponent implements OnInit {
   }
 
   private getBenchmarkXValues(serie: PlotSeries, values: number[][], benchmarkResults: BenchmarkResult[]) {
-    if (serie.x == "increasingValues") {
+    if (serie.x == "increasing_values") {
       return Array.from({length: values.length}, (_, i) => i + 1);
     } else {
       const extractedKeys: number[][] = benchmarkResults.map(benchmarkResult => benchmarkResult.values[serie.x!]);

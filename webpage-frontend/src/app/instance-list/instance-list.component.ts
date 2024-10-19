@@ -238,7 +238,7 @@ export class InstanceListComponent implements OnInit {
     this.allNetworks = Array.from(networksSet);
 
     this.allBenchmarks = benchmarks.flatMap(benchmark => benchmark.seriesX.concat(benchmark.seriesY)
-      .filter(series => series !== 'increasingValues')
+      .filter(series => series !== 'increasing_values')
       .map(series => {
         return {name: `${benchmark.name} - ${series}`, id: `${benchmark.id}-${series}`}
       }))

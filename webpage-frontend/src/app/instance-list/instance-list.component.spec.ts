@@ -66,7 +66,7 @@ describe("InstanceListComponent", () => {
       {
         id: "benchmark2", name: "Benchmark 2", description: "Description 2",
         instanceTypes: ["t2.micro", "t2.small"], instanceTags: [],
-        seriesX: ["increasingValues"], seriesY: ["Series2"], seriesOther: []
+        seriesX: ["increasing_values"], seriesY: ["Series2"], seriesOther: []
       },
     ]
 
