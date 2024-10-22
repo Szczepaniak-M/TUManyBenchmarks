@@ -1,5 +1,6 @@
 package de.tum.cit.cs.benchmarkservice.service
 
+import aws.sdk.kotlin.services.ec2.model.EphemeralNvmeSupport
 import aws.sdk.kotlin.services.ec2.model.InstanceTypeInfo
 import de.tum.cit.cs.benchmarkservice.model.Instance
 import org.springframework.stereotype.Service
@@ -14,8 +15,9 @@ class InstanceTypeInfoParser {
         val vCpu = parseCpu(instanceTypeInfo)
         val memory = parseMemory(instanceTypeInfo)
         val network = parseNetwork(instanceTypeInfo)
+        val storage = parseStorageInfo(instanceTypeInfo)
         val tags = parseInstanceTags(instanceTypeInfo)
-        return Instance(null, name, vCpu, memory, network, tags)
+        return Instance(null, name, vCpu, memory, network, storage, tags) // TODO
     }
 
     private fun parseInstanceName(instanceTypeInfo: InstanceTypeInfo): String {
@@ -37,6 +39,32 @@ class InstanceTypeInfoParser {
         return instanceTypeInfo.networkInfo?.networkPerformance ?: ""
     }
 
+    private fun parseStorageInfo(instanceTypeInfo: InstanceTypeInfo): String {
+        return if (instanceTypeInfo.instanceStorageSupported == true) {
+            val totalSize = instanceTypeInfo.instanceStorageInfo?.totalSizeInGb
+            val isNvme = instanceTypeInfo.instanceStorageInfo?.nvmeSupport != EphemeralNvmeSupport.Unsupported
+            val nvmeString = if (isNvme) "NVMe " else ""
+            val disks = instanceTypeInfo.instanceStorageInfo?.disks
+
+            if (disks != null) {
+                val disksString = mutableListOf<String>()
+                var addBrackets = disks.size > 1
+                for (disk in disks) {
+                    if (disk.count!! > 1) {
+                        addBrackets = true
+                    }
+                    disksString.add("${disk.count} * ${disk.sizeInGb} GB ${nvmeString}${disk.type?.value?.uppercase()}")
+                }
+                return if (addBrackets) {
+                    val allDisk = disksString.joinToString(" + ")
+                    "$totalSize GB ($allDisk)"
+                } else {
+                    disksString[0].removePrefix("1 * ")
+                }
+            } else "EBS only"
+        } else "EBS only"
+    }
+
     private fun parseInstanceTags(instanceTypeInfo: InstanceTypeInfo): List<String> {
         val tags = mutableListOf<String>()
         tags.add(parseFamily(instanceTypeInfo))
@@ -44,7 +72,7 @@ class InstanceTypeInfoParser {
         tags.add(parseMemoryTag(instanceTypeInfo))
         tags.add(parseNetworkTag(instanceTypeInfo))
         tags.addAll(parseArchitectures(instanceTypeInfo))
-        tags.addAll(parseStorageInfo(instanceTypeInfo))
+        tags.addAll(parseStorageInfoTag(instanceTypeInfo))
         parseHypervisor(instanceTypeInfo)?.let { tags.add(it) }
         parseMetal(instanceTypeInfo)?.let { tags.add(it) }
         parsePreviousGeneration(instanceTypeInfo)?.let { tags.add(it) }
@@ -78,7 +106,7 @@ class InstanceTypeInfoParser {
             ?: emptyList()
     }
 
-    private fun parseStorageInfo(instanceTypeInfo: InstanceTypeInfo): List<String> {
+    private fun parseStorageInfoTag(instanceTypeInfo: InstanceTypeInfo): List<String> {
         val tags = mutableListOf<String>()
         if (instanceTypeInfo.instanceStorageSupported == true) {
             val disk = instanceTypeInfo.instanceStorageInfo?.disks?.get(0)

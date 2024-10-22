@@ -36,7 +36,7 @@ class BenchmarkRunnerServiceTest {
         private const val INSTANCE_ID = "ID"
         private const val INSTANCE_NAME = "t2.micro"
         private const val BENCHMARK_ID = "BenchmarkId"
-        private val INSTANCE = Instance(INSTANCE_ID, INSTANCE_NAME, 8, BigDecimal(4), "Up to 25 Gigabit", emptyList())
+        private val INSTANCE = Instance(INSTANCE_ID, INSTANCE_NAME, 8, BigDecimal(4), "Up to 25 Gigabit", "EBS Only", emptyList())
         private val CONFIGURATION = Configuration(
             "name", "description", "directory", "* * * * *",
             2, emptyList(), listOf("t2.micro")

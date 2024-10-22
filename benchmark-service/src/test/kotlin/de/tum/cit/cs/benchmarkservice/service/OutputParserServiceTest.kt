@@ -21,7 +21,7 @@ class OutputParserServiceTest {
     @Test
     fun `should parse single output correctly`() {
         // given
-        val instance = Instance("id", "t2.micro", 8, BigDecimal(4), "Up to 25 Gigabit", listOf("ARM64"))
+        val instance = Instance("id", "t2.micro", 8, BigDecimal(4), "Up to 25 Gigabit", "EBS only", listOf("ARM64"))
         val configuration = Configuration(
             "name", "description", "directory", "* * * * *",
             2, emptyList(), emptyList()
@@ -43,7 +43,7 @@ class OutputParserServiceTest {
     @Test
     fun `should parse multiple outputs correctly`() {
         // Arrange
-        val instance = Instance("id", "t2.micro", 8, BigDecimal(4), "Up to 25 Gigabit", listOf("ARM64"))
+        val instance = Instance("id", "t2.micro", 8, BigDecimal(4), "Up to 25 Gigabit", "EBS only", listOf("ARM64"))
         val configuration = Configuration(
             "name", "description", "directory", "* * * * *",
             2, emptyList(), emptyList()
@@ -69,7 +69,7 @@ class OutputParserServiceTest {
     @Test
     fun `should handle empty results list`() {
         // given
-        val instance = Instance("id", "t2.micro", 8, BigDecimal(4), "Up to 25 Gigabit", listOf("ARM64"))
+        val instance = Instance("id", "t2.micro", 8, BigDecimal(4), "Up to 25 Gigabit", "EBS only", listOf("ARM64"))
         val configuration = Configuration(
             "name", "description", "directory", "* * * * *",
             2, emptyList(), emptyList()

@@ -14,7 +14,31 @@ class InstanceTypeInfoParserTest {
         private val V_CPU_INFO = VCpuInfo { defaultVCpus = 8 }
         private val MEMORY_INFO = MemoryInfo { sizeInMib = 4096 }
         private val PROCESSOR_INFO = ProcessorInfo { supportedArchitectures = listOf(ArchitectureType.X86_64, ArchitectureType.I386) }
-        private val INSTANCE_STORAGE_INFO = InstanceStorageInfo { disks = listOf(DiskInfo { type = DiskType.Ssd }) }
+        private val DISK_INFO_1 = DiskInfo {
+            count = 2
+            type = DiskType.Ssd
+            sizeInGb = 100
+        }
+        private val DISK_INFO_2 = DiskInfo {
+            count = 4
+            type = DiskType.Ssd
+            sizeInGb = 200
+        }
+        private val DISK_INFO_3 = DiskInfo {
+            count = 1
+            type = DiskType.Ssd
+            sizeInGb = 300
+        }
+        private val INSTANCE_STORAGE_INFO_1 = InstanceStorageInfo {
+            totalSizeInGb = 1000
+            disks = listOf(DISK_INFO_1, DISK_INFO_2)
+            nvmeSupport = EphemeralNvmeSupport.Supported
+        }
+        private val INSTANCE_STORAGE_INFO_2 = InstanceStorageInfo {
+            totalSizeInGb = 100
+            disks = listOf(DISK_INFO_3)
+            nvmeSupport = EphemeralNvmeSupport.Unsupported
+        }
         private val NETWORK_INFO = NetworkInfo { networkPerformance = "Up to 25 Gigabit" }
         private val HYPERVISOR = InstanceTypeHypervisor.Nitro
     }
@@ -30,7 +54,7 @@ class InstanceTypeInfoParserTest {
             memoryInfo = MEMORY_INFO
             processorInfo = PROCESSOR_INFO
             instanceStorageSupported = true
-            instanceStorageInfo = INSTANCE_STORAGE_INFO
+            instanceStorageInfo = INSTANCE_STORAGE_INFO_1
             networkInfo = NETWORK_INFO
             hypervisor = HYPERVISOR
             bareMetal = false
@@ -49,6 +73,7 @@ class InstanceTypeInfoParserTest {
         assertEquals(8, result.vCpu)
         assertEquals(BigDecimal(4), result.memory)
         assertEquals("Up to 25 Gigabit", result.network)
+        assertEquals("1000 GB (2 * 100 GB NVMe SSD + 4 * 200 GB NVMe SSD)", result.storage)
         assertEquals(expectedTags, result.tags)
     }
 
@@ -61,7 +86,7 @@ class InstanceTypeInfoParserTest {
             memoryInfo = MEMORY_INFO
             processorInfo = PROCESSOR_INFO
             instanceStorageSupported = false
-            instanceStorageInfo = INSTANCE_STORAGE_INFO
+            instanceStorageInfo = null
             networkInfo = NETWORK_INFO
         }
         val expectedTags = listOf("Family t3", "8 vCPUs", "4 GiB Memory", "Up to 25 Gigabit Network", "x86-64", "i386")
@@ -71,6 +96,32 @@ class InstanceTypeInfoParserTest {
 
         // then
         assertEquals(expectedTags, result.tags)
+        assertEquals("EBS only", result.storage)
+    }
+
+    @Test
+    fun `do not add NVMe if NVMe is not supported`() {
+        // given
+        val instanceTypeInfo = InstanceTypeInfo {
+            instanceType = INSTANCE_NAME
+            vCpuInfo = V_CPU_INFO
+            memoryInfo = MEMORY_INFO
+            processorInfo = PROCESSOR_INFO
+            instanceStorageSupported = true
+            instanceStorageInfo = INSTANCE_STORAGE_INFO_2
+            networkInfo = NETWORK_INFO
+        }
+        val expectedTags = listOf(
+            "Family t3", "8 vCPUs", "4 GiB Memory",
+            "Up to 25 Gigabit Network", "x86-64", "i386", "SSD"
+        )
+
+        // when
+        val result = parser.parse(instanceTypeInfo)
+
+        // then
+        assertEquals(expectedTags, result.tags)
+        assertEquals("300 GB SSD", result.storage)
     }
 
     @Test
@@ -82,7 +133,7 @@ class InstanceTypeInfoParserTest {
             memoryInfo = MEMORY_INFO
             processorInfo = PROCESSOR_INFO
             instanceStorageSupported = false
-            instanceStorageInfo = INSTANCE_STORAGE_INFO
+            instanceStorageInfo = INSTANCE_STORAGE_INFO_1
             networkInfo = NETWORK_INFO
             hypervisor = null
             bareMetal = true
@@ -109,7 +160,7 @@ class InstanceTypeInfoParserTest {
             memoryInfo = MEMORY_INFO
             processorInfo = PROCESSOR_INFO
             instanceStorageSupported = false
-            instanceStorageInfo = INSTANCE_STORAGE_INFO
+            instanceStorageInfo = INSTANCE_STORAGE_INFO_1
             networkInfo = NETWORK_INFO
         }
         val expectedTags = listOf("Family t12", "8 vCPUs", "4 GiB Memory", "Up to 25 Gigabit Network", "x86-64", "i386")

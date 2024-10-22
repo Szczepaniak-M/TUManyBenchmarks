@@ -48,6 +48,8 @@ class CustomInstanceRepositoryImplTest {
         private val MEMORY_2 = BigDecimal(128)
         private const val NETWORK_1 = "Up to 25 Gigabit"
         private const val NETWORK_2 = "Up to 50 Gigabit"
+        private const val STORAGE_1 = "EBS only"
+        private const val STORAGE_2 = "80 GB SSD"
         private val TAGS_1 = listOf("2 vCPU", "1.0 GiB", "Up to 25 Gigabit")
         private val TAGS_2 = listOf("64 vCPU", "128 GiB", "Up to 50 Gigabit")
         private const val BENCHMARK_ID_1 = "8327a14d7a8318ac3294d715"
@@ -57,8 +59,8 @@ class CustomInstanceRepositoryImplTest {
     @Test
     fun `should return 0 if no benchmarks updated`() = runTest {
         // given
-        val instance1 = Instance(ID_1, NAME_1, CPU_1, MEMORY_1, NETWORK_1, TAGS_1)
-        val instance2 = Instance(ID_2, NAME_2, CPU_2, MEMORY_2, NETWORK_2, TAGS_2)
+        val instance1 = Instance(ID_1, NAME_1, CPU_1, MEMORY_1, NETWORK_1, STORAGE_1, TAGS_1)
+        val instance2 = Instance(ID_2, NAME_2, CPU_2, MEMORY_2, NETWORK_2, STORAGE_2, TAGS_2)
         instanceRepository.save(instance1)
         instanceRepository.save(instance2)
 
@@ -72,8 +74,8 @@ class CustomInstanceRepositoryImplTest {
     @Test
     fun `should push new benchmark result when benchmark is new`() = runTest {
         // given
-        val instance1 = Instance(ID_1, NAME_1, CPU_1, MEMORY_1, NETWORK_1, TAGS_1)
-        val instance2 = Instance(ID_2, NAME_2, CPU_2, MEMORY_2, NETWORK_2, TAGS_2)
+        val instance1 = Instance(ID_1, NAME_1, CPU_1, MEMORY_1, NETWORK_1, STORAGE_1, TAGS_1)
+        val instance2 = Instance(ID_2, NAME_2, CPU_2, MEMORY_2, NETWORK_2, STORAGE_2, TAGS_2)
         instanceRepository.save(instance1)
         instanceRepository.save(instance2)
         val benchmarkResult = listOf(
@@ -102,8 +104,8 @@ class CustomInstanceRepositoryImplTest {
     @Test
     fun `should push new benchmark when benchmark is already exists`() = runTest {
         // given
-        val instance1 = Instance(ID_1, NAME_1, CPU_1, MEMORY_1, NETWORK_1, TAGS_1)
-        val instance2 = Instance(ID_2, NAME_2, CPU_2, MEMORY_2, NETWORK_2, TAGS_2)
+        val instance1 = Instance(ID_1, NAME_1, CPU_1, MEMORY_1, NETWORK_1, STORAGE_1, TAGS_1)
+        val instance2 = Instance(ID_2, NAME_2, CPU_2, MEMORY_2, NETWORK_2, STORAGE_2, TAGS_2)
         instanceRepository.save(instance1)
         instanceRepository.save(instance2)
         val benchmarkResultPrev = listOf(
@@ -138,8 +140,8 @@ class CustomInstanceRepositoryImplTest {
     @Test
     fun `should push new benchmark when the first benchmark is created and the second benchmark not`() = runTest {
         // given
-        val instance1 = Instance(ID_1, NAME_1, CPU_1, MEMORY_1, NETWORK_1, TAGS_1)
-        val instance2 = Instance(ID_2, NAME_2, CPU_2, MEMORY_2, NETWORK_2, TAGS_2)
+        val instance1 = Instance(ID_1, NAME_1, CPU_1, MEMORY_1, NETWORK_1, STORAGE_1, TAGS_1)
+        val instance2 = Instance(ID_2, NAME_2, CPU_2, MEMORY_2, NETWORK_2, STORAGE_2, TAGS_2)
         instanceRepository.save(instance1)
         instanceRepository.save(instance2)
         val benchmarkResultPrev = listOf(

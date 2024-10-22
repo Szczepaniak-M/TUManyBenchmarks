@@ -32,7 +32,7 @@ class Ec2ConfigurationServiceTest {
     @Test
     fun `should generate EC2 configuration based on default configuration`() = runBlocking {
         // given
-        val instance = Instance("id", "t2.micro", 8, BigDecimal(4), "Up to 25 Gigabit", listOf("ARM64"))
+        val instance = Instance("id", "t2.micro", 8, BigDecimal(4), "Up to 25 Gigabit", "EBS only", listOf("ARM64"))
         val configuration = Configuration(
             "name", "description", "directory", "* * * * *",
             2, emptyList(), listOf("t2.micro")
@@ -71,7 +71,7 @@ class Ec2ConfigurationServiceTest {
     @Test
     fun `should generate EC2 configuration should override default configuration`() = runBlocking {
         // given
-        val instance = Instance("id", "t2.micro", 8, BigDecimal(4), "Up to 25 Gigabit", listOf("ARM64"))
+        val instance = Instance("id", "t2.micro", 8, BigDecimal(4), "Up to 25 Gigabit", "EBS only", listOf("ARM64"))
         val configuration = Configuration(
             "name", "description", "directory", "* * * * *",
             2, emptyList(), listOf("t2.micro")
@@ -116,7 +116,7 @@ class Ec2ConfigurationServiceTest {
     @Test
     fun `should generate EC2 configuration based on default configuration when nodes missing`() = runBlocking {
         // given
-        val instance = Instance("id", "t2.micro", 8, BigDecimal(4), "Up to 25 Gigabit", listOf("ARM64"))
+        val instance = Instance("id", "t2.micro", 8, BigDecimal(4), "Up to 25 Gigabit", "EBS only", listOf("ARM64"))
         val configuration = Configuration(
             "name", "description", "directory", "* * * * *",
             2, emptyList(), listOf("t2.micro")
@@ -154,7 +154,7 @@ class Ec2ConfigurationServiceTest {
     @Test
     fun `should generate EC2 configuration with X86-64 instance image`() = runBlocking {
         // given
-        val instance = Instance("id", "t2.micro", 8, BigDecimal(4), "Up to 25 Gigabit", listOf("x86-64"))
+        val instance = Instance("id", "t2.micro", 8, BigDecimal(4), "Up to 25 Gigabit", "EBS only", listOf("x86-64"))
         val configuration = Configuration(
             "name", "description", "directory", "* * * * *",
             2, emptyList(), listOf("t2.micro")
@@ -182,7 +182,7 @@ class Ec2ConfigurationServiceTest {
     @Test
     fun `should generate EC2 configuration with custom instance without custom image`() = runBlocking {
         // given
-        val instance = Instance("id", "t2.micro", 8, BigDecimal(4), "Up to 25 Gigabit", listOf("x86-64"))
+        val instance = Instance("id", "t2.micro", 8, BigDecimal(4), "Up to 25 Gigabit", "EBS only", listOf("x86-64"))
         val configuration = Configuration(
             "name", "description", "directory", "* * * * *",
             2, emptyList(), listOf("t2.micro")

@@ -98,7 +98,7 @@ class MongoInitializer(
             // select specific fields and reshape benchmarks
             project(
                 fields(
-                    include("_id", "name", "vCpu", "memory", "network", "tags"),
+                    include("_id", "name", "vCpu", "memory", "network", "storage", "tags"),
                     computed(
                         "benchmarks",
                         Document(

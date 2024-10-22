@@ -33,7 +33,7 @@ class InstanceServiceTest {
     companion object {
         private val TEMPLATE_INSTANCE = Instance(
             "id", "t2.micro", 8, BigDecimal(4),
-            "Up to 25 Gigabit", emptyList()
+            "Up to 25 Gigabit", "EBS only", emptyList()
         )
         private val TEMPLATE_CONFIGURATION = Configuration(
             name = "", description = "", cron = "", directory = "", instanceNumber = 0,
@@ -61,12 +61,13 @@ class InstanceServiceTest {
         private const val VCPUS = 8
         private val MEMORY = BigDecimal(4)
         private const val NETWORK = "Up to 25 Gigabit"
+        private const val STORAGE = "EBS only"
         private val TAG_LISTS_1 = listOf("8 vCPUs", "4 GiB Memory", "x86_64", "i386", "Up to 25 Gigabit Network")
         private val TAG_LISTS_2 = listOf("8 vCPUs", "4 GiB Memory", "x86_64", "i386")
-        private val INSTANCE_1 = Instance(null, INSTANCE_NAME_1_STRING, VCPUS, MEMORY, NETWORK, TAG_LISTS_1)
-        private val INSTANCE_2 = Instance(ID_2, INSTANCE_NAME_2_STRING, VCPUS, MEMORY, NETWORK, TAG_LISTS_2)
-        private val INSTANCE_1_OUT_OF_DATE = Instance(ID_1, INSTANCE_NAME_1_STRING, VCPUS, MEMORY, NETWORK, TAG_LISTS_2)
-        private val INSTANCE_1_WITH_ID = Instance(ID_1, INSTANCE_NAME_1_STRING, VCPUS, MEMORY, NETWORK, TAG_LISTS_1)
+        private val INSTANCE_1 = Instance(null, INSTANCE_NAME_1_STRING, VCPUS, MEMORY, NETWORK, STORAGE, TAG_LISTS_1)
+        private val INSTANCE_2 = Instance(ID_2, INSTANCE_NAME_2_STRING, VCPUS, MEMORY, NETWORK, STORAGE, TAG_LISTS_2)
+        private val INSTANCE_1_OUT_OF_DATE = Instance(ID_1, INSTANCE_NAME_1_STRING, VCPUS, MEMORY, NETWORK, STORAGE, TAG_LISTS_2)
+        private val INSTANCE_1_WITH_ID = Instance(ID_1, INSTANCE_NAME_1_STRING, VCPUS, MEMORY, NETWORK, STORAGE, TAG_LISTS_1)
     }
 
     @Test

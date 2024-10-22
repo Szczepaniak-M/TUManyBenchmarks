@@ -92,10 +92,10 @@ class BenchmarkServiceTest {
     fun `should run benchmarks and return correct number of benchmarks`() = runTest {
         // given
         val instances = listOf(
-            Instance("id1", "t2.micro", 1, BigDecimal.ONE, "Low", emptyList()),
-            Instance("id2", "t3.micro", 1, BigDecimal.ONE, "Low", emptyList()),
-            Instance("id3", "t1.micro", 1, BigDecimal.ONE, "Low", listOf("Previous Generation")),
-            Instance("id4", "t2.small", 1, BigDecimal.ONE, "Low", emptyList())
+            Instance("id1", "t2.micro", 1, BigDecimal.ONE, "Low", "EBS only", emptyList()),
+            Instance("id2", "t3.micro", 1, BigDecimal.ONE, "Low", "EBS only", emptyList()),
+            Instance("id3", "t1.micro", 1, BigDecimal.ONE, "Low", "EBS only", listOf("Previous Generation")),
+            Instance("id4", "t2.small", 1, BigDecimal.ONE, "Low", "EBS only", emptyList())
         )
         val benchmarks = listOf(
             Benchmark(
@@ -171,7 +171,7 @@ class BenchmarkServiceTest {
     fun `should return 0 if no matching benchmarks`() = runTest {
         // given
         val instances = listOf(
-            Instance("id1", "t2.micro", 1, BigDecimal.ONE, "Low", emptyList()),
+            Instance("id1", "t2.micro", 1, BigDecimal.ONE, "Low", "EBS only", emptyList()),
         )
         val instancesWithBenchmarks = listOf(InstanceWithBenchmarks(instances[0], emptyList()))
         coEvery { benchmarkCronRepository.findAll() } returns flowOf(BenchmarkCron("id1", "0 1 * * *"))
@@ -209,10 +209,10 @@ class BenchmarkServiceTest {
     fun `should return 0 if all benchmark fails benchmarks`() = runTest {
         // given
         val instances = listOf(
-            Instance("id1", "t2.micro", 1, BigDecimal.ONE, "Low", emptyList()),
-            Instance("id2", "t3.micro", 1, BigDecimal.ONE, "Low", emptyList()),
-            Instance("id3", "t1.micro", 1, BigDecimal.ONE, "Low", listOf("Previous Generation")),
-            Instance("id4", "t2.small", 1, BigDecimal.ONE, "Low", emptyList())
+            Instance("id1", "t2.micro", 1, BigDecimal.ONE, "Low", "EBS only", emptyList()),
+            Instance("id2", "t3.micro", 1, BigDecimal.ONE, "Low", "EBS only", emptyList()),
+            Instance("id3", "t1.micro", 1, BigDecimal.ONE, "Low", "EBS only", listOf("Previous Generation")),
+            Instance("id4", "t2.small", 1, BigDecimal.ONE, "Low", "EBS only", emptyList())
         )
         val benchmarks = listOf(
             Benchmark(
