@@ -16,6 +16,7 @@ data class Instance(
     val vCpu: Int,
     val memory: BigDecimal,
     val network: String,
+    val storage: String,
     val tags: List<String>,
     val benchmarks: List<Benchmark>
 )

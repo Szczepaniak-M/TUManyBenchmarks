@@ -30,8 +30,8 @@ class InstanceServiceTest {
     private lateinit var ec2PriceService: Ec2PriceService
 
     companion object {
-        private val INSTANCE_1 = Instance("id1", "t2.micro", BigDecimal.ZERO, BigDecimal.ZERO, 1, BigDecimal.ONE, "Low", emptyList(), emptyList())
-        private val INSTANCE_2 = Instance("id2", "t3.micro", BigDecimal.ZERO, BigDecimal.ZERO, 2, BigDecimal.TWO, "Low", emptyList(), emptyList())
+        private val INSTANCE_1 = Instance("id1", "t2.micro", BigDecimal.ZERO, BigDecimal.ZERO, 1, BigDecimal.ONE, "Low", "EBS only", emptyList(), emptyList())
+        private val INSTANCE_2 = Instance("id2", "t3.micro", BigDecimal.ZERO, BigDecimal.ZERO, 2, BigDecimal.TWO, "Low", "EBS only", emptyList(), emptyList())
         private val INSTANCE_1_RESULT = INSTANCE_1.copy(onDemandPrice = BigDecimal.ONE, spotPrice = BigDecimal.TWO)
         private val INSTANCE_2_RESULT = INSTANCE_2.copy(onDemandPrice = BigDecimal.TWO, spotPrice = BigDecimal.TEN)
     }

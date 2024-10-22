@@ -117,7 +117,7 @@ class RestControllerTest {
         val apiKey = "apiKey123"
         val instanceList = listOf(
             Instance(
-                "id1", "t3.micro", BigDecimal.ONE, BigDecimal.ONE, 1, BigDecimal.ONE, "Low", listOf("1 vCPU"),
+                "id1", "t3.micro", BigDecimal.ONE, BigDecimal.ONE, 1, BigDecimal.ONE, "Low", "EBS only", listOf("1 vCPU"),
                 listOf(
                     Benchmark(
                         "benchId1", "benchmark1", "benchmarkDescription1", "directory1",
@@ -148,7 +148,7 @@ class RestControllerTest {
                 )
             ),
             Instance(
-                "id1", "t3.small", BigDecimal.TWO, BigDecimal.TWO, 2, BigDecimal.TWO, "Low", listOf("2 vCPU"),
+                "id1", "t3.small", BigDecimal.TWO, BigDecimal.TWO, 2, BigDecimal.TWO, "Low", "EBS only", listOf("2 vCPU"),
                 listOf(
                     Benchmark(
                         "benchId1", "benchmark1", "benchmarkDescription1", "directory1",
@@ -310,7 +310,7 @@ class RestControllerTest {
         val apiKey = "apiKey123"
         val instanceType = "t3.micro"
         val instance = Instance(
-            "id1", "t3.small", BigDecimal.TWO, BigDecimal.TWO, 2, BigDecimal.TWO, "Low", listOf("2 vCPU"), listOf(
+            "id1", "t3.small", BigDecimal.TWO, BigDecimal.TWO, 2, BigDecimal.TWO, "Low", "EBS only", listOf("2 vCPU"), listOf(
                 Benchmark(
                     "benchId1", "benchmark1", "benchmarkDescription1", "directory1",
                     listOf(BenchmarkResult(1000, mapOf(Pair("key1", 1)))),

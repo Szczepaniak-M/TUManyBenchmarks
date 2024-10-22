@@ -27,8 +27,8 @@ class InstanceRepositoryTests {
     @Test
     fun `find instance details by instance name`() = runTest {
         // given
-        val instance1 = Instance("id1", "t2.micro", BigDecimal.ZERO, BigDecimal.ZERO, 1, BigDecimal.ONE, "Low", emptyList(), emptyList())
-        val instance2 = Instance("id2", "t2.small", BigDecimal.ZERO, BigDecimal.ZERO, 2, BigDecimal.TWO, "Low", emptyList(), emptyList())
+        val instance1 = Instance("id1", "t2.micro", BigDecimal.ZERO, BigDecimal.ZERO, 1, BigDecimal.ONE, "Low", "EBS only", emptyList(), emptyList())
+        val instance2 = Instance("id2", "t2.small", BigDecimal.ZERO, BigDecimal.ZERO, 2, BigDecimal.TWO, "Low", "EBS only", emptyList(), emptyList())
         instanceRepository.save(instance1)
         instanceRepository.save(instance2)
 
@@ -43,7 +43,7 @@ class InstanceRepositoryTests {
     @Test
     fun `not find instance details by instance name when it does not exists`() = runTest {
         // given
-        val instance1 = Instance("id1", "t2.micro", BigDecimal.ZERO, BigDecimal.ZERO, 1, BigDecimal.ONE, "Low", emptyList(), emptyList())
+        val instance1 = Instance("id1", "t2.micro", BigDecimal.ZERO, BigDecimal.ZERO, 1, BigDecimal.ONE, "Low", "EBS only", emptyList(), emptyList())
         instanceRepository.save(instance1)
 
         // when

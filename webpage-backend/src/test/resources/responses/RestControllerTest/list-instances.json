@@ -6,6 +6,7 @@
     "spotPrice": 1.0,
     "memory": 1.0,
     "network": "Low",
+    "storage": "EBS only",
     "tags": [
       "1 vCPU"
     ],
@@ -107,6 +108,7 @@
     "spotPrice": 2.0,
     "memory": 2.0,
     "network": "Low",
+    "storage": "EBS only",
     "tags": [
       "2 vCPU"
     ],
