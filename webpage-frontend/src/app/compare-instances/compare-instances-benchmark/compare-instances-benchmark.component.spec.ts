@@ -17,6 +17,7 @@ describe("CompareInstancesBenchmarkComponent", () => {
       vcpu: 0,
       memory: 0,
       network: "",
+      storage: "",
       tags: [],
       benchmarks: [
         {
@@ -45,6 +46,7 @@ describe("CompareInstancesBenchmarkComponent", () => {
       vcpu: 0,
       memory: 0,
       network: "",
+      storage: "",
       tags: [],
       benchmarks: [{
         id: "benchmark1",

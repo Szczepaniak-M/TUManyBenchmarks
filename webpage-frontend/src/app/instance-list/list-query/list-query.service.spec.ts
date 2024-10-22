@@ -86,6 +86,7 @@ describe("ListQueryService", () => {
       minSpotPrice: 0.01,
       maxSpotPrice: 0.1,
       network: ["High", "Medium"],
+      storage: ["EBS only", "10 GB HDD"],
       tagsAll: ["tag1", "tag2"],
       tagsAny: ["tag3", "tag4"],
       benchmark: "benchmark-series",
@@ -93,16 +94,17 @@ describe("ListQueryService", () => {
 
     const query = service.transformFilterToQuery(filter);
 
-    const expectedQuery = "SELECT i.name as Name, i.on_demand_price as \"On-Demand Price [$/h]\", i.spot_price as \"Spot Price [$/h]\", " +
-      "i.vcpu as vCPUs, i.memory as Memory, i.network as Network, " +
-      "s.min as Minimum, s.avg as Average, s.median as Median, s.max as Maximum, i.tags as Tags\n" +
+    const expectedQuery = "SELECT i.name AS Name, i.on_demand_price AS \"On-Demand Price [$/h]\", i.spot_price AS \"Spot Price [$/h]\", " +
+      "i.vcpu AS vCPUs, i.memory AS \"Memory [GB]\", i.network AS Network, i.storage AS Storage, " +
+      "s.min AS Minimum, s.avg AS Average, s.median AS Median, s.max AS Maximum, i.tags AS Tags\n" +
       "FROM instances i, statistics s\n" +
       "WHERE i.name LIKE '%instance1%' " +
       "AND i.on_demand_price >= 0.01 AND i.on_demand_price <= 0.1 " +
       "AND i.spot_price >= 0.01 AND i.spot_price <= 0.1 " +
       "AND i.vcpu >= 2 AND i.vcpu <= 8 " +
       "AND i.memory >= 16 AND i.memory <= 64 " +
-      "AND i.network IN ('High' ,'Medium') " +
+      "AND i.network IN ('High', 'Medium') " +
+      "AND i.storage IN ('EBS only', '10 GB HDD') " +
       "AND i.id = s.instance_id AND s.benchmark_id = 'benchmark' AND s.series = 'series' " +
       "AND array_has_all(i.tags, ['tag1', 'tag2']) AND array_has_any(i.tags, ['tag3', 'tag4'])"
     expect(query).toBe(expectedQuery);
@@ -113,6 +115,10 @@ describe("ListQueryService", () => {
 
     const query = service.transformFilterToQuery(filter);
 
-    expect(query).toEqual(`SELECT i.name as Name, i.on_demand_price as "On-Demand Price [$/h]", i.spot_price as "Spot Price [$/h]", i.vcpu as vCPUs, i.memory as Memory, i.network as Network, i.tags as Tags\nFROM instances i\n`);
+    expect(query).toEqual(
+      'SELECT i.name AS Name, i.on_demand_price AS "On-Demand Price [$/h]", i.spot_price AS "Spot Price [$/h]", ' +
+      'i.vcpu AS vCPUs, i.memory AS "Memory [GB]", i.network AS Network, i.storage AS Storage, ' +
+      'i.tags AS Tags\nFROM instances i\n'
+    );
   });
 });

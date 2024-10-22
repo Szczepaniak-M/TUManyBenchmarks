@@ -4,8 +4,9 @@ export interface InstanceDefaultRow {
   "On-Demand Price [$/h]": number,
   "Spot Price [$/h]": number,
   vCPUs: number,
-  Memory: number,
+  "Memory [GB]": number,
   Network: string,
+  Storage: string,
   Tags: string[],
   Minimum?: number,
   Average?: number,
@@ -23,6 +24,7 @@ export interface Instance {
   vcpu: number,
   memory: number,
   network: string,
+  storage: string,
   tags: string[],
   benchmarks: Benchmark[],
 }

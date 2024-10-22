@@ -28,8 +28,8 @@ export class ListQueryService {
     this.createTables()
       .then(() => {
         this.loadTable('instances')
-        this.loadTable('benchmarks')
-        this.loadTable('statistics')
+          .then(() => this.loadTable('benchmarks'))
+          .then(() => this.loadTable('statistics'))
       });
   }
 
@@ -47,12 +47,13 @@ export class ListQueryService {
   }
 
   public transformFilterToQuery(filter: Filter): string {
-    let query = "SELECT i.name as Name, i.on_demand_price as \"On-Demand Price [$/h]\", " +
-      "i.spot_price as \"Spot Price [$/h]\", i.vcpu as vCPUs, i.memory as Memory, i.network as Network,";
+    let query = "SELECT i.name AS Name, i.on_demand_price AS \"On-Demand Price [$/h]\", " +
+      "i.spot_price AS \"Spot Price [$/h]\", i.vcpu AS vCPUs, i.memory AS \"Memory [GB]\", i.network AS Network, " +
+      "i.storage AS Storage,";
     if (filter.benchmark) {
-      query += " s.min as Minimum, s.avg as Average, s.median as Median, s.max as Maximum,";
+      query += " s.min AS Minimum, s.avg AS Average, s.median AS Median, s.max AS Maximum,";
     }
-    query += " i.tags as Tags\n";
+    query += " i.tags AS Tags\n";
     query += "FROM instances i";
     if (filter.benchmark) {
       query += `, statistics s`;
@@ -91,7 +92,11 @@ export class ListQueryService {
       }
       if (filter.network) {
         const networks = filter.network.map(network => `'${network}'`);
-        conditions.push(`i.network IN (${networks.join(" ,")})`);
+        conditions.push(`i.network IN (${networks.join(", ")})`);
+      }
+      if (filter.storage) {
+        const storages = filter.storage.map(storage => `'${storage}'`);
+        conditions.push(`i.storage IN (${storages.join(", ")})`);
       }
       if (filter.benchmark) {
         const benchmarkSplit = filter.benchmark.split("-");
@@ -122,6 +127,7 @@ export class ListQueryService {
       "network" VARCHAR NOT NULL,
       "on_demand_price" DOUBLE NOT NULL,
       "spot_price" DOUBLE NOT NULL,
+      "storage" VARCHAR NOT NULL,
       "tags" VARCHAR[],
       "vcpu" INTEGER NOT NULL,
     );`

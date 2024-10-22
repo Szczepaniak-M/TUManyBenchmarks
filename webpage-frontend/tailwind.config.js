@@ -4,7 +4,13 @@ module.exports = {
     "./src/**/*.{html,ts}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      container: {
+        screens: {
+          '2xl': '1740px', // Override 1536px with 1740px
+        },
+      },
+    }
   },
   plugins: [],
   safelist: [

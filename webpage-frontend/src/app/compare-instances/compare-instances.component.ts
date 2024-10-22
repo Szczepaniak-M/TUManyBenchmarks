@@ -27,8 +27,9 @@ import {forkJoin} from "rxjs";
               <p><strong class="text-black">On-Demand Price: </strong>\${{ instance.onDemandPrice }} hourly</p>
               <p><strong class="text-black">Spot Price: </strong>\${{ instance.spotPrice }} hourly</p>
               <p><strong class="text-black">vCPU: </strong>{{ instance.vcpu }}</p>
-              <p><strong class="text-black">Network: </strong>{{ instance.network }}</p>
               <p><strong class="text-black">Memory: </strong>{{ instance.memory }} GiB</p>
+              <p><strong class="text-black">Network: </strong>{{ instance.network }}</p>
+              <p><strong class="text-black">Network: </strong>{{ instance.storage }}</p>
               <p><strong class="text-black">Tags: </strong>
                 <span *ngFor="let tag of instance.tags"
                       class="inline-block bg-gray-400 rounded-full px-3 py-1 text-sm font-semibold text-gray-800 mr-2 my-1">

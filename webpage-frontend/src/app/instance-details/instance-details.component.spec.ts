@@ -22,8 +22,9 @@ describe("InstanceDetailsComponent", () => {
           onDemandPrice: 0.01,
           spotPrice: 0.001,
           vcpu: 4,
-          network: "10 Gbps",
           memory: 16,
+          network: "10 Gbps",
+          storage: "EBS only",
           tags: ["Tag1", "Tag2"],
           benchmarks: [
             {
@@ -70,8 +71,9 @@ describe("InstanceDetailsComponent", () => {
     expect(compiled.querySelectorAll("p")[0].textContent).toContain("On-Demand Price: $0.01 hourly");
     expect(compiled.querySelectorAll("p")[1].textContent).toContain("Spot Price: $0.001 hourly");
     expect(compiled.querySelectorAll("p")[2].textContent).toContain("vCPU: 4");
-    expect(compiled.querySelectorAll("p")[3].textContent).toContain("Network: 10 Gbps");
-    expect(compiled.querySelectorAll("p")[4].textContent).toContain("Memory: 16 GiB");
+    expect(compiled.querySelectorAll("p")[3].textContent).toContain("Memory: 16 GiB");
+    expect(compiled.querySelectorAll("p")[4].textContent).toContain("Network: 10 Gbps");
+    expect(compiled.querySelectorAll("p")[5].textContent).toContain("Storage: EBS only");
   });
 
   it("should display benchmarks correctly", () => {

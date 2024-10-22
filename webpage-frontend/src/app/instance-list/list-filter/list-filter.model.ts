@@ -9,6 +9,7 @@ export interface Filter {
   minMemory?: number,
   maxMemory?: number,
   network?: string[],
+  storage?: string[],
   tagsAll?: string[],
   tagsAny?: string[],
   benchmark?: string,

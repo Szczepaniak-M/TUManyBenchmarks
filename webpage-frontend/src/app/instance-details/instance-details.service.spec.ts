@@ -20,6 +20,7 @@ describe("InstanceDetailsService", () => {
     vcpu: 8,
     memory: 16,
     network: "10 Gbps Network",
+    storage: "EBS only",
     tags: ["8 vCPUs", "10 Gbps Network", "16 GiB Memory", "Other tag"],
     benchmarks: [
       {
@@ -49,6 +50,7 @@ describe("InstanceDetailsService", () => {
     vcpu: 8,
     memory: 16,
     network: "10 Gbps Network",
+    storage: "EBS only",
     tags: ["Other tag"],
     benchmarks: [
       {

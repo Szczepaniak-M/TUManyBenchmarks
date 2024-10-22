@@ -90,6 +90,15 @@ import {Filter} from "./list-filter.model";
           </mat-select>
         </mat-form-field>
         <mat-form-field class="border rounded m-1 w-1/5">
+          <mat-label class="font-medium">Storage</mat-label>
+          <mat-select multiple [(ngModel)]="filter.storage" (ngModelChange)="onFilterChange()">
+            <mat-option
+              *ngFor="let storage of allStorage.sort()"
+              [value]="storage">{{ storage }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="border rounded m-1 w-1/5">
           <mat-label class="font-medium">Tags (all of):</mat-label>
           <mat-select multiple [(ngModel)]="filter.tagsAll" (ngModelChange)="onFilterChange()">
             <mat-option
@@ -131,6 +140,7 @@ import {Filter} from "./list-filter.model";
 })
 export class ListFilterComponent {
   @Input({required: true}) allNetworks!: string[];
+  @Input({required: true}) allStorage!: string[];
   @Input({required: true}) allTags!: string[];
   @Input({required: true}) allBenchmarks!: { name: string, id: string }[];
   @Input({required: true}) selectedInstances!: number;

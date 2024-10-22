@@ -44,30 +44,30 @@ describe("InstanceListService", () => {
     const mockInstances: Instance[] = [
       {
         id: "id1", onDemandPrice: 0.01, spotPrice: 0.001, name: "t2.micro", vcpu: 4, memory: 16, network: "10 Gib Network",
-        tags: ["4 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"], benchmarks: []
+        storage: "EBS only", tags: ["4 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"], benchmarks: []
       },
       {
         id: "id2", onDemandPrice: 0.02, spotPrice: 0.002, name: "t2.small", vcpu: 8, memory: 16, network: "10 Gib Network",
-        tags: ["8 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"], benchmarks: []
+        storage: "10 GB HDD", tags: ["8 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"], benchmarks: []
       },
       {
         id: "id3", onDemandPrice: 0.03, spotPrice: 0.003, name: "t2.nano", vcpu: 16, memory: 16, network: "10 Gib Network",
-        tags: ["16 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"], benchmarks: []
+        storage: "10 GB SSD", tags: ["16 vCPUs", "16 GiB Memory", "10 Gib Network", "Additional Tag"], benchmarks: []
       }
     ];
 
     const expectedInstances: Instance[] = [
       {
         id: "id1", onDemandPrice: 0.01, spotPrice: 0.001, name: "t2.micro", vcpu: 4, memory: 16, network: "10 Gib Network",
-        tags: ["Additional Tag"], benchmarks: [],
+        storage: "EBS only", tags: ["Additional Tag"], benchmarks: [],
       },
       {
         id: "id2", onDemandPrice: 0.02, spotPrice: 0.002, name: "t2.small", vcpu: 8, memory: 16, network: "10 Gib Network",
-        tags: ["Additional Tag"], benchmarks: []
+        storage: "10 GB HDD", tags: ["Additional Tag"], benchmarks: []
       },
       {
         id: "id3", onDemandPrice: 0.03, spotPrice: 0.003, name: "t2.nano", vcpu: 16, memory: 16, network: "10 Gib Network",
-        tags: ["Additional Tag"], benchmarks: []
+        storage: "10 GB SSD", tags: ["Additional Tag"], benchmarks: []
       }
     ];
 

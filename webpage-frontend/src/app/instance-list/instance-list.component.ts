@@ -32,6 +32,7 @@ import {ListHeaderComponent} from "./list-header/list-header.component";
         <app-list-filter
           [allTags]="allTags"
           [allNetworks]="allNetworks"
+          [allStorage]="allStorage"
           [allBenchmarks]="allBenchmarks"
           [selectedInstances]="selectedInstances.size"
           (filterChange)="applyFilters($event)"
@@ -73,15 +74,20 @@ export class InstanceListComponent implements OnInit {
   selectedInstances: Set<string> = new Set<string>();
   allTags: string[] = [];
   allNetworks: string[] = [];
+  allStorage: string[] = [];
   allBenchmarks: { name: string, id: string }[] = [];
   filter: Filter = {}
   queryConsoleActive: boolean = false
   @ViewChild(ListQueryComponent) queryComponent!: ListQueryComponent
   @ViewChild(ListHeaderComponent) header!: ListHeaderComponent;
-  private defaultColumnsWithoutBenchmark = ["Name", "On-Demand Price [$/h]", "Spot Price [$/h]", "vCPUs", "Memory", "Network", "Tags"]
+  private defaultColumnsWithoutBenchmark = [
+    "Name", "On-Demand Price [$/h]", "Spot Price [$/h]", "vCPUs", "Memory [GB]", "Network", "Storage", "Tags"
+  ]
   columns: string[] = this.defaultColumnsWithoutBenchmark
-  private defaultColumnsWithBenchmark = ["Name", "On-Demand Price [$/h]", "Spot Price [$/h]", "vCPUs", "Memory", "Network", "Minimum",
-    "Average", "Median", "Maximum", "Tags"]
+  private defaultColumnsWithBenchmark = [
+    "Name", "On-Demand Price [$/h]", "Spot Price [$/h]", "vCPUs", "Memory [GB]", "Network", "Storage", "Minimum",
+    "Average", "Median", "Maximum", "Tags"
+  ]
 
   constructor(private instanceListService: InstanceListService,
               private router: Router,
@@ -121,15 +127,16 @@ export class InstanceListComponent implements OnInit {
       const matchesMaxSpotPrice = filter.maxSpotPrice ? instance["Spot Price [$/h]"] <= filter.maxSpotPrice : true;
       const matchesMinCpu = filter.minCpu ? instance.vCPUs >= filter.minCpu : true;
       const matchesMaxCpu = filter.maxCpu ? instance.vCPUs <= filter.maxCpu : true;
-      const matchesMinMemory = filter.minMemory ? instance.Memory >= filter.minMemory : true;
-      const matchesMaxMemory = filter.maxMemory ? instance.Memory <= filter.maxMemory : true;
+      const matchesMinMemory = filter.minMemory ? instance["Memory [GB]"] >= filter.minMemory : true;
+      const matchesMaxMemory = filter.maxMemory ? instance["Memory [GB]"] <= filter.maxMemory : true;
       const matchesNetwork = filter.network && filter.network.length ? filter.network.includes(instance.Network) : true;
+      const matchesStorage = filter.storage && filter.storage.length ? filter.storage.includes(instance.Storage) : true;
       const matchesTagsAnd = filter.tagsAll && filter.tagsAll.length ? filter.tagsAll.every(tag => instance.Tags.includes(tag)) : true;
       const matchesTagsOr = filter.tagsAny && filter.tagsAny.length ? filter.tagsAny.some(tag => instance.Tags.includes(tag)) : true;
       const matchesBenchmark = !!benchmark ? instance.benchmarks.map(stat => stat.benchmarkId).includes(benchmark) : true
       instance.hidden = !(matchesName && matchesMinOnDemandPrice && matchesMaxOnDemandPrice
         && matchesMinSpotPrice && matchesMaxSpotPrice && matchesMinCpu && matchesMaxCpu && matchesMinMemory
-        && matchesMaxMemory && matchesNetwork && matchesTagsAnd && matchesTagsOr && matchesBenchmark);
+        && matchesMaxMemory && matchesNetwork && matchesStorage && matchesTagsAnd && matchesTagsOr && matchesBenchmark);
       return instance
     });
     if (filter.benchmark) {
@@ -215,8 +222,9 @@ export class InstanceListComponent implements OnInit {
         "On-Demand Price [$/h]": instance.onDemandPrice,
         "Spot Price [$/h]": instance.spotPrice,
         vCPUs: instance.vcpu,
-        Memory: instance.memory,
+        "Memory [GB]": instance.memory,
         Network: instance.network,
+        Storage: instance.storage,
         Tags: instance.tags,
         benchmarks: benchmarksMap.get(instance.id) ?? [],
         hidden: false
@@ -228,14 +236,17 @@ export class InstanceListComponent implements OnInit {
   private updateFilters(benchmarks: BenchmarkDetails[]): void {
     const tagsSet = new Set<string>();
     const networksSet = new Set<string>();
+    const storageSet = new Set<string>();
 
     this.defaultRows.forEach(instance => {
       instance.Tags.forEach(tag => tagsSet.add(tag));
       networksSet.add(instance.Network);
+      storageSet.add(instance.Storage)
     });
 
     this.allTags = Array.from(tagsSet);
     this.allNetworks = Array.from(networksSet);
+    this.allStorage = Array.from(storageSet)
 
     this.allBenchmarks = benchmarks.flatMap(benchmark => benchmark.seriesX.concat(benchmark.seriesY)
       .filter(series => series !== 'increasing_values')

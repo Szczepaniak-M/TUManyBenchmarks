@@ -22,8 +22,9 @@ describe("CompareInstancesComponent", () => {
           onDemandPrice: 0.1,
           spotPrice: 0.01,
           vcpu: 4,
-          network: "10 Gbps",
           memory: 16,
+          network: "10 Gbps",
+          storage: "EBS only",
           tags: ["Tag1", "Tag2"],
           benchmarks: [
             {id: "benchmark1", name: "Benchmark 1", description: "Description 1", results: [], plots: []},
