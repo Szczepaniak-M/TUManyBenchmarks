@@ -94,8 +94,7 @@ class BenchmarkServiceTest {
         val instances = listOf(
             Instance("id1", "t2.micro", 1, BigDecimal.ONE, "Low", "EBS only", emptyList()),
             Instance("id2", "t3.micro", 1, BigDecimal.ONE, "Low", "EBS only", emptyList()),
-            Instance("id3", "t1.micro", 1, BigDecimal.ONE, "Low", "EBS only", listOf("Previous Generation")),
-            Instance("id4", "t2.small", 1, BigDecimal.ONE, "Low", "EBS only", emptyList())
+            Instance("id3", "t2.small", 1, BigDecimal.ONE, "Low", "EBS only", emptyList())
         )
         val benchmarks = listOf(
             Benchmark(
@@ -112,7 +111,7 @@ class BenchmarkServiceTest {
         val instancesWithBenchmarks = listOf(
             InstanceWithBenchmarks(instances[0], listOf(benchmarks[0])),
             InstanceWithBenchmarks(instances[1], listOf(benchmarks[1])),
-            InstanceWithBenchmarks(instances[3], emptyList())
+            InstanceWithBenchmarks(instances[2], emptyList())
         )
 
         coEvery { benchmarkCronRepository.findAll() } returns flowOf(
@@ -200,9 +199,7 @@ class BenchmarkServiceTest {
         coVerify(exactly = 1) { instanceRepository.findAll() }
         verify(exactly = 1) { instanceService.findMatchingBenchmarks(any<Instance>(), any<List<Benchmark>>()) }
         coVerify(exactly = 0) { benchmarkRunnerService.runBenchmarksForInstance(any<InstanceWithBenchmarks>()) }
-        coVerify(exactly = 0) { customInstanceRepository.updateBenchmarksById(any<String>(), any<List<BenchmarkResult>>()
-        )
-        }
+        coVerify(exactly = 0) { customInstanceRepository.updateBenchmarksById(any<String>(), any<List<BenchmarkResult>>()) }
     }
 
     @Test
@@ -211,8 +208,7 @@ class BenchmarkServiceTest {
         val instances = listOf(
             Instance("id1", "t2.micro", 1, BigDecimal.ONE, "Low", "EBS only", emptyList()),
             Instance("id2", "t3.micro", 1, BigDecimal.ONE, "Low", "EBS only", emptyList()),
-            Instance("id3", "t1.micro", 1, BigDecimal.ONE, "Low", "EBS only", listOf("Previous Generation")),
-            Instance("id4", "t2.small", 1, BigDecimal.ONE, "Low", "EBS only", emptyList())
+            Instance("id3", "t2.small", 1, BigDecimal.ONE, "Low", "EBS only", emptyList())
         )
         val benchmarks = listOf(
             Benchmark(
@@ -229,7 +225,7 @@ class BenchmarkServiceTest {
         val instancesWithBenchmarks = listOf(
             InstanceWithBenchmarks(instances[0], listOf(benchmarks[0])),
             InstanceWithBenchmarks(instances[1], listOf(benchmarks[1])),
-            InstanceWithBenchmarks(instances[3], emptyList())
+            InstanceWithBenchmarks(instances[2], emptyList())
         )
 
         coEvery { benchmarkCronRepository.findAll() } returns flowOf(
