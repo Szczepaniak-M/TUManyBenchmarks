@@ -10,7 +10,7 @@ import {environment} from "../../environments/environment";
         <div class="mb-2">
           <h2 class="text-xl font-bold">Goal</h2>
           <p class="text-gray-700 text-justify">
-            TUManyBenchmarks is a service dedicated to providing information about low-level performance metrics
+            TUManyBenchmarks is a service dedicated to providing information about hardware metrics
             for different types of virtual machines.
             Our mission is to deliver accurate and reliable benchmark data to help users make informed
             decisions and achieve cost-efficiency.
@@ -20,7 +20,7 @@ import {environment} from "../../environments/environment";
         <div class="mb-2">
           <h2 class="text-xl font-bold">Motivation</h2>
           <p class="text-gray-700 text-justify">
-            The lack of low-level performance metrics delivered by cloud providers and
+            The lack of hardware metrics delivered by cloud providers and
             the difficulty of proper benchmarking leaded us to the conclusion that there is a need
             for a new benchmarking service.
             We believe such a service should characterize two attributes: extensibility and transparency.
@@ -31,7 +31,7 @@ import {environment} from "../../environments/environment";
             Transparency means everyone can check what and how benchmarks are executed to
             provide trustworthiness in the presented results.
             Moreover, the second aspect of transparency is achieving transparency of instances' performance
-            within and between vendors by publishing their low-level performance metrics.
+            within and between vendors by publishing their hardware metrics.
           </p>
         </div>
 

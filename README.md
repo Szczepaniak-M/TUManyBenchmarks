@@ -1,7 +1,7 @@
 # TUManyBenchmarks - Service for EC2 benchmarking
 ## About
 TUManyBenchmarks is a service that automatically benchmarks EC2 instances.
-Its responsibility is to provide users with information about the low-level performance metrics of different EC2 instances.
+Its responsibility is to provide users with information about the hardware metrics of different EC2 instances.
 The service allows all users to upload benchmarks, which will be executed regularly by TUManyBenchmarks.
 After execution, the results are available in the web application, where they are presented on the plot and can be queried.
 
