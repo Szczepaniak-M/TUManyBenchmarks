@@ -27,4 +27,10 @@ Run `./gradlew build` to build the project. The build artifacts will be stored i
 Run `./gradlew test` to execute the unit tests.
 
 ### Run
-Run command `java -jar benchmark-service-0.0.1-SNAPSHOT.jar` with set proper environmental variables to run service.
+Run command `java -jar benchmark-service-1.0.0.jar` with set proper environmental variables to run service.
+
+## Requirements:
+To run the service, the machine requires:
+- Java 21
+- AmazonEC2FullAccess AMI Policy
+- public IPv4 (to communicate with MongoDB Atlas) and IPv6 addresses (to communicate with other EC2)

@@ -30,3 +30,10 @@ Run `./gradlew test` to execute the unit tests.
 
 ### Run
 Run command `java -jar webpage-backend-1.0.0.jar` with set proper environmental variables to run service.
+
+
+## Requirements:
+To run the service, the machine requires:
+- Java 21
+- AmazonEC2ReadOnlyAccess and AWSPriceListServiceFullAccess AMI Policies
+- public IPv4 (to communicate with MongoDB Atlas)
