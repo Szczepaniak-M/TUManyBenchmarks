@@ -6,6 +6,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.annotation.Profile
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
 @Component
@@ -17,8 +18,8 @@ class InstanceUpdateScheduler(
 
     private val logger = KotlinLogging.logger {}
 
-    // check instances every Sunday at 00:30
-//    @Scheduled(cron = "0 30 0 * * MON")
+    // check instances on start and every Sunday at 00:30
+    @Scheduled(cron = "0 30 0 * * SUN")
     @EventListener(ApplicationReadyEvent::class)
     fun updateInstances() {
         logger.info { "Starting updating AWS EC2 instances information" }

@@ -86,7 +86,7 @@ class Ec2QuotaServiceTest {
             assertEquals(3, remainingQuota1)
 
             withContext(Dispatchers.Default) {
-                delay(500)
+                delay(1500)
             }
 
             val remainingQuota2 = ec2QuotaService.releaseQuota(acquiredQuota2)

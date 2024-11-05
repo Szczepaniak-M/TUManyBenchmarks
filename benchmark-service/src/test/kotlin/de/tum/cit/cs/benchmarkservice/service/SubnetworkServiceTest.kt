@@ -22,8 +22,8 @@ class SubnetworkServiceTest {
         subnetworkService.assignAvailableSubnetwork(ec2Configuration)
 
         // then
-        assertEquals("10.0.1.0/24", ec2Configuration.ipv4Cidr)
-        assertEquals("d044:05ab:f827:6801::/64", ec2Configuration.ipv6Cidr)
+        assertEquals("10.0.6.0/24", ec2Configuration.ipv4Cidr)
+        assertEquals("d044:05ab:f827:6806::/64", ec2Configuration.ipv6Cidr)
     }
 
     @Test
@@ -35,14 +35,14 @@ class SubnetworkServiceTest {
         subnetworkService.assignAvailableSubnetwork(ec2Configuration)
 
         // then
-        assertEquals("10.0.2.0/24", ec2Configuration.ipv4Cidr)
-        assertEquals("d044:05ab:f827:6802::/64", ec2Configuration.ipv6Cidr)
+        assertEquals("10.0.7.0/24", ec2Configuration.ipv4Cidr)
+        assertEquals("d044:05ab:f827:6807::/64", ec2Configuration.ipv6Cidr)
     }
 
     @Test
     fun `test releaseSubnetwork should add subnet back to pool`() {
         // given
-        repeat(254) {
+        repeat(249) {
             subnetworkService.assignAvailableSubnetwork(ec2Configuration)
         }
 

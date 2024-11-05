@@ -7,7 +7,8 @@ class SubnetworkService(
     val ipv4Network: String,
     val ipv6Network: String
 ) {
-    private val availableSubnetworks = ConcurrentLinkedQueue<Int>((1..254).toList())
+    // leave a few subnets free to create a subnets for the service in different AZs
+    private val availableSubnetworks = ConcurrentLinkedQueue<Int>((6..254).toList())
 
     fun assignAvailableSubnetwork(ec2Configuration: Ec2Configuration) {
         val subnetId = availableSubnetworks.poll()

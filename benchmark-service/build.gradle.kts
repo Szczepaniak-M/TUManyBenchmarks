@@ -2,15 +2,15 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "3.3.0"
-    id("io.spring.dependency-management") version "1.1.5"
-    kotlin("jvm") version "2.0.0"
-    kotlin("plugin.spring") version "2.0.0"
+    id("org.springframework.boot") version "3.3.5"
+    id("io.spring.dependency-management") version "1.1.6"
+    kotlin("jvm") version "2.0.20"
+    kotlin("plugin.spring") version "2.0.20"
 }
-val springCloudVersion by extra("2023.0.2")
+val springCloudVersion by extra("2023.0.3")
 
 group = "de.tum.cit.cs"
-version = "0.0.1-SNAPSHOT"
+version = "1.0.0"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
@@ -33,7 +33,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     implementation("com.cronutils:cron-utils:9.2.1")
-    implementation("aws.sdk.kotlin:ec2-jvm:1.3.47") {
+    implementation("aws.sdk.kotlin:ec2-jvm:1.3.67") {
         exclude("com.squareup.okhttp3:okhttp")
     }
     implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.14")

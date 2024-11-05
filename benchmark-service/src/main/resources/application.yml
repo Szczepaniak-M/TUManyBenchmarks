@@ -13,8 +13,8 @@ aws:
       name: aws-benchmark-private-key
       file: aws-benchmark-private-key.pem
     default-ami:
-      x86: ami-0bc16b510fa2622db
-      arm: ami-0bc16b510fa2622db-arm
+      x86: ami-x86
+      arm: ami-arm
     network:
       availability-zone: use1-az1
       vpcId: ${VPC_ID:#{null}}
@@ -22,7 +22,7 @@ aws:
       ipv6Cidr: ${IPV6_CIDR:#{null}}
 github:
   repository:
-    url: https://api.github.com/repos/Szczepaniak-M/thesis-test-repo/contents
+    url: https://api.github.com/repos/Szczepaniak-M/TUManyBenchmarks-benchmarks/contents
 
 #logging:
 #  level:

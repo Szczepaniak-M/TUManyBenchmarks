@@ -261,8 +261,8 @@ class AwsServiceTest {
 
         val capturedCreateRequest = createRequestSlot.captured
         assertEquals(VPC, capturedCreateRequest.vpcId)
-        assertEquals("10.1.1.0/24", capturedCreateRequest.cidrBlock)
-        assertEquals("d044:05ab:f827:6801::/64", capturedCreateRequest.ipv6CidrBlock)
+        assertEquals("10.1.6.0/24", capturedCreateRequest.cidrBlock)
+        assertEquals("d044:05ab:f827:6806::/64", capturedCreateRequest.ipv6CidrBlock)
         assertEquals(AVAILABILITY_ZONE, capturedCreateRequest.availabilityZoneId)
 
         val capturedModifyRequest = modifyRequestSlot.captured
