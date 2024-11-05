@@ -27,3 +27,6 @@ Run `./gradlew build` to build the project. The build artifacts will be stored i
 
 ### Running unit tests
 Run `./gradlew test` to execute the unit tests.
+
+### Run
+Run command `java -jar webpage-backend-1.0.0.jar` with set proper environmental variables to run service.
