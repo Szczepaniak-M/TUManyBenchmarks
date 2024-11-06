@@ -1,0 +1,61 @@
+---
+- name: Install and run sockperf
+  hosts: localhost
+  tasks:
+    - name: Install dependencies
+      become: yes
+      apt:
+        name:
+          - git
+          - perl
+          - make
+          - automake
+          - autoconf
+          - m4
+          - libtool-bin
+          - g++
+        state: present
+
+    - name: Ensure entries are present in /etc/hosts to allow GitHub communication via IPv6
+      become: yes
+      lineinfile:
+        path: /etc/hosts
+        state: present
+        line: "{{ item }}"
+      loop:
+        - "2a01:4f8:c010:d56::2 github.com"
+        - "2a01:4f8:c010:d56::3 api.github.com"
+        - "2a01:4f8:c010:d56::4 codeload.github.com"
+        - "2a01:4f8:c010:d56::5 objects.githubusercontent.com"
+        - "2a01:4f8:c010:d56::6 ghcr.io"
+        - "2a01:4f8:c010:d56::7 pkg.github.com npm.pkg.github.com maven.pkg.github.com nuget.pkg.github.com rubygems.pkg.github.com"
+
+    - name: Clone sockperf repository
+      git:
+        repo: "https://github.com/Mellanox/sockperf.git"
+        dest: /home/ubuntu/network_latency/sockperf
+
+    - name: Run sockperf autogen.sh
+      command: ./autogen.sh
+      args:
+        chdir: /home/ubuntu/network_latency/sockperf
+
+    - name: Configure sockperf
+      command: ./configure
+      args:
+        chdir: /home/ubuntu/network_latency/sockperf
+
+    - name: Compile sockperf
+      make:
+        chdir: /home/ubuntu/network_latency/sockperf
+
+    - name: Install sockperf
+      become: yes
+      command: make install
+      args:
+        chdir: /home/ubuntu/network_latency/sockperf
+
+    - name: Make run_latency_bench.sh executable
+      file:
+        path: /home/ubuntu/network_latency/run_latency_bench.sh
+        mode: '0755'

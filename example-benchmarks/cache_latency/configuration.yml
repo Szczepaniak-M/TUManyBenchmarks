@@ -1,0 +1,64 @@
+configuration:
+  name: "Cache latency"
+  description: "Benchmark analyzing the basic properties of the CPU cache"
+  directory: cache_latency
+  cron: "0 * * * *"
+  instance-number: 1
+  instance-types:
+    # Graviton
+    - c6g.medium
+    - c6g.2xlarge
+    - c6g.metal
+
+    - c7g.metal
+    - c7g.2xlarge
+    - c7g.medium
+
+    - c8g.medium
+    - c8g.2xlarge
+    - c8g.metal-24xl
+
+    # Intel
+    - c5.metal
+    - c5.2xlarge
+    - c5.large
+
+    - c6i.metal
+    - c6i.2xlarge
+    - c6i.large
+
+    - c7i.metal-24xl
+    - c7i.2xlarge
+    - c7i.large
+
+    # AMD
+    - m5a.24xlarge
+    - m5a.2xlarge
+    - m5a.large
+
+    - c5a.24xlarge
+    - c5a.2xlarge
+    - c5a.large
+
+    - c6a.metal
+    - c6a.2xlarge
+    - c6a.large
+
+    - c7a.metal-48xl
+    - c7a.2xlarge
+    - c7a.large
+
+nodes:
+  - node-id: 0
+    ansible-configuration: ansible.yml
+    benchmark-command: ./run_latency.sh
+    output-command: python3 format_output.py results.csv
+plots:
+  - type: line
+    title: Cache latency for different input sizes
+    xaxis: Input size [10^x MB]
+    yaxis: Latency [ns]
+    series:
+      - x: input_size_log10
+        y: latency
+        legend: Latency

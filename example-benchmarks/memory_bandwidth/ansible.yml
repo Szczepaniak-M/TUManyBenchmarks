@@ -1,0 +1,28 @@
+---
+- name: Install packages and compile programs
+  hosts: localhost
+  tasks:
+    - name: Update APT package list
+      become: yes
+      apt:
+        update_cache: yes
+
+    - name: Install necessary packages
+      become: yes
+      apt:
+        name:
+          - g++
+          - numactl
+          - libtbb-dev
+          - bc
+        state: present
+
+    - name: Compile membw.cpp with optimizations
+      command: g++ membw.cpp -o membw -O3 -ltbb -march=native
+      args:
+        chdir: /home/ubuntu/memory_bandwidth
+
+    - name: Make run_membw.sh executable
+      file:
+        path: /home/ubuntu/memory_bandwidth/run_membw.sh
+        mode: '0755'

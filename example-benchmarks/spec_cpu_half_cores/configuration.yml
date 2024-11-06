@@ -1,0 +1,300 @@
+configuration:
+  name: "SPEC CPU2017 Integer Rate - Half of Cores"
+  description: "Benchmark analyzing CPU throughput using half of cores (only physical cores)"
+  directory: spec_cpu_half_cores
+  cron: "0 * * * *"
+  instance-number: 1
+  instance-types:
+    - c3.2xlarge #Intel
+    - c4.2xlarge
+    - c5.2xlarge
+    - c6i.2xlarge
+    - c7i.2xlarge
+
+    - m5a.2xlarge #AMD
+    - c5a.2xlarge
+    - c6a.2xlarge
+    - c7a.2xlarge
+
+    - a1.2xlarge #Graviton
+    - c6g.2xlarge
+    - c7g.2xlarge
+    - c8g.2xlarge
+
+nodes:
+  - node-id: 1
+    ansible-configuration: ansible.yml
+    image-x86: ami-040ae5b7ceb70e213
+    image-arm: ami-0fb858c88e8a6483e
+    benchmark-command: ./run_spec.sh
+    output-command: python3 format_output.py /home/ubuntu/specbench/result/CPU2017.001.intrate.csv
+
+plots:
+  - type: scatter
+    title: SPEC CPU 2017 Total Score
+    yaxis: Score
+    series:
+      - y: SPECrate2017_int_base
+        legend: Int Rate Base
+      - y: SPECrate2017_int_peak
+        legend: Int Rate Peak
+
+  - type: scatter
+    title: 500.perlbench_r - Execution Time
+    yaxis: Time [s]
+    series:
+      - y: 500_perlbench_r_base_selected_time
+        legend: Selected Base Time
+      - y: 500_perlbench_r_base_not_selected_time
+        legend: Non-Selected Base Time
+      - y: 500_perlbench_r_peak_selected_time
+        legend: Selected Peak Time
+      - y: 500_perlbench_r_peak_not_selected_time
+        legend: Non-Selected Peak Time
+
+  - type: scatter
+    title: 500.perlbench_r - Ratio
+    yaxis: Ratio
+    series:
+      - y: 500_perlbench_r_peak_selected_ratio
+        legend: Selected Base Ratio
+      - y: 500_perlbench_r_base_not_selected_ratio
+        legend: Non-Selected Base Ratio
+      - y: 500_perlbench_r_peak_selected_ratio
+        legend: Selected Peak Ratio
+      - y: 500_perlbench_r_peak_not_selected_ratio
+        legend: Non-Selected Peak Ratio
+
+  - type: scatter
+    title: 502.gcc_r - Execution Time
+    yaxis: Time [s]
+    series:
+      - y: 502_gcc_r_base_selected_time
+        legend: Selected Base Time
+      - y: 502_gcc_r_base_not_selected_time
+        legend: Non-Selected Base Time
+      - y: 502_gcc_r_peak_selected_time
+        legend: Selected Peak Time
+      - y: 502_gcc_r_peak_not_selected_time
+        legend: Non-Selected Peak Time
+
+  - type: scatter
+    title: 502.gcc_r - Ratio
+    yaxis: Ratio
+    series:
+      - y: 502_gcc_r_peak_selected_ratio
+        legend: Selected Base Ratio
+      - y: 502_gcc_r_base_not_selected_ratio
+        legend: Non-Selected Base Ratio
+      - y: 502_gcc_r_peak_selected_ratio
+        legend: Selected Peak Ratio
+      - y: 502_gcc_r_peak_not_selected_ratio
+        legend: Non-Selected Peak Ratio
+
+  - type: scatter
+    title: 505.mcf_r - Execution Time
+    yaxis: Time [s]
+    series:
+      - y: 505_mcf_r_base_selected_time
+        legend: Selected Base Time
+      - y: 505_mcf_r_base_not_selected_time
+        legend: Non-Selected Base Time
+      - y: 505_mcf_r_peak_selected_time
+        legend: Selected Peak Time
+      - y: 505_mcf_r_peak_not_selected_time
+        legend: Non-Selected Peak Time
+
+  - type: scatter
+    title: 505.mcf_r - Ratio
+    yaxis: Ratio
+    series:
+      - y: 505_mcf_r_peak_selected_ratio
+        legend: Selected Base Ratio
+      - y: 505_mcf_r_base_not_selected_ratio
+        legend: Non-Selected Base Ratio
+      - y: 505_mcf_r_peak_selected_ratio
+        legend: Selected Peak Ratio
+      - y: 505_mcf_r_peak_not_selected_ratio
+        legend: Non-Selected Peak Ratio
+
+  - type: scatter
+    title: 520.omnetpp_r - Execution Time
+    yaxis: Time [s]
+    series:
+      - y: 520_omnetpp_r_base_selected_time
+        legend: Selected Base Time
+      - y: 520_omnetpp_r_base_not_selected_time
+        legend: Non-Selected Base Time
+      - y: 520_omnetpp_r_peak_selected_time
+        legend: Selected Peak Time
+      - y: 520_omnetpp_r_peak_not_selected_time
+        legend: Non-Selected Peak Time
+
+  - type: scatter
+    title: 520.omnetpp_r - Ratio
+    yaxis: Ratio
+    series:
+      - y: 520_omnetpp_r_peak_selected_ratio
+        legend: Selected Base Ratio
+      - y: 520_omnetpp_r_base_not_selected_ratio
+        legend: Non-Selected Base Ratio
+      - y: 520_omnetpp_r_peak_selected_ratio
+        legend: Selected Peak Ratio
+      - y: 520_omnetpp_r_peak_not_selected_ratio
+        legend: Non-Selected Peak Ratio
+
+  - type: scatter
+    title: 523.xalancbmk_r - Execution Time
+    yaxis: Time [s]
+    series:
+      - y: 523_xalancbmk_r_base_selected_time
+        legend: Selected Base Time
+      - y: 523_xalancbmk_r_base_not_selected_time
+        legend: Non-Selected Base Time
+      - y: 523_xalancbmk_r_peak_selected_time
+        legend: Selected Peak Time
+      - y: 523_xalancbmk_r_peak_not_selected_time
+        legend: Non-Selected Peak Time
+
+  - type: scatter
+    title: 523.xalancbmk_r - Ratio
+    yaxis: Ratio
+    series:
+      - y: 523_xalancbmk_r_peak_selected_ratio
+        legend: Selected Base Ratio
+      - y: 523_xalancbmk_r_base_not_selected_ratio
+        legend: Non-Selected Base Ratio
+      - y: 523_xalancbmk_r_peak_selected_ratio
+        legend: Selected Peak Ratio
+      - y: 523_xalancbmk_r_peak_not_selected_ratio
+        legend: Non-Selected Peak Ratio
+
+  - type: scatter
+    title: 525.x264_r - Execution Time
+    yaxis: Time [s]
+    series:
+      - y: 525_x264_r_base_selected_time
+        legend: Selected Base Time
+      - y: 525_x264_r_base_not_selected_time
+        legend: Non-Selected Base Time
+      - y: 525_x264_r_peak_selected_time
+        legend: Selected Peak Time
+      - y: 525_x264_r_peak_not_selected_time
+        legend: Non-Selected Peak Time
+
+  - type: scatter
+    title: 525.x264_r - Ratio
+    yaxis: Ratio
+    series:
+      - y: 525_x264_r_peak_selected_ratio
+        legend: Selected Base Ratio
+      - y: 525_x264_r_base_not_selected_ratio
+        legend: Non-Selected Base Ratio
+      - y: 525_x264_r_peak_selected_ratio
+        legend: Selected Peak Ratio
+      - y: 525_x264_r_peak_not_selected_ratio
+        legend: Non-Selected Peak Ratio
+
+  - type: scatter
+    title: 531.deepsjeng_r - Execution Time
+    yaxis: Time [s]
+    series:
+      - y: 531_deepsjeng_r_base_selected_time
+        legend: Selected Base Time
+      - y: 531_deepsjeng_r_base_not_selected_time
+        legend: Non-Selected Base Time
+      - y: 531_deepsjeng_r_peak_selected_time
+        legend: Selected Peak Time
+      - y: 531_deepsjeng_r_peak_not_selected_time
+        legend: Non-Selected Peak Time
+
+  - type: scatter
+    title: 531.deepsjeng_r - Ratio
+    yaxis: Ratio
+    series:
+      - y: 531_deepsjeng_r_peak_selected_ratio
+        legend: Selected Base Ratio
+      - y: 531_deepsjeng_r_base_not_selected_ratio
+        legend: Non-Selected Base Ratio
+      - y: 531_deepsjeng_r_peak_selected_ratio
+        legend: Selected Peak Ratio
+      - y: 531_deepsjeng_r_peak_not_selected_ratio
+        legend: Non-Selected Peak Ratio
+
+  - type: scatter
+    title: 541.leela_r - Execution Time
+    yaxis: Time [s]
+    series:
+      - y: 541_leela_r_base_selected_time
+        legend: Selected Base Time
+      - y: 541_leela_r_base_not_selected_time
+        legend: Non-Selected Base Time
+      - y: 541_leela_r_peak_selected_time
+        legend: Selected Peak Time
+      - y: 541_leela_r_peak_not_selected_time
+        legend: Non-Selected Peak Time
+
+  - type: scatter
+    title: 541.leela_r - Ratio
+    yaxis: Ratio
+    series:
+      - y: 541_leela_r_peak_selected_ratio
+        legend: Selected Base Ratio
+      - y: 541_leela_r_base_not_selected_ratio
+        legend: Non-Selected Base Ratio
+      - y: 541_leela_r_peak_selected_ratio
+        legend: Selected Peak Ratio
+      - y: 541_leela_r_peak_not_selected_ratio
+        legend: Non-Selected Peak Ratio
+
+  - type: scatter
+    title: 548.exchange2_r - Execution Time
+    yaxis: Time [s]
+    series:
+      - y: 548_exchange2_r_base_selected_time
+        legend: Selected Base Time
+      - y: 548_exchange2_r_base_not_selected_time
+        legend: Non-Selected Base Time
+      - y: 548_exchange2_r_peak_selected_time
+        legend: Selected Peak Time
+      - y: 548_exchange2_r_peak_not_selected_time
+        legend: Non-Selected Peak Time
+
+  - type: scatter
+    title: 548.exchange2_r - Ratio
+    yaxis: Ratio
+    series:
+      - y: 548_exchange2_r_peak_selected_ratio
+        legend: Selected Base Ratio
+      - y: 548_exchange2_r_base_not_selected_ratio
+        legend: Non-Selected Base Ratio
+      - y: 548_exchange2_r_peak_selected_ratio
+        legend: Selected Peak Ratio
+      - y: 548_exchange2_r_peak_not_selected_ratio
+        legend: Non-Selected Peak Ratio
+
+  - type: scatter
+    title: 557.xz_r - Execution Time
+    yaxis: Time [s]
+    series:
+      - y: 557_xz_r_base_selected_time
+        legend: Selected Base Time
+      - y: 557_xz_r_base_not_selected_time
+        legend: Non-Selected Base Time
+      - y: 557_xz_r_peak_selected_time
+        legend: Selected Peak Time
+      - y: 557_xz_r_peak_not_selected_time
+        legend: Non-Selected Peak Time
+
+  - type: scatter
+    title: 557.xz_r - Ratio
+    yaxis: Ratio
+    series:
+      - y: 557_xz_r_peak_selected_ratio
+        legend: Selected Base Ratio
+      - y: 557_xz_r_base_not_selected_ratio
+        legend: Non-Selected Base Ratio
+      - y: 557_xz_r_peak_selected_ratio
+        legend: Selected Peak Ratio
+      - y: 557_xz_r_peak_not_selected_ratio
+        legend: Non-Selected Peak Ratio

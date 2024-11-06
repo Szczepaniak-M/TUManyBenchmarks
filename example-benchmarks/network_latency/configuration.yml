@@ -1,0 +1,56 @@
+---
+configuration:
+    name: Network Latency
+    description: Benchmark using sockperf to test network latency
+    directory: network_latency
+    cron: "0 * * * *"
+    instance-number: 2
+    instance-types:
+      - c8g.metal-24xl
+      - c7gn.metal
+      - c7g.metal
+      - c7i.metal-24xl
+      - c7a.metal-48xl
+      - c5.metal
+nodes:
+  - node-id: 0
+    ansible-configuration: ansible.yml
+
+  - node-id: 1
+    benchmark-command: ./run_latency_bench.sh
+    output-command: python3 format_output.py results.txt
+
+  - node-id: 2
+    benchmark-command: timeout 90 ./sockperf/sockperf server -i node-2 --tcp
+
+plots:
+  - type: scatter
+    title: Round-trip time
+    yaxis: Time [us]
+    series:
+      - y: average
+        legend: Average
+      - y: average_plus_std_dev
+        legend: Average + Std Dev
+      - y: average_minus_std_dev
+        legend: Average - Std Dev
+      - y: minimum
+        legend: Minimum
+      - y: maximum
+        legend: Maximum
+      - y: percentile_99_999
+        legend: Percentile 99.999%
+      - y: percentile_99_990
+        legend: Percentile 99.99%
+      - y: percentile_99_900
+        legend: Percentile 99.9%
+      - y: percentile_99_000
+        legend: Percentile 99%
+      - y: percentile_90_000
+        legend: Percentile 90%
+      - y: percentile_75_000
+        legend: Percentile 75%
+      - y: percentile_50_000
+        legend: Median
+      - y: percentile_25_000
+        legend: Percentile 25%

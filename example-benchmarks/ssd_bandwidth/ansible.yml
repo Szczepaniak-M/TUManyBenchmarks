@@ -1,0 +1,15 @@
+---
+- name: Install fio
+  hosts: localhost
+  tasks:
+    - name: Install dependencies
+      become: yes
+      apt:
+        name:
+          - fio
+        state: present
+
+    - name: Make run_fio.sh executable
+      file:
+        path: /home/ubuntu/ssd_bandwidth/run_fio.sh
+        mode: '0755'

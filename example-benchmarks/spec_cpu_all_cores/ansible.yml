@@ -1,0 +1,80 @@
+---
+- name: Install and run sockperf
+  hosts: localhost
+  tasks:
+    - name: Ensure the directory exists
+      file:
+          path: /home/ubuntu/specbench
+          state: directory
+          mode: '0755'
+
+    - name: Mount image
+      become: true
+      command: mount -t iso9660 -o ro,exec,loop cpu2017-1.1.9.iso /mnt
+      args:
+        chdir: /home/ubuntu
+
+    - name: Install SPEC CPU
+      command: ./install.sh -f -d /home/ubuntu/specbench
+      args:
+        chdir: /mnt
+
+    - name: Copy x86 config
+      copy:
+        src: /home/ubuntu/spec_cpu_all_cores/config_x86.cfg
+        dest: /home/ubuntu/specbench/config/config_x86.cfg
+
+    - name: Copy ARM config
+      copy:
+        src: /home/ubuntu/spec_cpu_all_cores/config_graviton.cfg
+        dest: /home/ubuntu/specbench/config/config_graviton.cfg
+
+    - name: Add flags tags to gcc.xml
+      community.general.xml:
+        path: /home/ubuntu/specbench/config/flags/gcc.xml
+        xpath: /flagsdescription
+        add_children:
+          - flag:
+              name: std-c-plus-plus-14
+              regexp: -std=c\+\+14
+              class: portability
+          - flag:
+              name: Wno-error-register
+              regexp: -Wno-error=register
+              class: portability
+        state: present
+        pretty_print: yes
+
+    - name: Add placeholder for C++14 description
+      community.general.xml:
+        path: /home/ubuntu/specbench/config/flags/gcc.xml
+        xpath: /flagsdescription/flag[@name='std-c-plus-plus-14']
+        value: DESCRIPTION_STD_C14
+        state: present
+        pretty_print: yes
+
+    - name: Add placeholder for WNo-Error description
+      community.general.xml:
+        path: /home/ubuntu/specbench/config/flags/gcc.xml
+        xpath: /flagsdescription/flag[@name='Wno-error-register']
+        value: DESCRIPTION_WNO_ERROR
+        state: "present"
+        pretty_print: yes
+
+    - name: Replace DESCRIPTION_STD_C14
+      replace:
+        path: /home/ubuntu/specbench/config/flags/gcc.xml
+        regexp: DESCRIPTION_STD_C14
+        replace: <![CDATA[<p>Compile source code with C++14.</p>]]>
+
+
+    - name: Replace DESCRIPTION_WNO_ERROR
+      replace:
+        path: /home/ubuntu/specbench/config/flags/gcc.xml
+        regexp: DESCRIPTION_WNO_ERROR
+        replace: <![CDATA[<p>Disable treating the use of the 'register' keyword as an error.</p>]]>
+
+    - name: Make run_spec.sh executable
+      file:
+        path: /home/ubuntu/spec_cpu_all_cores/run_spec.sh
+        mode: '0755'

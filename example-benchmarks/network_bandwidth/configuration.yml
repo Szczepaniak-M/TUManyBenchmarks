@@ -1,0 +1,64 @@
+---
+configuration:
+    name: Network Bandwidth
+    description: Benchmark testing network bandwidth over a time using iperf
+    directory: network_bandwidth
+    cron: "0 * * * *"
+    instance-number: 2
+    instance-types:
+      - c8g.metal-24xl
+      - c7gn.metal
+      - c7g.metal
+      - c7i.metal-24xl
+      - c7a.metal-48xl
+      - c5.metal
+      - c6g.medium
+      - t2.micro
+
+      - c7g.medium
+      - c7g.large
+      - c7g.xlarge
+
+      - c6i.2xlarge
+      - c7i.2xlarge
+
+      - c6a.2xlarge
+      - c7a.2xlarge
+
+      - c6g.2xlarge
+      - c7g.2xlarge
+      - c8g.2xlarge
+
+nodes:
+  - node-id: 0
+    ansible-configuration: ansible.yml
+
+  - node-id: 1
+    benchmark-command: ./run_bandwidth.sh
+    output-command: python3 format_output.py results.txt
+
+  - node-id: 2
+    benchmark-command: timeout 620 iperf -s
+    instance-type: c7gn.metal
+
+plots:
+  - type: line
+    title: Network Bandwidth over Time
+    xaxis: Time [s]
+    yaxis: Network Bandwidth [Gbit/s]
+    series:
+      - x: increasing_values
+        y: connection_min
+        legend: Minimum Connection Bandwidth
+
+      - x: increasing_values
+        y: connection_avg
+        legend: Average Connection Bandwidth
+
+      - x: increasing_values
+        y: connection_max
+        legend: Maximum Connection Bandwidth
+
+      - x: increasing_values
+        y: sum_bandwidth
+        legend: Connections Sum

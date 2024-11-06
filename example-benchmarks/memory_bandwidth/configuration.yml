@@ -1,0 +1,101 @@
+---
+configuration:
+    name: "Memory Bandwidth"
+    description: "Benchmark testing Memory Bandwidth for different number of threads"
+    directory: memory_bandwidth
+    cron: "0 * * * *"
+    instance-number: 1
+    instance-types:
+      # Graviton
+      - c6g.metal
+      - c6g.4xlarge
+      - c6g.2xlarge
+      - c6g.xlarge
+      - c6g.large
+
+      - c7g.metal
+      - c7g.4xlarge
+      - c7g.2xlarge
+      - c7g.xlarge
+      - c7g.large
+
+      - c8g.metal-24xl
+      - c8g.8xlarge
+      - c8g.4xlarge
+      - c8g.2xlarge
+      - c8g.xlarge
+      - c8g.large
+
+      # Intel
+      - c4.8xlarge
+      - c4.2xlarge
+      - c4.xlarge
+      - c4.large
+
+      - c5.metal
+      - c5.9xlarge
+      - c5.4xlarge
+      - c5.2xlarge
+      - c5.xlarge
+      - c5.large
+
+      - c6i.metal
+      - c6i.8xlarge
+      - c6i.2xlarge
+      - c6i.xlarge
+      - c6i.large
+
+      - c7i.metal-24xl
+      - c7i.8xlarge
+      - c7i.2xlarge
+      - c7i.xlarge
+      - c7i.large
+
+      # AMD
+      - m5a.24xlarge
+      - m5a.2xlarge
+      - m5a.xlarge
+      - m5a.large
+
+      - c5a.24xlarge
+      - c5a.16xlarge
+      - c5a.12xlarge
+      - c5a.8xlarge
+      - c5a.4xlarge
+      - c5a.2xlarge
+      - c5a.xlarge
+      - c5a.large
+
+      - c6a.metal
+      - c6a.16xlarge
+      - c6a.12xlarge
+      - c6a.8xlarge
+      - c6a.4xlarge
+      - c6a.2xlarge
+      - c6a.xlarge
+      - c6a.large
+
+      - c7a.metal-48xl
+      - c7a.16xlarge
+      - c7a.12xlarge
+      - c7a.8xlarge
+      - c7a.4xlarge
+      - c7a.2xlarge
+      - c7a.xlarge
+      - c7a.large
+
+nodes:
+  - node-id: 0
+    ansible-configuration: ansible.yml
+    benchmark-command: ./run_membw.sh
+    output-command: python3 format_output.py results.csv
+
+plots:
+  - type: line
+    title: Bandwidth depending on number of threads
+    xaxis: Threads count
+    yaxis: Memory Bandwidth [GB/s]
+    series:
+      - x: thread_counts
+        y: memory_bandwidth
+        legend: Memory bandwidth

@@ -1,0 +1,47 @@
+---
+configuration:
+    name: SSD Bandwidth
+    description: Benchmark SSD IOPS using FIO
+    directory: ssd_bandwidth
+    cron: "0 * * * *"
+    instance-number: 1
+    instance-types:
+      - i4g.large
+      - i4i.large
+      - is4gen.large
+      - i3.large
+      - i3en.large
+      - im4gn.large
+
+nodes:
+  - node-id: 0
+    ansible-configuration: ansible.yml
+    benchmark-command: sudo ./run_fio.sh
+    output-command: python3 format_output.py results-read.json results-randread.json results-write.json results-randwrite.json
+
+plots:
+  - type: scatter
+    title: Sequential Read Throughput
+    yaxis: SSD Throughput [IOPS]
+    series:
+      - y: iops_stddev_read
+        legend: Stddev
+      - y: iops_mean_read
+        legend: Average
+      - y: iops_min_read
+        legend: Minimum
+      - y: iops_max_read
+        legend: Maximum
+  - type: scatter
+    title: Random Read Throughput
+    yaxis: SSD Throughput [IOPS]
+    series:
+      - y: iops_stddev_randread
+        legend: Stddev
+      - y: iops_mean_randread
+        legend: Average
+      - y: iops_min_randread
+        legend: Minimum
+      - y: iops_max_randread
+        legend: Maximum
+

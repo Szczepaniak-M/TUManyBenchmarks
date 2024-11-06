@@ -11,6 +11,7 @@ The repository consists from 4 main parts:
 - `benchmark-service` - Spring Boot service responsible for excecuting benchmarks
 - `webpage-backend` - Spring Boot service responsible for exposing data about benchmark results
 - `webpage-frontend` - Angular application responsible for presenting results to the user
+- `example-benchmarks` - example benchmarks with their configuration files that can be executed by the service after moving them to separate repository
 
 ## Architecture overview
 
